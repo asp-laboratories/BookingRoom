@@ -1,0 +1,31 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="{% static '/css/sign_up.css' %}">
+</head>
+<body>
+      <div class="registro-contenedor">
+      <div class="registro">
+        <h1>Registro</h1>
+      <form method="post">
+            <label>Nombre de usuario: </label>
+            <input type="text" name="usario">
+            <label>Correo electronico: </label>
+            <input type="email" name="correo-electronico">
+            <label>Confirmar contraseña: </label>
+            <input type="password" name="contraseña">
+            <label>Contraseña: </label>
+            <input type="password" name="contraseña">
+
+            <button class="btn-enviar">Enviar datos</button>
+            <a href="{% url "login" %} ">¿Ya tienes cuenta? Iniciar sesion</a>
+      </form>
+      </div>
+    </div>
+</body>
+</html>

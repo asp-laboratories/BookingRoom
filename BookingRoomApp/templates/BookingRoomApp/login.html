@@ -1,0 +1,32 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static '/css/inicio_sesion_estilos.css'%} ">
+</head>
+<body>
+    <div class="contenedor-login">
+        <div class="login">
+            <h1>Inicio de sesion</h1>
+            <form action="" method="get" >
+                <label>Correo electronico:</label>
+                <input class="inputs" name="correo-electronico" type="text">
+                <label>Contraseña</label>
+                <input class="inputs" name="contraseña" type="password">
+
+                <button class="btn-ingresar">Ingresar</button>
+            </form>
+
+            <a href="{% url "sign_up" %}">¿No tienes cuenta? <span class="enviar-registro">Registrate aqui</span></a>
+        </div>
+        <div class="background">
+            <img class="logo" src="{% static '/img/BookingRoom.png' %}">
+        </div>
+        
+    </div>
+</body>
+</html>

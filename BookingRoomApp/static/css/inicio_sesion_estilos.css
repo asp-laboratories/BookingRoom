@@ -1,0 +1,142 @@
+:root {
+  /* Paleta de colores globales */
+  --color-primario: #9B582B;
+  --color-secundario: #D18A5B;
+  --color-fondo: #FAF9F6;
+  --color-texto: #333333;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    font-family: sans-serif;
+}
+
+
+.contenedor-login {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+}
+
+/*SECCION DE LA IZQUIERDA LOGIN*/
+
+form{
+    display: flex;
+    flex-direction: column;
+    width: 70%;
+    max-width: 500px;
+    gap: 10px;
+}
+
+.btn-ingresar{
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #D18A5B;
+    color: #fff;
+    border: none;
+}
+
+.btn-ingresar:hover{
+    background-color: #edc0a2;
+    color: #fff;
+    border: none;
+    cursor:pointer;
+}
+
+.inputs {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+}
+
+
+.login{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--color-primario);
+    color: #fff;
+}
+
+
+a{
+    color: #fff;
+    text-decoration: none;
+}
+
+span{
+    text-decoration: underline;
+}
+
+/*SECCION DE LA DERECHA BACKGROUND*/
+.background{
+    position: relative; /* Esencial para posicionar el logo adentro */
+    overflow: hidden;
+    background-image: linear-gradient(rgba(209, 138, 91, 0.3), rgba(209, 138, 91,0.6)),
+     url('salones-xv.jpg');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo{
+    position: absolute;   
+    right: -220px;        
+    top: 50%;            
+    transform: translateY(-50%);
+    width: 670px;
+    height: auto;
+    opacity: 90%;
+}
+
+@media (max-width: 768px) {
+    .contenedor-login {
+        grid-template-columns: 1fr;
+            min-width: 250px;
+
+    }
+
+    .background {
+        display: none; 
+    }
+
+    .login {
+        padding: 40px 20px;
+    }
+
+    form {
+        width: 90%;
+    }
+}
+
+/* Para pantallas más grandes que un monitor estándar (Full HD) */
+@media (min-width: 1520px) {
+    .login h1 {
+        font-size: 3rem;   /* Título más imponente */
+    }
+    
+    .inputs, .btn-ingresar {
+        padding: 15px;     /* Inputs más robustos y fáciles de clickear */
+        font-size: 1.1rem;
+    }
+
+    .logo{
+    position: absolute;   
+    right: -310px;        
+    top: 50%;            
+    transform: translateY(-50%);
+    width: 970px;
+    height: auto;
+
+}
+}
