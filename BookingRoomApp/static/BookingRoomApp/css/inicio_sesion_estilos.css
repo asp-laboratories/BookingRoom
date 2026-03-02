@@ -81,7 +81,7 @@ span{
     position: relative; /* Esencial para posicionar el logo adentro */
     overflow: hidden;
     background-image: linear-gradient(rgba(209, 138, 91, 0.3), rgba(209, 138, 91,0.6)),
-     url('salones-xv.jpg');
+     url('img/salones-xv.jpg');
     background-size: cover;
     background-position: center;
     display: flex;

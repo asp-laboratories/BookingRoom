@@ -6,13 +6,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="{% static '/css/inicio_sesion_estilos.css'%} ">
+    <link rel="stylesheet" href="{% static 'BookingRoomApp/css/inicio_sesion_estilos.css'%} ">
 </head>
 <body>
     <div class="contenedor-login">
         <div class="login">
             <h1>Inicio de sesion</h1>
-            <form action="" method="get" >
+            <form action="{% url "home" %}" method="get" >
                 <label>Correo electronico:</label>
                 <input class="inputs" name="correo-electronico" type="text">
                 <label>Contraseña</label>
@@ -24,7 +24,7 @@
             <a href="{% url "sign_up" %}">¿No tienes cuenta? <span class="enviar-registro">Registrate aqui</span></a>
         </div>
         <div class="background">
-            <img class="logo" src="{% static '/img/BookingRoom.png' %}">
+            <img class="logo" src="{% static 'BookingRoomApp/img/BookingRoom.png' %}">
         </div>
         
     </div>

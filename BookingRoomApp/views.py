@@ -8,3 +8,6 @@ def login(request):
 
 def sign_up(request):
     return render(request, 'BookingRoomApp/sign_up.html')
+
+def home(request):
+    return render(request, 'BookingRoomApp/home.html')

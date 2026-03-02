@@ -1,0 +1,310 @@
+:root {
+  /* Paleta de colores globales */
+  --color-primario: #9b582b;
+  --color-secundario: #d18a5b;
+  --color-fondo: #faf9f6;
+  --color-texto: #333333;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: sans-serif;
+}
+
+/*DIV PRINCIPAL GRID*/
+
+.contenedor-aplicacion {
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  transition: grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 100vh;
+  background-color: blue;
+}
+
+.contenedor-aplicacion.sidebar-cerrado {
+  grid-template-columns: 60px 1fr;
+  min-height: 100vh;
+}
+
+/*FIN DIV PRINCIPAL GRID*/
+
+/*DIV SIDEBAR*/
+
+.sidebar {
+  position: relative;
+  background-color: var(--color-primario);
+  color: #fff;
+  padding: 2rem 1rem;
+  border-top-right-radius: 25px;
+  border-bottom-right-radius: 25px;
+  border-right: 2px solid #fff;
+}
+
+.sidebar-cerrado .logo-texto,
+.sidebar-cerrado .salir .texto-menu {
+  display: none;
+}
+
+.sidebar-cerrado .sidebar-nav ul {
+  display: none;
+}
+
+.sidebar-nav,
+.salir,
+.letras {
+  transition: all 0.3s ease;
+}
+
+.contenedor-letras {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-menu {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-bottom: 20px;
+  font-family: Anton, 'Arial Black', sans-serif;;
+  font-weight: bold;
+  margin-bottom: 30px;
+  font-size: 2em;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.btn-menu:hover {
+  background-color: var(--color-secundario);
+}
+
+details[open] summary::after {
+  content: "▸"; /* Mantenemos el mismo contenido */
+  transform: rotate(90deg); /* Lo giramos 90 grados */
+}
+.recepcion {
+  margin-bottom: 10px;
+}
+
+.almacen {
+  margin-bottom: 10px;
+}
+
+ul {
+  list-style: none;
+  margin: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 1.1em;
+}
+
+a {
+  color: #fff;
+  text-decoration: none;
+}
+
+a:hover {
+  background-color: #d18a5b;
+  padding: 5px;
+  border-radius: 3px;
+}
+
+summary {
+  font-size: 1.3em;
+  cursor: pointer;
+  font-weight: bold;
+  list-style: none;
+}
+
+summary::-webkit-details-marker {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+summary::after {
+  content: "▸"; /* Usamos una flecha para rotarla */
+  float: right;
+  transition: transform 0.3s ease; /* La magia de la animación */
+}
+
+/* Añadir marcador personalizado */
+
+
+.salir {
+  position: absolute;
+  bottom: 0;
+  margin-bottom: 20px;
+  font-size: 1.3em;
+}
+
+/*FIN DIV SIDEBAR*/
+
+
+
+.contenedor-principal {
+  background-color: blue;
+}
+
+
+
+/*ICONOS SVG*/
+
+.icono {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+  vertical-align: middle;
+}
+/* Definimos diferentes tamaños con clases simples */
+.icono-16 {
+  width: 16px;
+  height: 16px;
+}
+
+.icono-20 {
+  width: 20px;
+  height: 20px;
+}
+
+.icono-24 {
+  width: 24px;
+  height: 24px;
+}
+
+.icono-32 {
+  width: 32px;
+  height: 32px;
+}
+
+.icono-48 {
+  width: 48px;
+  height: 48px;
+}
+/* Variantes de color */
+.icono.azul {
+  color: #2196f3;
+}
+.icono.rojo {
+  color: #f44336;
+}
+.icono.verde {
+  color: #4caf50;
+}
+.icono.blanco {
+  color: #ffffff;
+}
+.icono.negro {
+  color: #000000;
+}
+
+/* Variantes de tamaño con rem */
+/* .icono.sm {
+  width: 1rem;
+  height: 1rem;
+} 
+.icono.md {
+  width: 2rem;
+  height: 2rem;
+} 
+.icono.lg {
+  width: 3rem;
+  height: 3rem;
+} 
+.icono.xl {
+  width: 4rem;
+  height: 4rem;
+}  
+*/
+
+.icono {
+  fill: currentColor;
+  vertical-align: middle;
+}
+
+/*FIN ICONOS SVG*/
+
+
+/*ANIMACIONES*/
+
+.letras {
+  animation: fadeIn 1.5s ease-out;
+}
+.texto-menu {
+    white-space: nowrap;
+    transition: opacity 0.3s ease; /* Para que aparezca/desaparezca suave */
+}
+
+.sidebar-cerrado .texto-menu {
+    display: none; /* O puedes usar opacity: 0; si prefieres animarlo */
+}
+
+.sidebar-cerrado summary {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+/* Ocultamos el marcador + / - */
+.sidebar-cerrado summary::after {
+    display: none;
+}
+
+.sidebar-nav li {
+  transition: transform 0.2s ease;
+}
+
+.sidebar-nav details:hover {
+  transform: translateY(-2.5px);
+}
+
+.sidebar-nav li:hover {
+  transform: translateX(8px);
+  white-space: nowrap; /* Impide que el texto pase a la siguiente línea */
+  overflow: hidden;
+}
+
+.sidebar-nav li:hover .icono {
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5)); /* Brillo sutil */
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*FIN ANIMACIONES*/
+
+.deslizar {
+  animation: slideDown 0.5s ease-out;
+  white-space: nowrap; /* Impide que el texto pase a la siguiente línea */
+  overflow: hidden;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
+
+/* Rotación cuando el menú está abierto */
