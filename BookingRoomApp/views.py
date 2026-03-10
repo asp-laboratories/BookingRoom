@@ -11,3 +11,6 @@ def sign_up(request):
 
 def home(request):
     return render(request, 'BookingRoomApp/home.html')
+
+def reservacion(request):
+    return render(request, 'BookingRoomApp/reservacion.html')

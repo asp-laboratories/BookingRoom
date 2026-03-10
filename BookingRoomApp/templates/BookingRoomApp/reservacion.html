@@ -1,0 +1,149 @@
+{% extends "BookingRoomApp/base.html" %} {% load static %} {% block inicio %}
+
+<link
+  rel="stylesheet"
+  href="{% static 'BookingRoomApp/css/reservacion.css' %}"
+/>
+
+<h1 class="titulo-seccion">Reservación</h1>
+<div class="reservacion-contenedor-principal">
+  <div class="reservacion-contenedor-navegacion">
+    <nav class="reservacion-navegacion">
+      <ul>
+        <li><a href="#reservacion">Reservacion</a></li>
+        <li><a href="#cliente">Cliente</a></li>
+        <li><a href="#salon">Salones</a></li>
+        <li><a href="#servicios">Servicios</a></li>
+        <li><a href="#equipamiento">Equipamiento</a></li>
+        <li><a href="" class="reservacion-icono">🔔</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="reservacion-grid">
+    <div class="reservacion-inputs-reservacion">
+      <section id="reservacion" class="reservacion-seccion">
+        <h2 class="reservacion-titulo-seccion">Acerca de la reservación</h2>
+
+        <div class="reservacion-campo-contenedor">
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Hora de inicio</label>
+            <input type="time" class="reservacion-input" />
+          </div>
+
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Fecha del evento</label>
+            <input type="date" class="reservacion-input" />
+          </div>
+
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Hora de cierre</label>
+            <input type="time" class="reservacion-input" />
+          </div>
+
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Estimado de asistentes</label>
+            <input type="number" class="reservacion-input" />
+          </div>
+
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Descripción del evento</label>
+            <textarea rows="3" class="reservacion-textarea"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section id="cliente" class="reservacion-seccion">
+        <h3 class="reservacion-titulo-seccion">Datos del cliente</h3>
+
+        <div class="reservacion-campo-contenedor">
+          <div class="reservacion-radio-group">
+            <label>
+              <input type="radio" name="tipo-cliente" /> Persona moral
+            </label>
+            <label>
+              <input type="radio" name="tipo-cliente" /> Persona física
+            </label>
+          </div>
+
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Nombre completo</label>
+            <input type="text" class="reservacion-input" />
+          </div>
+
+          <div class="reservacion-grid-doble">
+            <div class="reservacion-campo">
+              <label class="reservacion-label">Primer apellido</label>
+              <input type="text" class="reservacion-input" />
+            </div>
+
+            <div class="reservacion-campo">
+              <label class="reservacion-label">Segundo apellido</label>
+              <input type="text" class="reservacion-input" />
+            </div>
+          </div>
+
+          <div class="reservacion-grid-doble">
+            <div class="reservacion-campo">
+              <label class="reservacion-label">RFC</label>
+              <input type="text" class="reservacion-input" />
+            </div>
+
+            <div class="reservacion-campo">
+              <label class="reservacion-label">Nombre Fiscal</label>
+              <input type="text" class="reservacion-input" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="salon">
+        <h3 class="reservacion-titulo-seccion">Salon y montaje</h3>
+        <div class="reservacion-campo-contenedor"></div>
+      </section>
+      <section id="servicios">
+        <h3 class="reservacion-titulo-seccion">Servicios</h3>
+        <div class="reservacion-campo-contenedor"></div>
+      </section>
+      <section id="equipamiento">
+        <h3 class="reservacion-titulo-seccion">Equipamientos</h3>
+        <div class="reservacion-campo-contenedor"></div>
+      </section>
+    </div>
+
+    <div class="reservacion-resumen">
+      <div class="reservacion-elemento">
+        <h2 class="reservacion-titulo-resumen">Coste de la reservación</h2>
+
+        <div>
+          <div class="reservacion-fila">
+            <span>Subtotal</span>
+            <span>$0.00</span>
+          </div>
+          <div class="reservacion-fila">
+            <span>IVA</span>
+            <span>$0.00</span>
+          </div>
+          <div class="reservacion-fila reservacion-total">
+            <span>Total</span>
+            <span>$0.00</span>
+          </div>
+          <div class="reservacion-fila">
+            <span>Atendido por:</span>
+            <span>Usuario</span>
+          </div>
+        </div>
+
+        <div class="reservacion-botones">
+          <button class="reservacion-btn reservacion-btn-confirmar">
+            Confirmar
+          </button>
+          <button class="reservacion-btn reservacion-btn-cancelar">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock inicio %}

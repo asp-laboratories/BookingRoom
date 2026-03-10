@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
       },
       // Aquí es donde conectarás con Django después
       events: [
-        { title: 'Evento de prueba', start: '2026-03-01' }
+        { title: 'Evento de prueba', start: '2026-03-01' },
+        { title: 'Mi evento', start: '2026-03-10' },
       ]
     });
     calendar.render();

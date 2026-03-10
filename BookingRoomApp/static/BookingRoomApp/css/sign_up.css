@@ -23,7 +23,7 @@ body{
     align-items: center;
     min-height: 100vh;
     background-image: linear-gradient(rgb(255, 255, 255, 0.2),rgb(155, 88, 43,0.5)),
-     url('/img/salon-registro-background.jpeg');
+     url('../img/salon-registro-background.jpeg');
     background-size: cover;
     background-position: center;
 }

@@ -1,0 +1,24 @@
+:root {
+  /* Paleta de colores globales */
+  --color-primario: #9b582b;
+  --color-secundario: #d18a5b;
+  --color-fondo: #faf9f6;
+  --color-texto: #333333;
+
+  --color-boton-accion: #2B5F9B;
+  --color-boton-cancelar: #CA301B;
+  --color-boton-guardar: #2B9B32;
+}
+
+.boton-accion{
+    background-color: #2B5F9B;
+    color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.boton-accion:hover{
+    transform: translateY(-2px);
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}

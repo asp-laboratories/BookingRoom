@@ -1,14 +1,23 @@
 {% extends "BookingRoomApp/base.html" %} {% block inicio %}
 
+<h1 class="titulo-seccion">Reservacion</h1>
 <div class="parent">
-  <div class="div1" id="calendar">1</div>
-  <div class="div2">2</div>
+  <div class="div1" id="calendar">
+  </div>
+  <div class="div2">
+
+    <div class="contenedor-solicitud">
+        <span>Evento 1</span>
+        <button class="boton-accion boton-beo">Ver BEO</button>
+    </div>
+  </div>
   <div class="div3">
-    <input type="date">
+    <h2 class="label-buscar">Buscar</h2>
+          <input class="buscar-fecha" type="date">
   </div>
   <div class="div5">
     <div class="contenedor-hacer">
-      <button class="btn-reservacion">Hacer reservacion</button>
+      <a href="{% url 'reservacion' %}" class="btn-reservacion">Hacer reservacion</a>
     </div>
   </div>
 </div>

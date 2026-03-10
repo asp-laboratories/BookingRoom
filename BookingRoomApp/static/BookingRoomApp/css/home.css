@@ -1,0 +1,117 @@
+
+
+.parent {
+  height: 85%;
+  margin: 50px;
+  margin-top: 10px;
+  margin-bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  gap: 8px;
+}
+
+.div1 {
+  grid-column: span 6 / span 6;
+  grid-row: span 6 / span 6;
+  background-color: transparent;
+  border-radius: 10px;
+
+}
+
+.div2 {
+  grid-column: span 3 / span 3;
+  grid-row: span 6 / span 6;
+  grid-column-start: 7;
+  background-color: #2196f3;
+  border-radius: 10px;
+
+}
+
+.div3 {
+  grid-column: span 4 / span 4;
+  grid-row-start: 7;
+  background-color: #2196f3;
+  border-radius: 10px;
+
+}
+
+.div5 {
+  grid-column: span 7 / span 7;
+  grid-column-start: 2;
+  grid-row-start: 8;
+  border-radius: 10px;
+}
+
+.contenedor-hacer{
+  display: flex;
+  height: 90%;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-reservacion{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80%;
+  height: 70%;
+  background-color: var(--color-secundario);
+  border: none;
+  border-radius: 16px;
+  color: #fff;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-reservacion:hover{
+    transform: translateY(-2px);
+}
+
+/* Rotación cuando el menú está abierto */
+.div2{
+    display: flex;
+    justify-content: start;
+}
+
+.contenedor-solicitud{
+    margin: 10px;
+  background-color: white;
+  color: rgb(0, 0, 0);
+  width: 90%;
+  height: 70px;
+  border-radius: 5px;
+  border-left: 5px solid #000;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  display: flex;
+  
+}
+
+.contenedor-solicitud:hover{
+    transform: translateX(5px);
+}
+
+.boton-beo{
+    margin: auto;
+}
+
+.div3{
+    display: flex;
+    justify-content: start;
+    align-items: start;
+    background-color: transparent;
+    flex-direction: column;
+}
+
+.label-buscar{
+    margin:5px;
+}
+
+.buscar-fecha{
+    padding: 10px;
+    width: 90%;
+    border: 1px solid #000;
+    border-radius: 10px;
+}

@@ -5,10 +5,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Inicio</title>
     <link rel="stylesheet" href="{% static "BookingRoomApp/css/sidebar.css" %}" />
-    <script src="{% static "BookingRoomApp/js/ocultar_sidebar.js" %}  " defer></script>
-    
+    <link rel="stylesheet" href="{% static "BookingRoomApp/css/home.css" %}" />
+    <link rel="stylesheet" href="{% static "BookingRoomApp/css/global.css" %}" />
+    <script src="{% static "BookingRoomApp/js/ocultar_sidebar.js" %}" defer></script>
+    <link rel="icon" href="{% static 'BookingRoomApp/img/favicon_io/favicon-16x16.png' %}" type="image/png">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
     <script src="{% static "BookingRoomApp/js/full_calendar.js" %}" defer></script>
 
@@ -19,8 +21,10 @@
         <div class="contenedor-letras">
           <button id="toggle-sidebar" class="letras btn-menu">
             BookingRoom
+            
           </button>
         </div>
+
 
         <nav class="sidebar-nav">
           <section class="recepcion">
@@ -36,7 +40,7 @@
                   <svg class="icono blanco icono-20">
                     <use href="{% static 'BookingRoomApp/img/icons/sprite.svg'%}#icon-bookmark"></use>
                   </svg>
-                  <a href="">Reservacion</a>
+                  <a href="{% url 'home' %}">Reservacion</a>
                 </li>
                 <li>
                   <svg class="icono blanco icono-20">
