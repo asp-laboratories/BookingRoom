@@ -1,10 +1,10 @@
-
+.titulo-seccion{
+  margin: 20px 50px 20px;
+}
 
 .parent {
-  height: 85%;
-  margin: 50px;
-  margin-top: 10px;
-  margin-bottom: 0;
+  height: calc(100vh - 120px);
+  margin: 30px 50px;
   display: grid;
   grid-template-columns: repeat(9, 1fr);
   grid-template-rows: repeat(9, 1fr);
@@ -15,7 +15,8 @@
   grid-column: span 6 / span 6;
   grid-row: span 6 / span 6;
   background-color: transparent;
-  border-radius: 10px;
+  margin-right: 20px;
+  box-shadow: rgb(155, 88, 43, 0.5) 1.95px 1.95px 2.6px;
 
 }
 
@@ -23,12 +24,25 @@
   grid-column: span 3 / span 3;
   grid-row: span 6 / span 6;
   grid-column-start: 7;
-  background-color: #2196f3;
+  background-color: var(--color-fondo);
   border-radius: 10px;
+  box-shadow: rgb(155, 88, 43, 0.5) 1.95px 1.95px 2.6px;
 
+  display: flex;
+  flex-direction: column;
+}
+
+.titulo-solicitud{
+  color: #000;
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 10px;
 }
 
 .div3 {
+  margin-top: 15px;
+  margin-bottom: 15px;
+
   grid-column: span 4 / span 4;
   grid-row-start: 7;
   background-color: #2196f3;
@@ -83,10 +97,10 @@
   width: 90%;
   height: 70px;
   border-radius: 5px;
-  border-left: 5px solid #000;
+  border-left: 5px solid var(--color-primario);
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
   display: flex;
-  
+  padding: 10px;
 }
 
 .contenedor-solicitud:hover{
@@ -94,7 +108,10 @@
 }
 
 .boton-beo{
-    margin: auto;
+    height: 35px;
+    margin-top: auto;
+    margin-left: auto;
+
 }
 
 .div3{

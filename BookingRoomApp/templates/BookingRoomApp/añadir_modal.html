@@ -1,0 +1,227 @@
+<style>
+  body {
+    margin: 0;
+    font-family: sans-serif;
+  }
+  .modal-grande {
+    width: 40%;
+    height: 90%;
+    padding: 30px;
+    border: none;
+  }
+
+  .modal-mediana {
+    width: 500px;
+    height: 400px;
+    padding: 20px;
+  }
+
+  .titulo-modal {
+    font-weight: bold;
+    font-size: 1em;
+    text-align: center;
+  }
+
+  .cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .parent {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    gap: 8px;
+  }
+
+  .div1 {
+    grid-row: span 3 / span 3;
+    background-color: aqua;
+  }
+
+  .div2 {
+    grid-row: span 3 / span 3;
+    background-color: aqua;
+  }
+
+  .div3 {
+    grid-column: span 2 / span 2;
+    grid-row: span 2 / span 2;
+    grid-row-start: 4;
+    background-color: aqua;
+  }
+
+  .div4 {
+    grid-row: span 3 / span 3;
+    grid-row-start: 6;
+    background-color: aqua;
+  }
+
+  .div5 {
+    grid-row: span 3 / span 3;
+    grid-row-start: 6;
+    background-color: aqua;
+  }
+
+  .div6 {
+    grid-column: span 2 / span 2;
+    grid-row: span 2 / span 2;
+    grid-row-start: 9;
+    background-color: aqua;
+  }
+
+  /* Reset mínimo */
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f0f0f0;
+    font-family: sans-serif;
+  }
+
+  /* Botón para abrir - lo ponemos en la esquina superior derecha */
+  #abrir {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background: #c4302b;
+    color: white;
+    border: none;
+    border-radius: 20px;
+  }
+
+  /* Overlay (fondo oscuro) */
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none; /* Oculto por defecto */
+  }
+
+  /* El modal - posicionado en superior derecha */
+  .modal {
+    background: white;
+    width: 300px;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: absolute;
+    top: 70px; /* Separado del botón */
+    right: 20px; /* Alineado a la derecha */
+  }
+
+  /* Botón de cerrar (la X) */
+  .cerrar {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 20px;
+    cursor: pointer;
+    border: none;
+    background: none;
+  }
+
+  /* Clase para mostrar el overlay */
+  .overlay.mostrar {
+    display: block;
+  }
+</style>
+
+<!-- Botones para abrir el modal -->
+<button onclick="abrirModalGrande()">Abrir modal grande</button>
+<button onclick="abrirModalMediana()">Abrir modal mediana</button>
+
+<!-- Elemento dialog -->
+<dialog id="miModal" class="modal-mediana">
+  <div class="cabecera">
+    <span class="titulo-modal"
+      >SOLICITUD DE: Orden de banquete de evento (BEO)</span
+    >
+    <button onclick="window.miModal.close()">X</button>
+  </div>
+
+  <div class="parent">
+    <div class="div1">
+      <label>Nombre completo: </label>
+      <label>Correo electronico: </label>
+      <label>Telefono: </label>
+      <label>RFC: </label>
+      <label>Nombre fiscal: </label>
+    </div>
+    <div class="div2">
+      Nombre: Decripcion? Fecha Horario Estado? Estimado de asistentes
+    </div>
+    <div class="div3"><label>Salon</label> <label>Montaje</label></div>
+    <div class="div4">No hay servicios</div>
+    <div class="div5">No hay equipamientos</div>
+    <div class="div6">Iva Subtotal Total</div>
+
+    <button>Aceptar</button><button>Denegar</button>
+
+    <button id="abrir">🔔 Notificaciones</button>
+
+    <!-- Overlay y modal -->
+    <div class="overlay" id="overlay">
+      <div class="modal">
+        <button class="cerrar" id="cerrar">&times;</button>
+        <h2>Solicitudes</h2>
+        <div class="contenedor-solicitud">
+          <span>Evento 1</span>
+          <button class="boton-accion boton-beo">Ver BEO</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  function abrirModalGrande() {
+    const modal = document.getElementById("miModal");
+    modal.className = "modal-grande";
+    modal.showModal();
+  }
+
+  function abrirModalMediana() {
+    const modal = document.getElementById("miModal");
+    modal.className = "modal-mediana";
+    modal.showModal();
+  }
+
+  const overlay = document.getElementById("overlay");
+  const abrir = document.getElementById("abrir");
+  const cerrar = document.getElementById("cerrar");
+
+  // Abrir modal
+  abrir.addEventListener("click", () => {
+    overlay.classList.add("mostrar");
+  });
+
+  // Cerrar con botón X
+  cerrar.addEventListener("click", () => {
+    overlay.classList.remove("mostrar");
+  });
+
+  // Cerrar haciendo clic fuera del modal
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      overlay.classList.remove("mostrar");
+    }
+  });
+
+  // Cerrar con tecla ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && overlay.classList.contains("mostrar")) {
+      overlay.classList.remove("mostrar");
+    }
+  });
+</script>

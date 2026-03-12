@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# Entornos virtuales
+venv/
+env/
+.venv/
+
+# Django
+*.sqlite3
+db.sqlite3
+*.egg-info/
+dist/
+build/
+media/
+staticfiles/
+
+# Entorno
+.env
+.env.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

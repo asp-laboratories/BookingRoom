@@ -5,30 +5,115 @@
   href="{% static 'BookingRoomApp/css/reservacion.css' %}"
 />
 
-<h1 class="titulo-seccion">Reservación</h1>
+<h1 style="margin: 50px 0px 20px 20px;">Reservación</h1>
 <div class="reservacion-contenedor-principal">
   <div class="reservacion-contenedor-navegacion">
     <nav class="reservacion-navegacion">
       <ul>
-        <li><a href="#reservacion">Reservacion</a></li>
         <li><a href="#cliente">Cliente</a></li>
+        <li><a href="#reservacion">Reservacion</a></li>
         <li><a href="#salon">Salones</a></li>
         <li><a href="#servicios">Servicios</a></li>
         <li><a href="#equipamiento">Equipamiento</a></li>
-        <li><a href="" class="reservacion-icono">🔔</a></li>
+        <li>
+          <a class="expandir-solicitud">
+                  <svg class="icono negro icono-20">
+                    <use href="{% static 'BookingRoomApp/img/icons/sprite.svg'%}#icon-bell"></use>
+                  </svg>
+                  
+          </a>
+        </li>
       </ul>
+      <div class="reservacion-overlay" id="reservacion-overlay">
+        <div class="reservacion-modal">
+          <button class="reservacion-cerrar" id="reservacion-cerrar">
+            &times;
+          </button>
+          <h2>Bandeja de solicitudes</h2>
+          <div class="reservacion-lista-notificaciones">
+            <div class="contenedor-solicitud">
+              <span>Evento 1</span>
+              <button class="boton-accion boton-beo" onclick="abrirModalBEO()">
+                Ver BEO
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </nav>
   </div>
 
   <div class="reservacion-grid">
     <div class="reservacion-inputs-reservacion">
-      <section id="reservacion" class="reservacion-seccion">
-        <h2 class="reservacion-titulo-seccion">Acerca de la reservación</h2>
+      <section id="cliente" class="reservacion-seccion">
+        <h2 class="reservacion-titulo-seccion">Datos del cliente</h2>
 
-        <div class="reservacion-campo-contenedor">
+        <div class="reservacion-campo-contenedor reservacion-grid-campos">
+          <div class="reservacion-campo span-2">
+            <input
+              type="text"
+              class="reservacion-input"
+              placeholder="Buscar por RFC o Nombre del contacto"
+            />
+          </div>
+
           <div class="reservacion-campo">
-            <label class="reservacion-label">Hora de inicio</label>
-            <input type="time" class="reservacion-input" />
+            <label class="reservacion-label">Tipo de cliente</label>
+            <div class="reservacion-radio-group">
+              <label><input type="radio" name="tipo-cliente" /> Persona moral</label>
+              <label><input type="radio" name="tipo-cliente" /> Persona física</label>
+            </div>
+          </div>
+
+          <div class="reservacion-campo">
+            <label class="reservacion-label">RFC</label>
+            <input type="text" class="reservacion-input" placeholder="ABCD123456XYZ" />
+          </div>
+
+          <div class="reservacion-campo span-2">
+            <label class="reservacion-label">Nombre completo / Razón Social</label>
+            <input type="text" class="reservacion-input" />
+          </div>
+
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Primer apellido</label>
+            <input type="text" class="reservacion-input" />
+          </div>
+
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Segundo apellido</label>
+            <input type="text" class="reservacion-input" />
+          </div>
+
+          <div class="reservacion-campo span-2">
+            <label class="reservacion-label">Nombre Fiscal</label>
+            <input type="text" class="reservacion-input" />
+          </div>
+
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Colonia</label>
+            <input type="text" class="reservacion-input" />
+          </div>
+
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Calle</label>
+            <input type="text" class="reservacion-input" />
+          </div>
+
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Número</label>
+            <input type="number" class="reservacion-input" />
+          </div>
+        </div>
+      </section>
+
+      <section id="reservacion" class="reservacion-seccion">
+        <h3 class="reservacion-titulo-seccion">Acerca de la reservación</h3>
+
+        <div class="reservacion-campo-contenedor reservacion-grid-campos">
+          <div class="reservacion-campo span-2">
+            <label class="reservacion-label">Nombre del evento</label>
+            <input type="text" class="reservacion-input" placeholder="Ej: Boda de Ana y Juan" />
           </div>
 
           <div class="reservacion-campo">
@@ -37,77 +122,94 @@
           </div>
 
           <div class="reservacion-campo">
-            <label class="reservacion-label">Hora de cierre</label>
+            <label class="reservacion-label">Estimado de asistentes</label>
+            <input type="number" class="reservacion-input" placeholder="0" />
+          </div>
+
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Hora de inicio</label>
             <input type="time" class="reservacion-input" />
           </div>
 
           <div class="reservacion-campo">
-            <label class="reservacion-label">Estimado de asistentes</label>
-            <input type="number" class="reservacion-input" />
+            <label class="reservacion-label">Hora de cierre</label>
+            <input type="time" class="reservacion-input" />
           </div>
 
-          <div class="reservacion-campo">
+          <div class="reservacion-campo span-2">
             <label class="reservacion-label">Descripción del evento</label>
-            <textarea rows="3" class="reservacion-textarea"></textarea>
+            <textarea rows="3" class="reservacion-textarea" placeholder="Detalles adicionales..."></textarea>
           </div>
         </div>
       </section>
 
-      <section id="cliente" class="reservacion-seccion">
-        <h3 class="reservacion-titulo-seccion">Datos del cliente</h3>
-
-        <div class="reservacion-campo-contenedor">
-          <div class="reservacion-radio-group">
-            <label>
-              <input type="radio" name="tipo-cliente" /> Persona moral
-            </label>
-            <label>
-              <input type="radio" name="tipo-cliente" /> Persona física
-            </label>
+      <section id="salon" class="reservacion-seccion">
+        <h3 class="reservacion-titulo-seccion">Salón y Montaje</h3>
+        <div class="reservacion-campo-contenedor reservacion-flex-row">
+          <div class="reservacion-columna">
+            <label class="reservacion-label">Seleccionar Salón</label>
+            <select class="reservacion-input">
+              <option value="">-- Selecciona un salón --</option>
+            </select>
           </div>
-
-          <div class="reservacion-campo">
-            <label class="reservacion-label">Nombre completo</label>
-            <input type="text" class="reservacion-input" />
-          </div>
-
-          <div class="reservacion-grid-doble">
-            <div class="reservacion-campo">
-              <label class="reservacion-label">Primer apellido</label>
-              <input type="text" class="reservacion-input" />
-            </div>
-
-            <div class="reservacion-campo">
-              <label class="reservacion-label">Segundo apellido</label>
-              <input type="text" class="reservacion-input" />
-            </div>
-          </div>
-
-          <div class="reservacion-grid-doble">
-            <div class="reservacion-campo">
-              <label class="reservacion-label">RFC</label>
-              <input type="text" class="reservacion-input" />
-            </div>
-
-            <div class="reservacion-campo">
-              <label class="reservacion-label">Nombre Fiscal</label>
-              <input type="text" class="reservacion-input" />
-            </div>
+          <div class="reservacion-columna">
+            <label class="reservacion-label">Seleccionar Montaje</label>
+            <select class="reservacion-input">
+              <option value="">-- Selecciona un montaje --</option>
+            </select>
           </div>
         </div>
       </section>
-
-      <section id="salon">
-        <h3 class="reservacion-titulo-seccion">Salon y montaje</h3>
-        <div class="reservacion-campo-contenedor"></div>
-      </section>
-      <section id="servicios">
+      <section id="servicios" class="reservacion-seccion">
         <h3 class="reservacion-titulo-seccion">Servicios</h3>
-        <div class="reservacion-campo-contenedor"></div>
+        <div class="reservacion-campo-contenedor reservacion-grid-campos">
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Tipo de servicio</label>
+            <select class="reservacion-input">
+              <option value="">-- Elige un tipo --</option>
+            </select>
+          </div>
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Seleccionar Servicio</label>
+            <select class="reservacion-input">
+              <option value="">-- Elige un servicio --</option>
+            </select>
+          </div>
+          <div class="reservacion-campo span-2">
+            <button class="btn-accion" style="width: 100%; margin-top: auto;">+ Añadir Servicio</button>
+          </div>
+        </div>
       </section>
-      <section id="equipamiento">
+
+      <section id="equipamiento" class="reservacion-seccion">
         <h3 class="reservacion-titulo-seccion">Equipamientos</h3>
-        <div class="reservacion-campo-contenedor"></div>
+        <div class="reservacion-campo-contenedor reservacion-grid-campos">
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Tipo de equipamiento</label>
+            <select class="reservacion-input">
+              <option value="">-- Elige un tipo --</option>
+            </select>
+          </div>
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Seleccionar Equipo</label>
+            <select class="reservacion-input">
+              <option value="">-- Elige un equipo --</option>
+            </select>
+          </div>
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Cantidad</label>
+            <div class="reservacion-control-cantidad">
+              <button class="btn-cantidad">-</button>
+              <input type="number" class="reservacion-input" value="0" style="text-align: center;" />
+              <button class="btn-cantidad">+</button>
+            </div>
+          </div>
+          <div class="reservacion-campo" style="display: flex; align-items: flex-end;">
+            <button class="btn-accion" style="width: 100%;">+ Añadir Equipo</button>
+          </div>
+        </div>
+      </section>
+
       </section>
     </div>
 
@@ -146,4 +248,34 @@
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const overlay = document.getElementById("reservacion-overlay");
+    const abrir = document.querySelector(".expandir-solicitud");
+    const cerrar = document.getElementById("reservacion-cerrar");
+
+    abrir.addEventListener("click", (e) => {
+      e.preventDefault();
+      overlay.classList.add("mostrar");
+    });
+
+    cerrar.addEventListener("click", () => {
+      overlay.classList.remove("mostrar");
+    });
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) {
+        overlay.classList.remove("mostrar");
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && overlay.classList.contains("mostrar")) {
+        overlay.classList.remove("mostrar");
+      }
+    });
+  });
+</script>
+
 {% endblock inicio %}

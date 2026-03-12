@@ -32,6 +32,10 @@ form {
   gap: 10px;
 }
 
+label{
+  margin-bottom: 10px;
+}
+
 .btn-ingresar {
   padding: 10px;
   border-radius: 10px;
@@ -89,7 +93,7 @@ span {
 
 .logo {
   position: absolute;
-  right: -220;
+  right: -420px;
   top: 50%;
   transform: translateY(-50%);
   width: 600px;
@@ -120,6 +124,7 @@ span {
 @media (min-width: 1520px) {
   .login h1 {
     font-size: 3rem; /* Título más imponente */
+    margin-bottom: 15px;
   }
 
   .inputs,

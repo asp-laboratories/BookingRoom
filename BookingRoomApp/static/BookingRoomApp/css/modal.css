@@ -1,0 +1,145 @@
+
+.modal-beo {
+    width: 700px;
+    max-width: 90vw;
+    height: 90vh;
+    max-height: 95vh;
+    padding: 20px;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    margin: auto;
+}
+
+.cabecera-modal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.titulo-modal {
+    font-weight: bold;
+    font-size: 1em;
+    text-align: center;
+    flex: 1;
+}
+
+.cerrar-modal {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.modal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    gap: 10px;
+    height: calc(100% - 100px);
+}
+
+.modal-div {
+    background-color: #f8dbbf;
+    padding: 10px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+}
+
+.modal-div-1 {
+    grid-row: span 2;
+}
+
+.modal-div-1 .datos {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.titulo-info-cliente {
+    margin-bottom: 10px;
+    color: #000000;
+    font-size: 1.1rem;
+}
+
+.titulo-seccion-modal {
+    margin-bottom: 10px;
+    color: #000000;
+    font-size: 1rem;
+}
+
+.modal-div .datos {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.modal-div .datos .fila-dato {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-div .datos label {
+    font-weight: bold;
+    color: #333;
+    font-size: 0.75rem;
+}
+
+.modal-div .datos span {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.modal-div-2 {
+    grid-row: span 2;
+}
+
+.modal-div-3 {
+    grid-column: span 2;
+}
+
+.modal-div-4,
+.modal-div-5 {
+    grid-row: span 2;
+}
+
+.modal-div-6 {
+    grid-column: span 2;
+}
+
+.modal-botones {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.btn-modal {
+    padding: 10px 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-aceptar {
+    background-color: #4caf50;
+    color: white;
+}
+
+.btn-denegar {
+    background-color: #f44336;
+    color: white;
+}
+
+.btn-modal:hover {
+    opacity: 0.9;
+}
