@@ -1,0 +1,136 @@
+{% extends "BookingRoomApp/base.html" %}
+{% load static %}
+
+{% block inicio %}
+
+<link rel="stylesheet" href="{% static 'BookingRoomApp/css/reservacion/historial_reservacion.css' %}">
+
+<div class="historial-container">
+    <h2 class="historial-titulo">Historial de reservaciones</h2>
+    <div class="historial-contenedor">
+        <div class="historial-fila">
+            <input type="text" placeholder="Nombre del cliente" class="historial-input">
+            <input type="text" placeholder="Reservación" class="historial-input">
+        </div>
+        <table class="historial-tabla">
+            <thead>
+                <tr>
+                    <th class="historial-th">Número</th>
+                    <th class="historial-th">Nombre</th>
+                    <th class="historial-th">Cliente</th>
+                    <th class="historial-th">Fecha de evento</th>
+                    <th class="historial-th">Horario</th>
+                    <th class="historial-th">Salón</th>
+                    <th class="historial-th">Estado</th>
+                    <th class="historial-th">Acción</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td class="historial-td">1</td>
+                    <td class="historial-td">Hacer del baño</td>
+                    <td class="historial-td">pepe</td>
+                    <td class="historial-td">23/02/2099</td>
+                    <td class="historial-td">18:00</td>
+                    <td class="historial-td">Salón</td>
+                    <td class="historial-td">Confirmado</td>
+
+                    <td class="historial-td">
+                        <button class="historial-btn" onclick="abrirPagos()">Ver pagos</button>
+                        <button class="historial-btn" onclick="abrirBEO()">Ver BEO</button>
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<div id="modalPagos" class="historial-modal">
+    <div class="historial-modal-content historial-modal-pagos">
+        <span class="historial-close" onclick="cerrarPagos()">×</span>
+
+        <h3><b>INFORME DE LA RESERVACIÓN</b></h3>
+
+        <h4>Coste de la reservación</h4>
+        <p>Subtotal: $0</p>
+        <p>IVA: $0</p>
+        <p>Total: $0</p>
+
+        <h4>Pagos de la reservación</h4>
+        <p>Primer pago: $0</p>
+        <p>Segundo pago: $0</p>
+        <p>Saldo: $0</p>
+
+    </div>
+
+</div>
+
+<div id="modalBEO" class="historial-modal">
+    <div class="historial-modal-content">
+        <span class="historial-close" onclick="cerrarBEO()">×</span>
+
+        <h2 style="text-align:center;">Orden de banquete de evento (BEO)</h2>
+        <div class="historial-grid">
+            <div class="historial-card">
+
+                <h4>Información del cliente</h4>
+
+                <p>Nombre:</p>
+                <p>Teléfono:</p>
+                <p>Correo electrónico:</p>
+                <p>Dirección:</p>
+                <p>RFC:</p>
+                <p>Nombre fiscal:</p>
+
+            </div>
+
+            <div class="historial-card">
+                <h4>Información del evento</h4>
+                <p>Nombre:</p>
+                <p>Descripción:</p>
+                <p>Fecha:</p>
+                <p>Horario:</p>
+                <p>Estado:</p>
+                <p>Estimado de asistentes:</p>
+            </div>
+
+        </div>
+
+        <h4 class="historial-section-title">Configuración del espacio</h4>
+        <div class="historial-card">
+            Salón: <br>
+            Montaje:
+        </div>
+
+        <div class="historial-grid">
+            <div class="historial-card">
+                <h4>Servicios incluidos</h4>
+                <p>No hay servicios</p>
+            </div>
+
+            <div class="historial-card">
+                <h4>Equipamiento incluidos</h4>
+                <p>No hay equipamientos</p>
+            </div>
+
+        </div>
+
+        <h4 class="historial-section-title">Coste del evento</h4>
+        <div class="historial-card">
+            Subtotal: <br>
+            IVA: <br>
+            Total:
+        </div>
+
+    </div>
+
+</div>
+
+<script src="{% static 'BookingRoomApp/js/reservacion/historial_reservacion.js' %}"></script>
+
+{% endblock inicio %}

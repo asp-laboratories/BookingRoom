@@ -14,3 +14,9 @@ def home(request):
 
 def reservacion(request):
     return render(request, 'BookingRoomApp/reservacion.html')
+
+def servicios(request):
+    return render(request, 'BookingRoomApp/administracion/servicios.html')
+
+def historial_reservacion(request):
+    return render(request, 'BookingRoomApp/recepcion/historial_reservacion.html')

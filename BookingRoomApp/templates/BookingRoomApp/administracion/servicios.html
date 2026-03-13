@@ -1,0 +1,112 @@
+{% extends "BookingRoomApp/base.html" %}
+{% load static %}
+
+{% block inicio %}
+
+<link rel="stylesheet" href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
+
+<div class="servicio-contenido">
+  <h1 class="titulo-seccion">Servicios</h1>
+  <h2>Registrar servicios</h2>
+
+  <div class="servicio-formularios">
+    <form class="servicio-seccionFlex">
+      <div class="servicio-seccionFlex">
+        <label class="servicio-label"
+          >Nombre:
+          <input
+            type="text"
+            placeholder="Nombre"
+            name="nameServicio"
+            class="servicio-input"
+            required
+          />
+        </label>
+
+        <label class="servicio-label"
+          >Tipo:
+          <div class="servicio-seccionTipos">
+            <select name="rolSeleccionado" id="itemAsig" class="servicio-select" required>
+              <option value disabled selected hidden>Seleccionar</option>
+              <option value="1">Recepcionista</option>
+              <option value="2">Almacenista</option>
+              <option value="3">Coordinador</option>
+            </select>
+            <button type="button" class="servicio-botonCrearTipo">Crear Tipo</button>
+          </div>
+        </label>
+
+        <label class="servicio-label"
+          >Descripcion:
+          <br />
+          <input
+            type="text"
+            placeholder="Descripcion"
+            name="descripcion"
+            class="servicio-input"
+            required
+          />
+        </label>
+
+        <label class="servicio-label"
+          >Costo:
+          <br />
+          <input
+            type="text"
+            placeholder="Costo"
+            name="costoServicio"
+            class="servicio-input"
+            required
+          />
+        </label>
+      </div>
+      <button class="servicio-paGuarar" type="submit">Guardar</button>
+    </form>
+  </div>
+
+  <form class="servicio-seccionBusq">
+    <h3 class="servicio-tituloSeccion">Busqueda</h3>
+
+    <div class="servicio-entradaBusquedas">
+      <input
+        type="text"
+        placeholder="Buscar servicio"
+        name="busqTraba"
+        class="servicio-input"
+        required
+      />
+
+      <button class="servicio-busqAlgo" type="submit">Buscar</button>
+    </div>
+  </form>
+
+  <div class="servicio-tablita">
+    <table class="servicio-tabla">
+      <thead class="servicio-thead">
+        <tr>
+          <th class="servicio-th">Indice</th>
+          <th class="servicio-th">Servicio</th>
+          <th class="servicio-th">Tipo</th>
+          <th class="servicio-th">Descripcion</th>
+          <th class="servicio-th">Costo</th>
+          <th class="servicio-th">Disposicion</th>
+          <th class="servicio-th">Editar</th>
+        </tr>
+      </thead>
+
+      <tbody class="servicio-tbody">
+        <tr>
+          <td class="servicio-td">1</td>
+          <td class="servicio-td">Servicio A</td>
+          <td class="servicio-td">Tipo 1</td>
+          <td class="servicio-td">Descripcion del servicio</td>
+          <td class="servicio-td">$500</td>
+          <td class="servicio-td">Activo</td>
+          <td class="servicio-td"><img class="servicio-img" src="/document.png" /></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock inicio %}
