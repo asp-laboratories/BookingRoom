@@ -1,0 +1,111 @@
+{% extends "BookingRoomApp/base.html" %}
+{% load static %}
+
+{% block inicio %}
+
+<link rel="stylesheet"
+    href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
+
+<div class="administrador-contenido">
+    <h1 class="titulo-seccion">Equipamientos</h1>
+
+    <h2>Registrar equipamientos</h2>
+
+    <div class="administrador-formularios">
+
+        <form class="administrador-seccionFlex">
+            <!--Segundo form par registrar dattos de trabajador-->
+            <div class="administrador-seccionFlex">
+                <label class="administrador-label">Nombre:
+                    <br>
+                    <input class="administrador-input" type="text" placeholder="Nombre"
+                        name="nameServicio" required />
+                </label>
+
+                <label class="administrador-label">Tipo:
+                    <div class="administrador-seccionTipos">
+                        <select name="rolSeleccionado" id="itemAsig" class="administrador-select"
+                            required>
+                            <option value disabled selected
+                                hidden>Tanga</option>
+                            <option value="1">Recepcionista</option>
+                            <option value="2">Almacenista</option>
+                            <option value="3">Coordinador</option>
+                        </select>
+                        <button type="button" class="administrador-botonCrearTipo">Crear
+                            Tipo</button>
+                    </div>
+                </label>
+
+                <label class="administrador-label">Descripcion:
+                    <br>
+                    <input class="administrador-input" type="text" placeholder="Descripcion"
+                        name="descripcion" required />
+                </label>
+
+                <label class="administrador-label">Costo:
+                    <br>
+                    <input class="administrador-input" type="text" placeholder="Costo"
+                        name="costoServicio" required />
+                </label>
+
+                <label class="administrador-label">Stock:
+                    <br>
+                    <input class="administrador-input" type="text" placeholder="Cantidad"
+                        name="stockTotal" required />
+                </label>
+
+            </div>
+
+            <button class="administrador-paGuarar" type="submit">Guardar</button>
+
+        </form>
+
+    </div>
+
+    <form class="administrador-seccionBusq">
+
+        <h3 class="administrador-tituloSeccion">Busqueda</h3>
+
+        <div class="administrador-entradaBusquedas">
+            <input class="administrador-input" type="text" placeholder="Buscar equipamiento"
+                name="busqTraba" required />
+
+            <button class="administrador-busqAlgo" type="submit">Buscar</button>
+        </div>
+    </form>
+
+    <div class="administrador-tablita">
+        <table class="administrador-tabla">
+            <thead class="administrador-thead">
+                <tr>
+                    <th class="administrador-th">Indice</th>
+                    <th class="administrador-th">Equipamiento</th>
+                    <th class="administrador-th">Tipo</th>
+                    <th class="administrador-th">Descripcion</th>
+                    <th class="administrador-th">Costo</th>
+                    <th class="administrador-th">Stock</th>
+                    <th class="administrador-th">Editar</th>
+                </tr>
+            </thead>
+
+            <tbody class="administrador-tbody">
+                <!-- aca va la logica del for onde se imprimen todos los trabajadores-->
+                <tr>
+                    <td class="administrador-td">tomson</td>
+                    <td class="administrador-td">oe</td>
+                    <td class="administrador-td">tomson</td>
+                    <td class="administrador-td">tomseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeon</td>
+                    <td class="administrador-td">tomsogn</td>
+                    <td class="administrador-td">tomson</td>
+                    <td class="administrador-td"><img class="administrador-img" src="document.png"></td>
+                </tr>
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock inicio %}

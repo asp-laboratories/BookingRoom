@@ -18,5 +18,17 @@ def reservacion(request):
 def servicios(request):
     return render(request, 'BookingRoomApp/administracion/servicios.html')
 
+def trabajadores(request):
+    return render(request, 'BookingRoomApp/administracion/trabajadores.html')
+
+def salones(request):
+    return render(request, 'BookingRoomApp/administracion/salones.html')
+
+def mobiliario(request):
+    return render(request, 'BookingRoomApp/administracion/mobiliario.html')
+
+def equipamiento(request):
+    return render(request, 'BookingRoomApp/administracion/equipamiento.html')
+
 def historial_reservacion(request):
     return render(request, 'BookingRoomApp/recepcion/historial_reservacion.html')

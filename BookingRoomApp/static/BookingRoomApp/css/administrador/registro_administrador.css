@@ -1,21 +1,21 @@
-.servicio-body {
+.administrador-body {
   font-weight: bold;
   word-wrap: break-word;
   overflow-x: hidden;
 }
 
-.servicio-input,
-.servicio-select {
+.administrador-input,
+.administrador-select {
   border: none;
   border-radius: 5px;
   padding: 15px;
 }
 
-.servicio-select {
+.administrador-select {
   cursor: pointer;
 }
 
-.servicio-label {
+.administrador-label {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -23,11 +23,11 @@
   max-width: 300px;
 }
 
-.servicio-seccionFlex label {
+.administrador-seccionFlex label {
   width: 100%;
 }
 
-.servicio-seccionFlex {
+.administrador-seccionFlex {
   flex: 1;
   display: flex;
   flex-wrap: wrap;
@@ -35,23 +35,24 @@
   gap: 5px;
 }
 
-.servicio-select:invalid {
+.administrador-select:invalid {
   color: grey;
 }
 
-.servicio-contenido {
+.administrador-contenido {
+  padding: 5px;
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
 
-.servicio-tituloSeccion {
+.administrador-tituloSeccion {
   margin: 0;
 }
 
-.servicio-formularios,
-.servicio-seccionBusq,
-.servicio-seccionModificar {
+.administrador-formularios,
+.administrador-seccionBusq,
+.administrador-seccionModificar {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
@@ -59,16 +60,16 @@
   border-radius: 5px;
 }
 
-.servicio-formularios {
+.administrador-formularios {
   padding: 10px;
 }
 
-.servicio-seccionBusq {
+.administrador-seccionBusq {
   padding: 5px;
   gap: 5px;
 }
 
-.servicio-datosMobiliario {
+.administrador-datosMobiliario {
   display: flex;
   width: 100%;
   gap: 5px;
@@ -76,7 +77,7 @@
   justify-content: left;
 }
 
-.servicio-segInputs {
+.administrador-segInputs {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
@@ -84,17 +85,17 @@
   padding-left: 10px;
 }
 
-.servicio-inputsAlgos {
+.administrador-inputsAlgos {
   display: flex;
   flex: 1;
   flex-direction: column;
   gap: 5px;
 }
 
-.servicio-paGuarar,
-.servicio-busqAlgo,
-.servicio-botonCrearTipo,
-.servicio-paGuararModal {
+.administrador-paGuarar,
+.administrador-busqAlgo,
+.administrador-botonCrearTipo,
+.administrador-paGuararModal {
   background-color: #2b9b32;
   color: white;
   font-weight: bold;
@@ -102,46 +103,46 @@
   cursor: pointer;
 }
 
-.servicio-paGuararModal {
+.administrador-paGuararModal {
   padding: 10px 50px;
   border-radius: 10px;
 }
 
-.servicio-paGuarar,
-.servicio-busqAlgo {
+.administrador-paGuarar,
+.administrador-busqAlgo {
   border-radius: 10px;
   padding: 10px 50px;
   margin-left: auto;
   align-self: flex-end;
 }
 
-.servicio-seccionCarac {
+.administrador-seccionCarac {
   display: flex;
   flex-direction: column;
 }
 
-.servicio-botonCrearTipo {
+.administrador-botonCrearTipo {
   border-radius: 5px;
   padding: 0 2px;
 }
 
-.servicio-seccionTipos {
+.administrador-seccionTipos {
   display: flex;
   width: 100%;
   gap: 5px;
   flex-wrap: wrap;
 }
 
-.servicio-seccionTipos select {
+.administrador-seccionTipos select {
   flex: 2;
 }
 
-.servicio-seccionTipos button {
+.administrador-seccionTipos button {
   flex: 1;
   min-height: 40px;
 }
 
-.servicio-entradaBusquedas {
+.administrador-entradaBusquedas {
   display: flex;
   align-items: center;
   padding: 5px;
@@ -149,21 +150,21 @@
   width: 100%;
 }
 
-.servicio-entradaBusquedas input {
+.administrador-entradaBusquedas input {
   flex: 1;
   max-width: none;
 }
 
-.servicio-entradaBusquedas select {
+.administrador-entradaBusquedas select {
   flex-shrink: 0;
   width: auto;
 }
 
-.servicio-entradaBusquedas .servicio-paGuarar {
+.administrador-entradaBusquedas .administrador-paGuarar {
   flex-shrink: 0;
 }
 
-.servicio-tablita {
+.administrador-tablita {
   width: 100%;
   max-height: 400px;
   overflow-y: auto;
@@ -172,24 +173,24 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.servicio-tabla {
+.administrador-tabla {
   border-collapse: collapse;
   width: 100%;
   table-layout: fixed;
 }
 
-.servicio-tbody {
+.administrador-tbody {
   background-color: white;
 }
 
-.servicio-thead th {
+.administrador-thead th {
   position: sticky;
   top: 0;
   background-color: #d9d9d9;
 }
 
-.servicio-td,
-.servicio-th {
+.administrador-td,
+.administrador-th {
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -198,13 +199,13 @@
   padding: 10px;
 }
 
-.servicio-img {
+.administrador-img {
   background-color: #2b5f9b;
   border-radius: 5px;
   cursor: pointer;
 }
 
-.servicio-inputGrid {
+.administrador-inputGrid {
   padding-left: 5px;
   flex: 1;
   display: grid;
@@ -214,19 +215,19 @@
 }
 
 @media (width <= 850px) {
-  .servicio-inputGrid {
+  .administrador-inputGrid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-.servicio-totalCarac {
+.administrador-totalCarac {
   display: flex;
   align-items: stretch;
   flex: 1;
   gap: 20px;
 }
 
-.servicio-agregar-quitar {
+.administrador-agregar-quitar {
   background-color: #2b5f9b;
   color: white;
   border: none;
@@ -238,24 +239,24 @@
   align-self: center;
 }
 
-.servicio-totalAnadir {
+.administrador-totalAnadir {
   justify-content: center;
   align-items: center;
 }
 
-.servicio-agregarMobilario {
+.administrador-agregarMobilario {
   margin-left: 0;
   padding: 5px 10px;
   align-self: center;
 }
 
-.servicio-cantidadCaracteristicas {
+.administrador-cantidadCaracteristicas {
   font-weight: bold;
   font-size: x-large;
   align-self: center;
 }
 
-.servicio-dialog {
+.administrador-dialog {
   background-color: #d9d9d9;
   padding: 15px;
   border-radius: 10px;

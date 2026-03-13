@@ -1,0 +1,128 @@
+{% extends "BookingRoomApp/base.html" %}
+{% load static %}
+
+{% block inicio %}
+
+<link rel="stylesheet"
+    href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
+
+<div class="administrador-contenido">
+    <h1 class="titulo-seccion">Salones</h1>
+
+    <h2>Registrar salones</h2>
+
+    <div class="administrador-formularios">
+
+        <form class="administrador-seccionFlex">
+            <!--Segundo form par registrar dattos de trabajador-->
+            <div class="administrador-segInputs">
+                <label class="administrador-label">Salon: <br>
+                    <input class="administrador-input"
+                        type="text"
+                        placeholder="Nombre"
+                        name="nameSalon"
+                        required /></label>
+
+                <label class="administrador-label">Costo: <br>
+                    <input class="administrador-input"
+                        type="text"
+                        placeholder="Costo"
+                        name="costoSalon"
+                        required /></label>
+
+                <label class="administrador-label">Ubicacion: <br>
+                    <input class="administrador-input"
+                        type="text"
+                        placeholder="Ubicacion"
+                        name="ubicacionSalon"
+                        required /></label>
+
+                <label class="administrador-label">Altura: <br>
+                    <input class="administrador-input"
+                        type="text"
+                        placeholder="Altura"
+                        name="alturaSalon"
+                        required /></label>
+
+                <label class="administrador-label">Ancho: <br>
+                    <input class="administrador-input"
+                        type="text"
+                        placeholder="Ancho"
+                        name="anchoSalon"
+                        required /></label>
+
+                <label class="administrador-label">Largo: <br>
+                    <input class="administrador-input"
+                        type="text"
+                        placeholder="Largo"
+                        name="largoSalon"
+                        required /></label>
+
+                <!-- Aca checar pa q genere automaticamente los metros cuadrados -->
+                <label class="administrador-label">Metros cuadrados: <br>
+                    <input class="administrador-input"
+                        type="text"
+                        placeholder="Metros cuadrados"
+                        name="meCuadra"
+                        required /></label>
+            </div>
+
+            <button class="administrador-paGuarar"
+                type="submit">Guardar</button>
+
+        </form>
+
+    </div>
+
+    <form class="administrador-seccionBusq">
+
+        <h3 class="administrador-tituloSeccion">Busqueda</h3>
+
+        <div class="administrador-entradaBusquedas">
+            <input class="administrador-input"
+                type="text"
+                placeholder="Buscar salon"
+                name="busqTraba"
+                required />
+
+            <button class="administrador-paGuarar" type="submit">Buscar</button>
+        </div>
+    </form>
+
+    <div class="administrador-tablita">
+        <table class="administrador-tabla">
+            <thead class="administrador-thead">
+                <tr>
+                    <th class="administrador-th">Indice</th>
+                    <th class="administrador-th">Salon</th>
+                    <th class="administrador-th">Costo</th>
+                    <th class="administrador-th">Ubicacion</th>
+                    <th class="administrador-th">Dimensiones</th>
+                    <th class="administrador-th">m2</th>
+                    <th class="administrador-th">Estado</th>
+                    <th class="administrador-th">Editar</th>
+                </tr>
+            </thead>
+
+            <tbody class="administrador-tbody">
+                <!-- aca va la logica del for onde se imprimen todos los trabajadores-->
+                <tr>
+                    <td class="administrador-td">tomson</td>
+                    <td class="administrador-td">oe</td>
+                    <td class="administrador-td">tomson</td>
+                    <td
+                        class="administrador-td">tomseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeon</td>
+                    <td class="administrador-td">tomsogn</td>
+                    <td class="administrador-td">tomson</td>
+                    <td class="administrador-td">tomson</td>
+                    <td class="administrador-td"><img class="administrador-img" src="/document.png"></td>
+                </tr>
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock inicio %}
