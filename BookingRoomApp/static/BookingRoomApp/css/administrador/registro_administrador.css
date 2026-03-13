@@ -56,7 +56,13 @@
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  background-color: #d9d9d9;
+  background-color: transparent;
+  background-color: var(--color-fondo);
+  box-shadow: rgb(155, 88, 43, 0.5) 1.95px 1.95px 2.6px;
+  margin-bottom: 15px;
+  margin-right: 10px;
+
+
   border-radius: 5px;
 }
 
@@ -169,7 +175,7 @@
   max-height: 400px;
   overflow-y: auto;
   border-radius: 5px;
-  background-color: #d9d9d9;
+  background-color: transparent;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -180,13 +186,14 @@
 }
 
 .administrador-tbody {
-  background-color: white;
+  background-color: transparent;
 }
 
 .administrador-thead th {
   position: sticky;
   top: 0;
-  background-color: #d9d9d9;
+  background-color: var(--color-primario);
+  color: #fff;
 }
 
 .administrador-td,
@@ -195,7 +202,8 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border: 1px solid #ccc;
+  border: 1px solid rgba(155, 88, 43, 0.3);
+
   padding: 10px;
 }
 

@@ -1,7 +1,24 @@
 {% extends "BookingRoomApp/base.html" %}
-{% block inicio %}
-<div>
-  <canvas id="myChart"></canvas>
-</div>
-{% endblock inicio %}
+{% load static %}
 
+{% block inicio %}
+
+<link rel="stylesheet" href="{% static 'BookingRoomApp/css/administrador/estadisticas.css' %}">
+
+<div class="estadisticas-contenedor-navegacion">
+    <nav class="estadisticas-navegacion">
+        <ul>
+            <li><a href="">Equipamiento</a></li>
+            <li><a href="">Servicios</a></li>
+            <li><a href="">Salones y montaje</a></li>
+            <li><a href="">Tipo de eventos</a></li>
+            <li><a href="">Trabajadores</a></li>
+        </ul>
+    </nav>
+</div>
+
+<div class="estadisticas-canvas-container">
+    <canvas id="myChart"></canvas>
+</div>
+
+{% endblock inicio %}
