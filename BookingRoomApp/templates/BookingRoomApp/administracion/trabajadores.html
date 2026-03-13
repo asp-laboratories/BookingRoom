@@ -1,0 +1,210 @@
+{% extends "BookingRoomApp/base.html" %}
+{% load static %}
+
+{% block inicio %}
+
+<link rel="stylesheet"
+    href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
+
+<div class="administrador-contenido">
+    <h1 class="titulo-seccion">Trabajadores</h1>
+
+    <h2>Registrar trabajadores</h2>
+
+    <div class="administrador-formularios">
+        <h3 class="administrador-tituloSeccion">Usuario</h3>
+        <form class="administrador-seccionFlex">
+            <!--Primer form par registrar cuenta-->
+            <div class="administrador-inputGrid">
+                <label class="administrador-label">Nombre de usuario:<br>
+                    <input
+                        type="text"
+                        placeholder="Usuario"
+                        name="nameUser"
+                        class="administrador-input"
+                        required /></label>
+
+                <label class="administrador-label">Correo electronico: <br>
+                    <input
+                        type="email"
+                        placeholder="Correo electronico"
+                        name="email"
+                        class="administrador-input"
+                        required /></label>
+
+                <label class="administrador-label">Contraseña: <br>
+                    <input
+                        type="password"
+                        placeholder="Contraseña"
+                        name="contrasena"
+                        class="administrador-input"
+                        required /></label>
+
+                <label class="administrador-label">Confirmar contraseña: <br>
+                    <input
+                        type="password"
+                        placeholder="Contraseña"
+                        name="contrasena"
+                        class="administrador-input"
+                        required /></label>
+            </div>
+
+            <button class="administrador-paGuarar"
+                type="submit">Guardar</button>
+
+        </form>
+    </div>
+
+    <div class="administrador-formularios">
+
+        <h3 class="administrador-tituloSeccion">Trabajador</h3>
+
+        <form class="administrador-seccionFlex">
+            <!--Segundo form par registrar dattos de trabajador-->
+            <div class="administrador-inputGrid">
+                <label class="administrador-label">Nombre: <br>
+                    <input
+                        type="text"
+                        placeholder="Nombre"
+                        name="nameTraba"
+                        class="administrador-input"
+                        required /></label>
+
+                <label class="administrador-label">Apellido paterno: <br>
+                    <input
+                        type="text"
+                        placeholder="Apellido paterno"
+                        name="priApellido"
+                        class="administrador-input"
+                        required /></label>
+
+                <label class="administrador-label">Apellido materno: <br>
+                    <input
+                        type="text"
+                        placeholder="Apellido materno"
+                        name="segApellido"
+                        class="administrador-input"
+                        required /></label>
+
+                <label class="administrador-label">Telefono: <br>
+                    <input
+                        type="tel"
+                        placeholder="Numero telefonico"
+                        name="telefono"
+                        class="administrador-input"
+                        required /></label>
+
+                <label class="administrador-label">RFC: <br>
+                    <input
+                        type="text"
+                        placeholder="RFC"
+                        name="rfc"
+                        class="administrador-input"
+                        required /></label>
+
+                <label class="administrador-label">Numero de empleado: <br>
+                    <input
+                        type="text"
+                        placeholder="Numero"
+                        name="numEmpleado"
+                        class="administrador-input"
+                        required /></label>
+
+                <label class="administrador-label"> Rol <br>
+                    <select name="rolSeleccionado" id="itemAsig"
+                        class="administrador-select" required>
+                        <option value disabled selected hidden>Tanga</option>
+                        <option value="1">Recepcionista</option>
+                        <option value="2">Almacenista</option>
+                        <option value="3">Coordinador</option>
+                    </select>
+                </label>
+
+                <!--Aca tengo q anadir q todas las cuentas sin rol se incluyan-->
+                <datalist id="items">
+                    <option value="2">panfilo</option>
+                    <option value="1">kaka</option>
+                </datalist>
+
+                <label class="administrador-label">Cuenta asociada: <br>
+                    <input
+                        type="text"
+                        placeholder="Numero de cuenta"
+                        name="numCuenta"
+                        class="administrador-input"
+                        list="items"
+                        required /></label>
+            </div>
+
+            <button class="administrador-paGuarar"
+                type="submit">Guardar</button>
+
+        </form>
+
+    </div>
+
+    <form class="administrador-seccionBusq">
+
+        <h3 class="administrador-tituloSeccion">Busqueda</h3>
+
+        <div class="administrador-entradaBusquedas">
+            <input
+                type="text"
+                placeholder="Buscar trabajador"
+                name="busqTraba"
+                class="administrador-input"
+                required />
+
+            <!-- checar esta parte para andir chido cada cosa, en caso de q no se elija un rol se hara una evaluacion por parte de django para q no haga filtro-->
+            <select name="rolSeleccionado" id="itemBusq"
+                class="administrador-select">
+                <option value selected hidden>Ningun seleccionado</option>
+                <option value="1">Recepcionista</option>
+                <option value="2">Almacenista</option>
+                <option value="3">Coordinador</option>
+            </select>
+
+            <button class="administrador-paGuarar" type="submit">Buscar</button>
+        </div>
+    </form>
+
+    <div class="administrador-tablita">
+        <table class="administrador-tabla">
+            <thead class="administrador-thead">
+                <tr>
+                    <th class="administrador-th">No. Empleado</th>
+                    <th class="administrador-th">Nombre</th>
+                    <th class="administrador-th">Pri. Apellido</th>
+                    <th class="administrador-th">Seg. Apellido</th>
+                    <th class="administrador-th">RFC</th>
+                    <th class="administrador-th">Telefono</th>
+                    <th class="administrador-th">Correo</th>
+                    <th class="administrador-th">Rol</th>
+                    <th class="administrador-th">Editar</th>
+                </tr>
+            </thead>
+
+            <tbody class="administrador-tbody">
+                <!-- aca va la logica del for onde se imprimen todos los trabajadores-->
+                <tr>
+                    <td class="administrador-td">tomson</td>
+                    <td class="administrador-td">oe</td>
+                    <td class="administrador-td">tomson</td>
+                    <td
+                        class="administrador-td">tomseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeon</td>
+                    <td class="administrador-td">tomsogn</td>
+                    <td class="administrador-td">tomson</td>
+                    <td class="administrador-td">tomson</td>
+                    <td class="administrador-td">tomson</td>
+                    <td class="administrador-td"><img class="administrador-img"
+                            src="/document.png"></td>
+                </tr>
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock inicio %}

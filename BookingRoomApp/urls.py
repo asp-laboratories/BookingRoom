@@ -11,5 +11,9 @@ urlpatterns = [
     path('almacen/inventario-equipamiento/', views.inventario_equipamiento, name="inventario_equipamiento"),
     path('almacen/inventario-mobiliario/', views.inventario_mobiliario, name="inventario_mobiliario"),
     path('recepcion/pagos/', views.pagos, name="pagos"),
-    path('administracion/estadisticas/', views.estadisticas, name="estadisticas")
+    path('administracion/estadisticas/', views.estadisticas, name="estadisticas"),
+    path('administracion/trabajadores/', views.trabajadores, name="trabajadores"),
+    path('administracion/salones/', views.salones, name="salones"),
+    path('administracion/mobiliario/', views.mobiliario, name="mobiliario"),
+    path('administracion/equipamiento/', views.equipamiento, name="equipamiento"),
 ]
