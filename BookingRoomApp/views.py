@@ -20,3 +20,15 @@ def servicios(request):
 
 def historial_reservacion(request):
     return render(request, 'BookingRoomApp/recepcion/historial_reservacion.html')
+
+def inventario_equipamiento(request):
+    return render(request, 'BookingRoomApp/almacen/inventario_equipamiento.html')
+
+def inventario_mobiliario(request):
+    return render(request, 'BookingRoomApp/almacen/inventario_mobiliario.html')
+
+def pagos(request):
+    return render(request, 'BookingRoomApp/recepcion/pagos.html')
+
+def estadisticas(request):
+    return render(request, 'BookingRoomApp/administracion/estadisticas.html')

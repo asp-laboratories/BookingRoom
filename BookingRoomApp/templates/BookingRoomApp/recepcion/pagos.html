@@ -1,0 +1,59 @@
+{% extends "BookingRoomApp/base.html" %}
+{% load static %}
+
+{% block inicio %}
+
+<link rel="stylesheet" href="{% static 'BookingRoomApp/css/recepcion/pagos.css' %}">
+
+<div class="pagos-container">
+    <div class="pagos-header">
+        <h2 class="pagos-h2">Registro de pagos</h2>
+        <span class="pagos-numero">N°1</span>
+    </div>
+
+    <div class="pagos-row">
+        <div class="pagos-field-group">
+            <label class="pagos-label">Numero de la reservacion</label>
+            <input type="text" class="pagos-input-text">
+        </div>
+        <div class="pagos-field-group">
+            <label class="pagos-label">Descripcion</label>
+            <input type="text" class="pagos-input-text">
+        </div>
+    </div>
+
+    <div class="pagos-row">
+        <div class="pagos-field-group">
+            <label class="pagos-label">Monto a pagar:</label>
+            <input type="text" class="pagos-input-text" placeholder="$0.00">
+        </div>
+        <div class="pagos-field-group">
+            <label class="pagos-label">Saldo restante:</label>
+            <input type="text" class="pagos-input-text" placeholder="$0.00" readonly>
+        </div>
+    </div>
+
+    <div class="pagos-section-title">Concepto de pago</div>
+    <div class="pagos-options-group">
+        <label class="pagos-option"><input type="radio" name="concepto" checked class="pagos-input-radio"> Abono</label>
+        <label class="pagos-option"><input type="radio" name="concepto" class="pagos-input-radio"> Liquidacion</label>
+        <label class="pagos-option"><input type="radio" name="concepto" class="pagos-input-radio"> Pago unico</label>
+    </div>
+
+    <div class="pagos-section-title">Metodo de pago</div>
+    <div class="pagos-options-group">
+        <label class="pagos-option"><input type="radio" name="metodo" checked class="pagos-input-radio"> Efectivo</label>
+        <label class="pagos-option"><input type="radio" name="metodo" class="pagos-input-radio"> Tarjeta</label>
+        <label class="pagos-option"><input type="radio" name="metodo" class="pagos-input-radio"> NFC</label>
+        <label class="pagos-option"><input type="radio" name="metodo" class="pagos-input-radio"> Transferencia</label>
+    </div>
+
+    <div class="pagos-actions">
+        <button class="pagos-btn pagos-btn-confirm">Confirmar</button>
+        <button class="pagos-btn pagos-btn-cancel">Cancelar</button>
+    </div>
+</div>
+
+
+
+{% endblock inicio %}

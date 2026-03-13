@@ -1,0 +1,149 @@
+.equipamiento-body {
+    background-color: #f2f2f2;
+    font-family: Arial, sans-serif;
+    margin: 0;
+}
+
+.equipamiento-container {
+    width: 80%;
+    margin: 50px auto;
+}
+
+.equipamiento-titulo {
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.equipamiento-contenedor {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+
+.equipamiento-fila {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.equipamiento-input, 
+.equipamiento-select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.equipamiento-tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.equipamiento-th, .equipamiento-td {
+    border: 1px solid  rgba(155, 88, 43, 0.3);
+    
+    padding: 10px;
+    text-align: center;
+}
+
+.equipamiento-th {
+    background-color: var(--color-primario);
+    color: #fff;
+}
+
+.equipamiento-btn-verde {
+    background-color: #2ea043;
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.equipamiento-btn-verde:hover {
+    background-color: #1c7c31;
+}
+
+.equipamiento-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+}
+
+.equipamiento-modal-content {
+    background: white;
+    width: 420px;
+    margin: 8% auto;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px #444;
+    position: relative;
+}
+
+.equipamiento-close {
+    position: absolute;
+    right: 12px;
+    top: 8px;
+    font-size: 26px;
+    cursor: pointer;
+}
+
+.equipamiento-close:hover {
+    color: red;
+}
+
+.equipamiento-form-grid {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.equipamiento-btn-guardar {
+    background-color: #2ea043;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.equipamiento-guardar {
+    text-align: center;
+    margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+    .equipamiento-container {
+        width: 100%;
+        margin: 20px auto;
+        padding: 10px;
+    }
+
+    .equipamiento-fila {
+        flex-direction: column;
+    }
+
+    .equipamiento-tabla {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .equipamiento-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .equipamiento-modal-content {
+        width: 90%;
+        margin: 20% auto;
+    }
+}

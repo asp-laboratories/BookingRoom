@@ -70,26 +70,23 @@
 
 </div>
 
-<div id="modalBEO" class="historial-modal">
-    <div class="historial-modal-content">
-        <span class="historial-close" onclick="cerrarBEO()">×</span>
+<div id="modalBEO" class="modal-beo-info">
+    <div class="modal-beo-content">
+        <span class="modal-beo-close" onclick="cerrarBEO()">×</span>
 
         <h2 style="text-align:center;">Orden de banquete de evento (BEO)</h2>
-        <div class="historial-grid">
-            <div class="historial-card">
-
+        <div class="modal-beo-grid">
+            <div class="modal-beo-card">
                 <h4>Información del cliente</h4>
-
                 <p>Nombre:</p>
                 <p>Teléfono:</p>
                 <p>Correo electrónico:</p>
                 <p>Dirección:</p>
                 <p>RFC:</p>
                 <p>Nombre fiscal:</p>
-
             </div>
 
-            <div class="historial-card">
+            <div class="modal-beo-card">
                 <h4>Información del evento</h4>
                 <p>Nombre:</p>
                 <p>Descripción:</p>
@@ -98,39 +95,34 @@
                 <p>Estado:</p>
                 <p>Estimado de asistentes:</p>
             </div>
-
         </div>
 
-        <h4 class="historial-section-title">Configuración del espacio</h4>
-        <div class="historial-card">
+        <h4 class="modal-beo-section-title">Configuración del espacio</h4>
+        <div class="modal-beo-card">
             Salón: <br>
             Montaje:
         </div>
 
-        <div class="historial-grid">
-            <div class="historial-card">
+        <div class="modal-beo-grid">
+            <div class="modal-beo-card">
                 <h4>Servicios incluidos</h4>
                 <p>No hay servicios</p>
             </div>
 
-            <div class="historial-card">
+            <div class="modal-beo-card">
                 <h4>Equipamiento incluidos</h4>
                 <p>No hay equipamientos</p>
             </div>
-
         </div>
 
-        <h4 class="historial-section-title">Coste del evento</h4>
-        <div class="historial-card">
+        <h4 class="modal-beo-section-title">Coste del evento</h4>
+        <div class="modal-beo-card">
             Subtotal: <br>
             IVA: <br>
             Total:
         </div>
-
     </div>
-
 </div>
 
-<script src="{% static 'BookingRoomApp/js/reservacion/historial_reservacion.js' %}"></script>
 
 {% endblock inicio %}

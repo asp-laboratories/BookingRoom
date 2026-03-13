@@ -15,7 +15,9 @@
     <script src="{% static "BookingRoomApp/js/modal.js" %}" defer></script>
     <link rel="icon" href="{% static 'BookingRoomApp/img/favicon_io/favicon-16x16.png' %}" type="image/png">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{% static "BookingRoomApp/js/full_calendar.js" %}" defer></script>
+    <script src="{% static "BookingRoomApp/js/chart.js" %}" defer></script>
 
   </head>
   <body>
@@ -49,7 +51,7 @@
                   <svg class="icono blanco icono-20">
                     <use href="{% static 'BookingRoomApp/img/icons/sprite.svg'%}#icon-payment"></use>
                   </svg>
-                  <a href="">Pagos</a>
+                  <a href="{% url 'pagos' %}">Pagos</a>
                 </li>
                 <li>
                   <svg class="icono blanco icono-20">
@@ -74,13 +76,13 @@
                   <svg class="icono blanco icono-20">
                     <use href="{% static 'BookingRoomApp/img/icons/sprite.svg'%}#icon-chair"></use>
                   </svg>
-                  <a href="">Inventario mobiliario</a>
+                  <a href="{% url 'inventario_mobiliario' %}">Inventario mobiliario</a>
                 </li>
                 <li>
                   <svg class="icono blanco icono-20">
                     <use href="{% static 'BookingRoomApp/img/icons/sprite.svg'%}#icon-devices"></use>
                   </svg>
-                  <a href="">Inventario equipamiento</a>
+                  <a href="{% url 'inventario_equipamiento' %}">Inventario equipamiento</a>
                 </li>
               </ul>
             </details>
@@ -100,7 +102,7 @@
                   <svg class="icono blanco icono-20">
                     <use href="{% static 'BookingRoomApp/img/icons/sprite.svg'%}#icon-charts"></use>
                   </svg>
-                  <a href="">Estadisticas</a>
+                  <a href="{% url 'estadisticas' %}">Estadisticas</a>
                 </li>
                 <li>
                   <svg class="icono blanco icono-20">

@@ -1,0 +1,148 @@
+.mobiliario-body {
+    background-color: #f2f2f2;
+    font-family: Arial, sans-serif;
+    margin: 0;
+}
+
+.mobiliario-container {
+    width: 80%;
+    margin: 50px auto;
+}
+
+.mobiliario-titulo {
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.mobiliario-contenedor {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+
+.mobiliario-fila {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.mobiliario-input, 
+.mobiliario-select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.mobiliario-tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.mobiliario-th, .mobiliario-td {
+    border: 1px solid  rgba(155, 88, 43, 0.3);
+    padding: 10px;
+    text-align: center;
+}
+
+.mobiliario-th {
+    background-color: var(--color-primario);
+    color: #fff;
+}
+
+.mobiliario-btn-verde {
+    background-color: #2ea043;
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.mobiliario-btn-verde:hover {
+    background-color: #1c7c31;
+}
+
+.mobiliario-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+}
+
+.mobiliario-modal-content {
+    background: white;
+    width: 420px;
+    margin: 8% auto;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px #444;
+    position: relative;
+}
+
+.mobiliario-close {
+    position: absolute;
+    right: 12px;
+    top: 8px;
+    font-size: 26px;
+    cursor: pointer;
+}
+
+.mobiliario-close:hover {
+    color: red;
+}
+
+.mobiliario-form-grid {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.mobiliario-btn-guardar {
+    background-color: #2ea043;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.mobiliario-guardar {
+    text-align: center;
+    margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+    .mobiliario-container {
+        width: 100%;
+        margin: 20px auto;
+        padding: 10px;
+    }
+
+    .mobiliario-fila {
+        flex-direction: column;
+    }
+
+    .mobiliario-tabla {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .mobiliario-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mobiliario-modal-content {
+        width: 90%;
+        margin: 20% auto;
+    }
+}

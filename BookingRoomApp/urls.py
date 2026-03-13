@@ -7,5 +7,9 @@ urlpatterns = [
     path('home/', views.home, name="home"),
     path('reservacion/', views.reservacion, name="reservacion"),
     path('administracion/servicios/', views.servicios, name="servicios"),
-    path('recepcion/historial/', views.historial_reservacion, name="historial_reservacion")
+    path('recepcion/historial/', views.historial_reservacion, name="historial_reservacion"),
+    path('almacen/inventario-equipamiento/', views.inventario_equipamiento, name="inventario_equipamiento"),
+    path('almacen/inventario-mobiliario/', views.inventario_mobiliario, name="inventario_mobiliario"),
+    path('recepcion/pagos/', views.pagos, name="pagos"),
+    path('administracion/estadisticas/', views.estadisticas, name="estadisticas")
 ]
