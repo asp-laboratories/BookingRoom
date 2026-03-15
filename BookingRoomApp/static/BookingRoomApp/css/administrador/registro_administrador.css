@@ -269,3 +269,20 @@
   padding: 15px;
   border-radius: 10px;
 }
+
+@media (max-width: 768px) {
+  .administrador-tablita,
+  .historial-tabla,
+  .mobiliario-tablita,
+  .equipamiento-tablita {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .administrador-tabla,
+  .historial-tabla,
+  .mobiliario-tabla,
+  .equipamiento-tabla {
+    min-width: 600px;
+  }
+}

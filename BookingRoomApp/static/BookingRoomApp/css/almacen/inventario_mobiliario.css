@@ -135,6 +135,8 @@
     .mobiliario-tabla {
         display: block;
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        min-width: 600px;
     }
 
     .mobiliario-form-grid {

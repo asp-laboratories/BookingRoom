@@ -144,6 +144,8 @@
   .historial-tabla {
     display: block;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    min-width: 600px;
   }
 
   .historial-grid {

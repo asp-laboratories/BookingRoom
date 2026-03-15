@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
         { title: 'Evento de prueba', start: '2026-03-01' },
         { title: 'Mi evento', start: '2026-03-10' },
         { title: 'Presentacion Web :)', start: '2026-03-13' },
+        { title: 'Funeral de ricardo', start: '2026-03-24' },
       ]
     });
     calendar.render();
