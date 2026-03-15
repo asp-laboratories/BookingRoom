@@ -1,5 +1,12 @@
 from django.http import HttpResponse
 from django.shortcuts import render
+from rest_framework import viewsets
+from .models import TipoServicio
+from .serializers import TipoServicioSerializer
+
+class TipoServicioViewSet(viewsets.ModelViewSet):
+    queryset = TipoServicio.objects.all()
+    serializer_class = TipoServicioSerializer
 
 
 # Create your views here.
@@ -13,7 +20,8 @@ def home(request):
     return render(request, 'BookingRoomApp/home.html')
 
 def reservacion(request):
-    return render(request, 'BookingRoomApp/reservacion.html')
+    tipos_servicio = TipoServicio.objects.filter(disposicion=True)
+    return render(request, 'BookingRoomApp/reservacion.html', {'tipos_servicio': tipos_servicio})
 
 def servicios(request):
     return render(request, 'BookingRoomApp/administracion/servicios.html')

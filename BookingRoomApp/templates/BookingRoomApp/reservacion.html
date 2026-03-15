@@ -167,6 +167,9 @@
             <label class="reservacion-label">Tipo de servicio</label>
             <select class="reservacion-input">
               <option value="">-- Elige un tipo --</option>
+              {% for tipo in tipos_servicio %}
+              <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+              {% endfor %}
             </select>
           </div>
           <div class="reservacion-campo">
