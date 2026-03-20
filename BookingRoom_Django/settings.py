@@ -134,3 +134,6 @@ STATIC_URL = 'static/'
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True
+
+# Firebase
+from .firebase_config import *

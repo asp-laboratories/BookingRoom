@@ -11,16 +11,23 @@
 
     <h2>Registrar trabajadores</h2>
 
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
     <div class="administrador-formularios">
         <h3 class="administrador-tituloSeccion">Usuario</h3>
-        <form class="administrador-seccionFlex">
-            <!--Primer form par registrar cuenta-->
+        <form class="administrador-seccionFlex" method="POST" action="{% url 'registrar_trabajador' %}">
+            {% csrf_token %}
+            <input type="hidden" name="form_tipo" value="cuenta">
             <div class="administrador-inputGrid">
                 <label class="administrador-label">Nombre de usuario:<br>
                     <input
                         type="text"
                         placeholder="Usuario"
-                        name="nameUser"
+                        name="nombre_usuario"
                         class="administrador-input"
                         required /></label>
 
@@ -43,30 +50,28 @@
                 <label class="administrador-label">Confirmar contraseña: <br>
                     <input
                         type="password"
-                        placeholder="Contraseña"
-                        name="contrasena"
+                        placeholder="Confirmar contraseña"
+                        name="confirmar_contrasena"
                         class="administrador-input"
                         required /></label>
             </div>
 
             <button class="administrador-paGuarar"
-                type="submit">Guardar</button>
-
+                type="submit">Siguiente</button>
         </form>
     </div>
 
     <div class="administrador-formularios">
-
         <h3 class="administrador-tituloSeccion">Trabajador</h3>
-
-        <form class="administrador-seccionFlex">
-            <!--Segundo form par registrar dattos de trabajador-->
+        <form class="administrador-seccionFlex" method="POST" action="{% url 'registrar_trabajador' %}">
+            {% csrf_token %}
+            <input type="hidden" name="form_tipo" value="trabajador">
             <div class="administrador-inputGrid">
                 <label class="administrador-label">Nombre: <br>
                     <input
                         type="text"
                         placeholder="Nombre"
-                        name="nameTraba"
+                        name="nombre"
                         class="administrador-input"
                         required /></label>
 
@@ -74,7 +79,7 @@
                     <input
                         type="text"
                         placeholder="Apellido paterno"
-                        name="priApellido"
+                        name="apellido_paterno"
                         class="administrador-input"
                         required /></label>
 
@@ -82,7 +87,7 @@
                     <input
                         type="text"
                         placeholder="Apellido materno"
-                        name="segApellido"
+                        name="apellido_materno"
                         class="administrador-input"
                         required /></label>
 
@@ -106,41 +111,23 @@
                     <input
                         type="text"
                         placeholder="Numero"
-                        name="numEmpleado"
+                        name="no_empleado"
                         class="administrador-input"
                         required /></label>
 
                 <label class="administrador-label"> Rol <br>
-                    <select name="rolSeleccionado" id="itemAsig"
-                        class="administrador-select" required>
+                    <select name="rol_id" class="administrador-select" required>
                         <option value disabled selected hidden>Escoge rol</option>
-                        <option value="1">Recepcionista</option>
-                        <option value="2">Almacenista</option>
-                        <option value="3">Coordinador</option>
+                        {% for rol in roles %}
+                        <option value="{{ rol.codigo }}">{{ rol.nombre }}</option>
+                        {% endfor %}
                     </select>
                 </label>
-
-                <!--Aca tengo q anadir q todas las cuentas sin rol se incluyan-->
-                <datalist id="items">
-                    <option value="2">panfilo</option>
-                    <option value="1">kaka</option>
-                </datalist>
-
-                <label class="administrador-label">Cuenta asociada: <br>
-                    <input
-                        type="text"
-                        placeholder="Numero de cuenta"
-                        name="numCuenta"
-                        class="administrador-input"
-                        list="items"
-                        required /></label>
             </div>
 
             <button class="administrador-paGuarar"
                 type="submit">Guardar</button>
-
         </form>
-
     </div>
 
     <form class="administrador-seccionBusq">
@@ -155,13 +142,12 @@
                 class="administrador-input"
                 required />
 
-            <!-- checar esta parte para andir chido cada cosa, en caso de q no se elija un rol se hara una evaluacion por parte de django para q no haga filtro-->
             <select name="rolSeleccionado" id="itemBusq"
                 class="administrador-select">
                 <option value selected hidden>Ningun seleccionado</option>
-                <option value="1">Recepcionista</option>
-                <option value="2">Almacenista</option>
-                <option value="3">Coordinador</option>
+                {% for rol in roles %}
+                <option value="{{ rol.codigo }}">{{ rol.nombre }}</option>
+                {% endfor %}
             </select>
 
             <button class="administrador-paGuarar" type="submit">Buscar</button>
@@ -185,20 +171,20 @@
             </thead>
 
             <tbody class="administrador-tbody">
-                <!-- aca va la logica del for onde se imprimen todos los trabajadores-->
+                {% for trabajador in trabajadores %}
                 <tr>
-                    <td class="administrador-td">ejemplo</td>
-                    <td class="administrador-td">ejemplo</td>
-                    <td class="administrador-td">ejemplo</td>
-                    <td
-                        class="administrador-td">ejemplo</td>
-                    <td class="administrador-td">ejemplo</td>
-                    <td class="administrador-td">ejemplo</td>
-                    <td class="administrador-td">ejemplo</td>
-                    <td class="administrador-td">ejemplo</td>
+                    <td class="administrador-td">{{ trabajador.no_empleado }}</td>
+                    <td class="administrador-td">{{ trabajador.nombre }}</td>
+                    <td class="administrador-td">{{ trabajador.apellidoPaterno }}</td>
+                    <td class="administrador-td">{{ trabajador.apelidoMaterno }}</td>
+                    <td class="administrador-td">{{ trabajador.rfc }}</td>
+                    <td class="administrador-td">{{ trabajador.telefono }}</td>
+                    <td class="administrador-td">{{ trabajador.correo_electronico }}</td>
+                    <td class="administrador-td">{{ trabajador.rol.nombre }}</td>
                     <td class="administrador-td"><img class="administrador-img"
                             src="/document.png"></td>
                 </tr>
+                {% endfor %}
             </tbody>
 
         </table>

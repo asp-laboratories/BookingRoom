@@ -44,8 +44,9 @@ class TipoCliente(models.Model):
 
 class Cuenta(models.Model):
     nombre_usuario = models.CharField(max_length=100)
-    correo_electronico = models.EmailField()
+    correo_electronico = models.EmailField(unique=True)
     disposicion = models.BooleanField(default=True)
+    firebase_uid = models.CharField(max_length=255, unique=True, null=True, blank=True)
     estado_cuenta = models.ForeignKey(EstadoCuenta, on_delete=models.PROTECT)
 
     class Meta:
@@ -60,7 +61,7 @@ class Trabajador(models.Model):
     apellidoPaterno = models.CharField(max_length=150)
     apelidoMaterno = models.CharField(max_length=150)
     telefono = models.CharField(max_length=15)
-    correo_electronico = models.EmailField()
+    correo_electronico = models.EmailField(unique=True)
     rol = models.ForeignKey(Rol, on_delete=models.PROTECT)
     cuenta = models.ForeignKey(Cuenta, on_delete=models.PROTECT)
 
@@ -75,7 +76,7 @@ class DatosCliente(models.Model):
     apellidoPaterno = models.CharField(max_length=150)
     apelidoMaterno = models.CharField(max_length=150)
     telefono = models.CharField(max_length=15)
-    correo_electronico = models.EmailField()
+    correo_electronico = models.EmailField(unique=True)
     dir_colonia = models.CharField(max_length=150)
     dir_calle = models.CharField(max_length=150)
     dir_numero = models.CharField( max_length=50)

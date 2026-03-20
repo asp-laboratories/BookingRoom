@@ -1,32 +1,70 @@
 {% load static %}
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="{% static 'BookingRoomApp/css/inicio_sesion_estilos.css'%} ">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - BookingRoom</title>
+    <link
+      rel="stylesheet"
+      href="{% static 'BookingRoomApp/css/inicio_sesion_estilos.css'%}"
+    />
+  </head>
+  <body>
     <div class="contenedor-login">
-        <div class="login">
-            <h1>Inicio de sesion</h1>
-            <form action="{% url "home" %}" method="get" >
-                <label>Correo electronico:</label>
-                <input class="inputs" name="correo-electronico" type="text" placeholder="ejemplo@gmail.com" >
-                <label>Contraseña</label>
-                <input class="inputs" name="contraseña" type="password" placeholder="123456">
+      <div class="login">
+        <h1>Inicio de sesion</h1>
 
-                <button class="btn-ingresar">Ingresar</button>
-            </form>
+        <div
+          id="error-mensaje"
+          style="color: red; margin-bottom: 10px; display: none"
+        ></div>
 
-            <a href="{% url "sign_up" %}">¿No tienes cuenta? <span class="enviar-registro">Registrate aqui</span></a>
-        </div>
-        <div class="background">
-            <img class="logo" src="{% static 'BookingRoomApp/img/BookingRoom.png' %}">
-        </div>
-        
+        <form id="loginForm">
+          {% csrf_token %}
+          <label>Correo electronico:</label>
+          <input
+            class="inputs"
+            id="email"
+            name="email"
+            type="email"
+            placeholder="ejemplo@gmail.com"
+            required
+          />
+          <label>Contraseña</label>
+          <input
+            class="inputs"
+            id="password"
+            name="password"
+            type="password"
+            placeholder="123456"
+            required
+          />
+
+          <button class="btn-ingresar" type="submit" id="btnSubmit">
+            Ingresar
+          </button>
+        </form>
+
+        <a href="{% url 'sign_up' %}"
+          >¿No tienes cuenta?
+          <span class="enviar-registro">Registrate aqui</span></a
+        >
+      </div>
+      <div class="background">
+        <img
+          class="logo"
+          src="{% static 'BookingRoomApp/img/BookingRoom.png' %}"
+        />
+      </div>
     </div>
-</body>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    
+    <!-- Firebase Auth -->
+    <script src="{% static 'BookingRoomApp/js/firebase-auth.js' %}"></script>
+  </body>
 </html>
