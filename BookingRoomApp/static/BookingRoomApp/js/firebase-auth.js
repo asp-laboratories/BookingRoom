@@ -28,14 +28,12 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         const idToken = await userCredential.user.getIdToken();
 
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        
         const response = await fetch('/api/login/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
             },
+            credentials: 'include',
             body: JSON.stringify({ token: idToken })
         });
 

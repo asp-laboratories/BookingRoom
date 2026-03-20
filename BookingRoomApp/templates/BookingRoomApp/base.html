@@ -24,6 +24,7 @@
     <button class="btn-menu-mobile" id="btn-menu-mobile">☰</button>
     <div class="overlay-sidebar" id="overlay-sidebar"></div>
     <div class="contenedor-aplicacion" id="app-container">
+      {% if rol %}
       <aside class="sidebar" id="sidebar">
         <div class="contenedor-letras">
           <button id="toggle-sidebar" class="letras btn-menu">
@@ -34,6 +35,9 @@
 
 
         <nav class="sidebar-nav">
+
+          
+          {% if rol == 'ADMIN' or rol == 'RECEP' %}
           <section class="recepcion">
             <details>
               <summary>
@@ -49,12 +53,14 @@
                   </svg>
                   <a href="{% url 'home' %}">Reservacion</a>
                 </li>
+                {% if rol == 'ADMIN' or rol == 'RECEP' %}
                 <li>
                   <svg class="icono blanco icono-20">
                     <use href="{% static 'BookingRoomApp/img/icons/sprite.svg'%}#icon-payment"></use>
                   </svg>
                   <a href="{% url 'pagos' %}">Pagos</a>
                 </li>
+                {% endif %}
                 <li>
                   <svg class="icono blanco icono-20">
                     <use href="{% static 'BookingRoomApp/img/icons/sprite.svg'%}#icon-history"></use>
@@ -64,7 +70,9 @@
               </ul>
             </details>
           </section>
+          {% endif %}
 
+          {% if rol == 'ADMIN' or rol == 'ALMAC' %}
           <section class="almacen">
             <details>
               <summary>
@@ -89,7 +97,9 @@
               </ul>
             </details>
           </section>
+          {% endif %}
 
+          {% if rol == 'ADMIN' %}
           <section class="administracion">
             <details>
               <summary>
@@ -145,15 +155,25 @@
               </ul>
             </details>
           </section>
+          {% endif %}
+
         </nav>
 
-        <a class="salir" href="{% url "login" %}">
+        <a class="salir" href="{% url 'login' %}">
           <svg class="icono blanco icono-32">
             <use href="{% static 'BookingRoomApp/img/icons/sprite.svg'%}#icon-logout"></use>
           </svg>
           <span class="texto-menu">Cerrar sesion</span>
         </a>
       </aside>
+      {% else %}
+      <style>
+        .contenedor-aplicacion {
+          display: block;
+        }
+      </style>
+
+      {% endif %}
       <main class="contenedor-principal">
         {% block inicio %}
         {% endblock inicio %}

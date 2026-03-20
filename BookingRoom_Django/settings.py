@@ -72,6 +72,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'BookingRoom_Django.wsgi.application'
 
+# Tamaño máximo de upload (10MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+
+# Sesiones - usar cache para evitar bloqueos de SQLite
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+SESSION_COOKIE_AGE = 60 * 60 * 24  # 24 horas
+SESSION_COOKIE_HTTPONLY = True
+
+# Cache
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases

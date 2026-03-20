@@ -7,4 +7,5 @@ router.register(r'tipo-servicio', views.TipoServicioViewSet)
 
 urlpatterns = router.urls + [
     path('login/', views.api_login, name='api_login'),
+    path('signup/', views.api_signup, name='api_signup'),
 ]

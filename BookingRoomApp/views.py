@@ -17,6 +17,41 @@ except:
     FIREBASE_ENABLED = False
 
 
+def get_user_rol(request):
+    cuenta_id = request.session.get('cuenta_id')
+    if not cuenta_id:
+        return None
+    try:
+        trabajador = Trabajador.objects.select_related('rol').get(cuenta_id=cuenta_id)
+        return trabajador.rol.codigo
+    except:
+        return None
+
+
+def get_cuenta_and_rol(request):
+    cuenta_id = request.session.get('cuenta_id')
+    if not cuenta_id:
+        return None, None
+    try:
+        cuenta = Cuenta.objects.get(id=cuenta_id)
+        try:
+            trabajador = Trabajador.objects.select_related('rol').get(cuenta_id=cuenta_id)
+            rol = trabajador.rol.codigo
+        except Trabajador.DoesNotExist:
+            rol = None
+        return cuenta, rol
+    except:
+        return None, None
+
+
+def require_login(view_func):
+    def wrapper(request, *args, **kwargs):
+        if not request.session.get('cuenta_id'):
+            return HttpResponseRedirect(reverse('login'))
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
 class TipoServicioViewSet(viewsets.ModelViewSet):
     queryset = TipoServicio.objects.all()
     serializer_class = TipoServicioSerializer
@@ -39,20 +74,21 @@ def api_login(request):
             if not FIREBASE_ENABLED:
                 return JsonResponse({'error': 'Firebase no configurado'}, status=500)
             
-            # Verificar token con Firebase
+            if len(token) > 10000:
+                return JsonResponse({'error': 'Token inválido'}, status=400)
+            
             decoded = auth.verify_id_token(token)
             firebase_uid = decoded['uid']
             email = decoded.get('email', '')
             
-            # Buscar o crear sesión en BD local
             try:
                 cuenta = Cuenta.objects.get(firebase_uid=firebase_uid)
             except Cuenta.DoesNotExist:
                 return JsonResponse({'error': 'Cuenta no registrada en el sistema'}, status=404)
             
-            # Guardar sesión en Django
             request.session['cuenta_id'] = cuenta.id
             request.session['firebase_uid'] = firebase_uid
+            request.session.modified = True
             
             return JsonResponse({'success': True, 'user': {
                 'id': cuenta.id,
@@ -70,35 +106,96 @@ def sign_up(request):
     return render(request, 'BookingRoomApp/sign_up.html')
 
 
-def home(request):
-    cuenta_id = request.session.get('cuenta_id')
+@csrf_exempt
+def api_signup(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            token = data.get('token')
+            
+            if not token:
+                return JsonResponse({'error': 'Token requerido'}, status=400)
+            
+            if not FIREBASE_ENABLED:
+                return JsonResponse({'error': 'Firebase no configurado'}, status=500)
+            
+            if len(token) > 10000:
+                return JsonResponse({'error': 'Token inválido'}, status=400)
+            
+            decoded = auth.verify_id_token(token)
+            firebase_uid = decoded['uid']
+            email = decoded.get('email', '')
+            display_name = decoded.get('name', '')
+            
+            estado_cuenta = EstadoCuenta.objects.filter(codigo='ACT').first()
+            
+            cuenta, created = Cuenta.objects.get_or_create(
+                firebase_uid=firebase_uid,
+                defaults={
+                    'nombre_usuario': display_name,
+                    'correo_electronico': email,
+                    'estado_cuenta': estado_cuenta,
+                    'disposicion': True
+                }
+            )
+            
+            if created:
+                return JsonResponse({'success': True, 'message': 'Cuenta creada exitosamente'})
+            else:
+                return JsonResponse({'success': True, 'message': 'Ya tenías una cuenta'})
+                
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
     
-    if not cuenta_id:
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+def home(request):
+    cuenta, rol = get_cuenta_and_rol(request)
+    if not cuenta:
         return HttpResponseRedirect(reverse('login'))
     
-    cuenta = Cuenta.objects.get(id=cuenta_id)
-    
     return render(request, 'BookingRoomApp/home.html', {
-        'cuenta': cuenta
+        'cuenta': cuenta,
+        'rol': rol
     })
 
 
 def reservacion(request):
+    cuenta, rol = get_cuenta_and_rol(request)
+    if not cuenta:
+        return HttpResponseRedirect(reverse('login'))
+    
     tipos_servicio = TipoServicio.objects.filter(disposicion=True)
-    return render(request, 'BookingRoomApp/reservacion.html', {'tipos_servicio': tipos_servicio})
+    return render(request, 'BookingRoomApp/reservacion.html', {
+        'tipos_servicio': tipos_servicio,
+        'rol': rol
+    })
 
 
 def servicios(request):
-    return render(request, 'BookingRoomApp/administracion/servicios.html')
+    cuenta, rol = get_cuenta_and_rol(request)
+    if not cuenta:
+        return HttpResponseRedirect(reverse('login'))
+    
+    return render(request, 'BookingRoomApp/administracion/servicios.html', {'rol': rol})
 
 
 def trabajadores(request):
+    cuenta, rol = get_cuenta_and_rol(request)
+    if not cuenta:
+        return HttpResponseRedirect(reverse('login'))
+    
+    if rol != 'ADMIN':
+        return HttpResponseRedirect(reverse('home'))
+    
     roles = Rol.objects.all()
     trabajadores_list = Trabajador.objects.select_related('cuenta', 'rol').all()
     
     return render(request, 'BookingRoomApp/administracion/trabajadores.html', {
         'roles': roles,
-        'trabajadores': trabajadores_list
+        'trabajadores': trabajadores_list,
+        'rol': rol
     })
 
 
@@ -188,32 +285,64 @@ def registrar_trabajador(request):
 
 
 def salones(request):
-    return render(request, 'BookingRoomApp/administracion/salones.html')
+    cuenta, rol = get_cuenta_and_rol(request)
+    if not cuenta:
+        return HttpResponseRedirect(reverse('login'))
+    
+    return render(request, 'BookingRoomApp/administracion/salones.html', {'rol': rol})
 
 
 def mobiliario(request):
-    return render(request, 'BookingRoomApp/administracion/mobiliario.html')
+    cuenta, rol = get_cuenta_and_rol(request)
+    if not cuenta:
+        return HttpResponseRedirect(reverse('login'))
+    
+    return render(request, 'BookingRoomApp/administracion/mobiliario.html', {'rol': rol})
 
 
 def equipamiento(request):
-    return render(request, 'BookingRoomApp/administracion/equipamiento.html')
+    cuenta, rol = get_cuenta_and_rol(request)
+    if not cuenta:
+        return HttpResponseRedirect(reverse('login'))
+    
+    return render(request, 'BookingRoomApp/administracion/equipamiento.html', {'rol': rol})
 
 
 def historial_reservacion(request):
-    return render(request, 'BookingRoomApp/recepcion/historial_reservacion.html')
+    cuenta, rol = get_cuenta_and_rol(request)
+    if not cuenta:
+        return HttpResponseRedirect(reverse('login'))
+    
+    return render(request, 'BookingRoomApp/recepcion/historial_reservacion.html', {'rol': rol})
 
 
 def inventario_equipamiento(request):
-    return render(request, 'BookingRoomApp/almacen/inventario_equipamiento.html')
+    cuenta, rol = get_cuenta_and_rol(request)
+    if not cuenta:
+        return HttpResponseRedirect(reverse('login'))
+    
+    return render(request, 'BookingRoomApp/almacen/inventario_equipamiento.html', {'rol': rol})
 
 
 def inventario_mobiliario(request):
-    return render(request, 'BookingRoomApp/almacen/inventario_mobiliario.html')
+    cuenta, rol = get_cuenta_and_rol(request)
+    if not cuenta:
+        return HttpResponseRedirect(reverse('login'))
+    
+    return render(request, 'BookingRoomApp/almacen/inventario_mobiliario.html', {'rol': rol})
 
 
 def pagos(request):
-    return render(request, 'BookingRoomApp/recepcion/pagos.html')
+    cuenta, rol = get_cuenta_and_rol(request)
+    if not cuenta:
+        return HttpResponseRedirect(reverse('login'))
+    
+    return render(request, 'BookingRoomApp/recepcion/pagos.html', {'rol': rol})
 
 
 def estadisticas(request):
-    return render(request, 'BookingRoomApp/administracion/estadisticas.html')
+    cuenta, rol = get_cuenta_and_rol(request)
+    if not cuenta:
+        return HttpResponseRedirect(reverse('login'))
+    
+    return render(request, 'BookingRoomApp/administracion/estadisticas.html', {'rol': rol})

@@ -5,27 +5,111 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Registro - BookingRoom</title>
   <link rel="stylesheet" href="{% static 'BookingRoomApp/css/sign_up.css' %}">
 </head>
 <body>
-      <div class="registro-contenedor">
-      <div class="registro">
-        <h1>Registro</h1>
-      <form method="post">
-            <label>Nombre de usuario: </label>
-            <input type="text" name="usario">
-            <label>Correo electronico: </label>
-            <input type="email" name="correo-electronico">
-            <label>Confirmar contraseña: </label>
-            <input type="password" name="contraseña">
-            <label>Contraseña: </label>
-            <input type="password" name="contraseña">
+  <div class="registro-contenedor">
+    <div class="registro">
+      <h1>Registro</h1>
+      
+      <div id="error-mensaje" style="color: red; margin-bottom: 10px; display: none;"></div>
+      <div id="success-mensaje" style="color: green; margin-bottom: 10px; display: none;"></div>
+      
+      <form id="signupForm">
+        {% csrf_token %}
+        <label>Nombre de usuario: </label>
+        <input type="text" id="displayName" required>
+        <label>Correo electronico: </label>
+        <input type="email" id="email" required>
+        <label>Contraseña: </label>
+        <input type="password" id="password" required>
+        <label>Confirmar contraseña: </label>
+        <input type="password" id="confirmPassword" required>
 
-            <button class="btn-enviar">Enviar datos</button>
-            <a href="{% url "login" %} ">¿Ya tienes cuenta? Iniciar sesion</a>
+        <button class="btn-enviar" type="submit" id="btnSubmit">Enviar datos</button>
+        <a href="{% url 'login' %}">¿Ya tienes cuenta? Iniciar sesion</a>
       </form>
-      </div>
     </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  
+  <script src="{% static 'BookingRoomApp/js/firebase-auth.js' %}"></script>
+  
+  <script>
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const displayName = document.getElementById('displayName').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const btnSubmit = document.getElementById('btnSubmit');
+      const errorDiv = document.getElementById('error-mensaje');
+      const successDiv = document.getElementById('success-mensaje');
+      
+      if (password !== confirmPassword) {
+        errorDiv.textContent = 'Las contraseñas no coinciden';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'Cargando...';
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+
+      try {
+        // Crear usuario en Firebase
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        await userCredential.user.updateProfile({ displayName: displayName });
+        const idToken = await userCredential.user.getIdToken();
+
+        const response = await fetch('/api/signup/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ token: idToken })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          successDiv.textContent = data.message || 'Cuenta creada exitosamente';
+          successDiv.style.display = 'block';
+          errorDiv.style.display = 'none';
+          
+          // Redirigir al login después de 2 segundos
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 2000);
+        } else {
+          // Si falla, eliminar usuario de Firebase
+          await auth.currentUser.delete();
+          errorDiv.textContent = data.error || 'Error al registrar';
+          errorDiv.style.display = 'block';
+        }
+      } catch (error) {
+        let mensaje = 'Error al registrar';
+        if (error.code === 'auth/email-already-in-use') {
+          mensaje = 'Este correo ya está registrado';
+        } else if (error.code === 'auth/weak-password') {
+          mensaje = 'La contraseña debe tener al menos 6 caracteres';
+        } else if (error.code === 'auth/invalid-email') {
+          mensaje = 'Correo inválido';
+        }
+        errorDiv.textContent = mensaje;
+        errorDiv.style.display = 'block';
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = 'Enviar datos';
+      }
+    });
+  </script>
 </body>
 </html>
