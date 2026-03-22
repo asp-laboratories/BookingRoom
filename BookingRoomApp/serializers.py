@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import TipoServicio
+from .models import TipoServicio, Rol, EstadoCuenta, TipoCliente, Cuenta, Trabajador, DatosCliente
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,3 +31,60 @@ class TipoServicioSerializer(serializers.ModelSerializer):
     class Meta:
         model = TipoServicio
         fields = '__all__'
+
+
+class RolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rol
+        fields = '__all__'
+
+
+class EstadoCuentaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EstadoCuenta
+        fields = '__all__'
+
+
+class TipoClienteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TipoCliente
+        fields = '__all__'
+
+
+class CuentaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cuenta
+        fields = '__all__'
+
+
+class CuentaMinimalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cuenta
+        fields = ['id', 'nombre_usuario', 'correo_electronico']
+
+
+class TrabajadorSerializer(serializers.ModelSerializer):
+    rol_nombre = serializers.CharField(source='rol.nombre', read_only=True)
+    rol_codigo = serializers.CharField(source='rol.codigo', read_only=True)
+    cuenta_nombre = serializers.CharField(source='cuenta.nombre_usuario', read_only=True)
+    
+    class Meta:
+        model = Trabajador
+        fields = '__all__'
+
+
+class DatosClienteSerializer(serializers.ModelSerializer):
+    tipo_cliente_nombre = serializers.CharField(source='tipo_cliente.nombre', read_only=True)
+    cuenta_nombre = serializers.CharField(source='cuenta.nombre_usuario', read_only=True)
+    
+    class Meta:
+        model = DatosCliente
+        fields = '__all__'
+
+
+class LoginResponseSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    nombre = serializers.CharField()
+    email = serializers.EmailField()
+    tipo = serializers.CharField()
+    rol = serializers.CharField(allow_null=True)
