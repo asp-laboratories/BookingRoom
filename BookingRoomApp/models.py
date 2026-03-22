@@ -115,3 +115,134 @@ class DatosCliente(models.Model):
 
     # def get_absolute_url(self):
     #     return reverse("TipoServicio_detail", kwargs={"pk": self.pk})
+
+
+class EstadoMobil(models.Model):
+    codigo = models.CharField(max_length=5, primary_key=True)
+    nombre = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'estado_mobil'
+        verbose_name = "Estado de mobiliario"
+
+    def __str__(self):
+        return self.codigo
+
+
+class CaracterMobil(models.Model):
+    descripcion = models.TextField()
+
+    class Meta:
+        db_table = 'caracter_mobi'
+        verbose_name = "Característica de mobiliario"
+
+    def __str__(self):
+        return self.descripcion
+
+
+class TipoMobil(models.Model):
+    nombre = models.CharField(max_length=100)
+    disposicion = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'tipo_mobil'
+        verbose_name = "Tipo de mobiliario"
+
+    def __str__(self):
+        return self.nombre
+
+
+class TipoMontaje(models.Model):
+    nombre = models.CharField(max_length=100)
+    disposicion = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'tipo_montaje'
+        verbose_name = "Tipo de montaje"
+
+    def __str__(self):
+        return self.nombre
+
+
+class TipoEvento(models.Model):
+    nombre = models.CharField(max_length=100)
+    disposicion = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'tipo_evento'
+        verbose_name = "Tipo de evento"
+
+    def __str__(self):
+        return self.nombre
+
+
+class EstadoReserva(models.Model):
+    codigo = models.CharField(max_length=5, primary_key=True)
+    nombre = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'estado_reserva'
+        verbose_name = "Estado de reserva"
+
+    def __str__(self):
+        return self.codigo
+
+
+class EstadoSalon(models.Model):
+    codigo = models.CharField(max_length=5, primary_key=True)
+    nombre = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'estado_salon'
+        verbose_name = "Estado de salón"
+
+    def __str__(self):
+        return self.codigo
+
+
+class TipoEquipa(models.Model):
+    nombre = models.CharField(max_length=100)
+    disposicion = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'tipo_equipa'
+        verbose_name = "Tipo de equipamiento"
+
+    def __str__(self):
+        return self.nombre
+
+
+class EstadoEquipa(models.Model):
+    codigo = models.CharField(max_length=5, primary_key=True)
+    nombre = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'estado_equipa'
+        verbose_name = "Estado de equipamiento"
+
+    def __str__(self):
+        return self.codigo
+
+
+class ConceptoPago(models.Model):
+    codigo = models.CharField(max_length=5, primary_key=True)
+    nombre = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'concepto_pago'
+        verbose_name = "Concepto de pago"
+
+    def __str__(self):
+        return self.codigo
+
+
+class MetodoPago(models.Model):
+    codigo = models.CharField(max_length=5, primary_key=True)
+    nombre = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'metodo_pago'
+        verbose_name = "Método de pago"
+
+    def __str__(self):
+        return self.codigo

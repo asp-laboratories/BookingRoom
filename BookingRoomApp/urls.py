@@ -1,18 +1,20 @@
 from django.urls import path
-from rest_framework.routers import DefaultRouter
 from . import views
 
-router = DefaultRouter()
-router.register(r'tipo-servicio', views.TipoServicioViewSet)
-router.register(r'rol', views.RolViewSet)
-router.register(r'estado-cuenta', views.EstadoCuentaViewSet)
-router.register(r'tipo-cliente', views.TipoClienteViewSet)
-router.register(r'cuenta', views.CuentaViewSet)
-router.register(r'trabajador', views.TrabajadorViewSet)
-router.register(r'datos-cliente', views.DatosClienteViewSet)
-
-urlpatterns = router.urls + [
-    path('login/', views.api_login, name='api_login'),
-    path('signup/', views.api_signup, name='api_signup'),
-    path('flutter-login/', views.api_flutter_login, name='api_flutter_login'),
+urlpatterns = [
+    path('', views.login, name="login"),
+    path('sign_up/', views.sign_up, name="sign_up"),
+    path('home/', views.home, name="home"),
+    path('reservacion/', views.reservacion, name="reservacion"),
+    path('administracion/servicios/', views.servicios, name="servicios"),
+    path('recepcion/historial/', views.historial_reservacion, name="historial_reservacion"),
+    path('almacen/inventario-equipamiento/', views.inventario_equipamiento, name="inventario_equipamiento"),
+    path('almacen/inventario-mobiliario/', views.inventario_mobiliario, name="inventario_mobiliario"),
+    path('recepcion/pagos/', views.pagos, name="pagos"),
+    path('administracion/estadisticas/', views.estadisticas, name="estadisticas"),
+    path('administracion/trabajadores/', views.trabajadores, name="trabajadores"),
+    path('administracion/trabajadores/registrar/', views.registrar_trabajador, name="registrar_trabajador"),
+    path('administracion/salones/', views.salones, name="salones"),
+    path('administracion/mobiliario/', views.mobiliario, name="mobiliario"),
+    path('administracion/equipamiento/', views.equipamiento, name="equipamiento"),
 ]
