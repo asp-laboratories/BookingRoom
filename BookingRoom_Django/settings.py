@@ -92,24 +92,38 @@ CACHES = {
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+# PostgreSQL (desarrollo/pruebas) - Cambia estos valores según tu configuración
+# CREATE DATABASE bookingroom_test; en psql
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'bookingroom_test',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'bookingroom',
-            'USER': 'tu_usuario',
-            'PASSWORD': 'tu_password',
-            'HOST': 'localhost',
-            'PORT': '5432',
-        }
-    }
+}
+
+# SQLite (descomenta si prefieres usar SQLite)
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+# PostgreSQL producción (descomenta y usa estas credenciales)
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'bookingroom',
+#         'USER': 'tu_usuario',
+#         'PASSWORD': 'tu_password',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
 
 # Password validation
