@@ -252,12 +252,12 @@ class MetodoPago(models.Model):
 
 class Salon(models.Model):
     nombre = models.CharField(max_length=50)
-    costo = models.DecimalField()
+    costo = models.DecimalField(max_digits=10, decimal_places=2)
     ubicacion = models.CharField(max_length=100)
-    dimenLargo = models.DecimalField()
-    dimenAncho = models.DecimalField()
-    dimenAlto = models.DecimalField()
-    metrosCuadrados = models.DecimalField()
+    dimenLargo = models.DecimalField(max_digits=10, decimal_places=2)
+    dimenAncho = models.DecimalField(max_digits=10, decimal_places=2)
+    dimenAlto = models.DecimalField(max_digits=10, decimal_places=2)
+    metrosCuadrados = models.DecimalField(max_digits=10, decimal_places=2)
     maxCapacidad = models.IntegerField()
     estado_salon = models.ForeignKey(EstadoSalon, on_delete=models.CASCADE)
 
@@ -270,7 +270,7 @@ class Salon(models.Model):
 
 
 class Montaje(models.Model):
-    costo = models.DecimalField()
+    costo = models.DecimalField(max_digits=10, decimal_places=2)
     salon = models.ForeignKey(Salon, on_delete=models.CASCADE)
     tipo_montaje = models.ForeignKey(TipoMontaje, on_delete=models.CASCADE)
 
@@ -285,7 +285,7 @@ class Montaje(models.Model):
 class Servicio(models.Model):
     nombre = models.CharField(max_length=75)
     descripcion = models.CharField(max_length=150)
-    costo = models.DecimalField()
+    costo = models.DecimalField(max_digits=10, decimal_places=2)
     disposicion = models.BooleanField()
     tipo_servicio = models.ForeignKey(TipoServicio, on_delete=models.CASCADE)
 
@@ -298,15 +298,15 @@ class Servicio(models.Model):
 
 
 class Reservacion(models.Model):
-    descripEvento = models.models.CharField(max_length=50)
+    descripEvento = models.CharField(max_length=50)
     estimaAsistentes = models.IntegerField()
     fechaReservacion = models.DateField(auto_now_add=True)
     fechaEvento = models.DateField()
     horaInicio = models.TimeField()
     horaFin = models.TimeField()
-    subtotal = models.DecimalField()
-    IVA = models.DecimalField()
-    total = models.DecimalField()
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
+    IVA = models.DecimalField(max_digits=10, decimal_places=2)
+    total = models.DecimalField(max_digits=10, decimal_places=2)
     cliente = models.ForeignKey(DatosCliente, on_delete=models.CASCADE)
     montaje = models.ForeignKey(Montaje, on_delete=models.CASCADE)
     estado_reserva = models.ForeignKey(EstadoReserva, on_delete=models.CASCADE)
@@ -325,7 +325,7 @@ class Reservacion(models.Model):
 class Mobiliario(models.Model):
     nombre = models.CharField(max_length=75)
     descripcion = models.CharField(max_length=150)
-    costo = models.DecimalField()
+    costo = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.IntegerField()
     tipo_movil = models.ForeignKey(TipoMobil, on_delete=models.CASCADE)
     descripcion_mob = models.ManyToManyField(CaracterMobil)
@@ -355,7 +355,7 @@ class MontajeMobiliario(models.Model):
 class Equipamiento(models.Model):
     nombre = models.CharField(max_length=75)
     descripcion = models.CharField(max_length=150)
-    costo = models.DecimalField()
+    costo = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.IntegerField()
     tipo_equipa = models.ForeignKey(TipoEquipa, on_delete=models.CASCADE)
 
@@ -464,7 +464,7 @@ class Encuesta(models.Model):
 
 class Pago(models.Model):
     nota = models.CharField(max_length=100)
-    monto = models.DecimalField()
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
     fecha = models.DateField(auto_now=True)
     hora = models.TimeField(auto_now=True)
     no_pago = models.IntegerField()

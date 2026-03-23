@@ -5,7 +5,12 @@
   href="{% static 'BookingRoomApp/css/reservacion.css' %}"
 />
 
-<h1 style="margin: 50px 0px 20px 20px;">Reservación</h1>
+<h1 style="margin: 50px 0px 20px 20px;"><a style="color: black;" href="{% url 'home' %}">
+
+                    <svg class="icono negro icono-20">
+                    <use href="{% static 'BookingRoomApp/img/icons/sprite.svg'%}#icon-left"></use>
+                  </svg>
+</a>Reservación</h1>
 <div class="reservacion-contenedor-principal">
   <div class="reservacion-contenedor-navegacion">
     <nav class="reservacion-navegacion">
@@ -49,12 +54,12 @@
         <h2 class="reservacion-titulo-seccion">Datos del cliente</h2>
 
         <div class="reservacion-campo-contenedor reservacion-grid-campos">
-          <div class="reservacion-campo span-2">
+          <div class="reservacion-campo span-2 buscar-row-reverse">
             <input
               type="text"
               class="reservacion-input"
               placeholder="Buscar por RFC o Nombre del contacto"
-            />
+            /> <button>Buscar</button>
           </div>
 
           <div class="reservacion-campo">
@@ -280,5 +285,121 @@
     });
   });
 </script>
+
+<dialog id="miModal" class="modal-beo">
+  <div class="cabecera-modal">
+    <span class="titulo-modal"
+      >SOLICITUD DE: Orden de banquete de evento (BEO)</span
+    >
+    <button onclick="window.miModal.close()" class="cerrar-modal">X</button>
+  </div>
+
+  <div class="modal-grid">
+    <div class="modal-div modal-div-1">
+      <h3 class="titulo-info-cliente">Información del cliente</h3>
+
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Nombre completo:</label>
+          <span>[Nombre]</span>
+        </div>
+        <div class="fila-dato">
+          <label>Correo electrónico:</label>
+          <span>[Correo]</span>
+        </div>
+        <div class="fila-dato">
+          <label>Teléfono:</label>
+          <span>[Teléfono]</span>
+        </div>
+        <div class="fila-dato">
+          <label>RFC:</label>
+          <span>[RFC]</span>
+        </div>
+        <div class="fila-dato">
+          <label>Nombre fiscal:</label>
+          <span>[Nombre Fiscal]</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-2">
+      <h3 class="titulo-seccion-modal">Información del evento</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Nombre:</label>
+          <span>[Nombre]</span>
+        </div>
+        <div class="fila-dato">
+          <label>Descripción:</label>
+          <span>[Descripción]</span>
+        </div>
+        <div class="fila-dato">
+          <label>Fecha:</label>
+          <span>[Fecha]</span>
+        </div>
+        <div class="fila-dato">
+          <label>Horario:</label>
+          <span>[Horario]</span>
+        </div>
+        <div class="fila-dato">
+          <label>Estado:</label>
+          <span>[Estado]</span>
+        </div>
+        <div class="fila-dato">
+          <label>Asistentes:</label>
+          <span>[Estimado]</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-3">
+      <h3 class="titulo-seccion-modal">Salón y Montaje</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Salón:</label>
+          <span>[Salón]</span>
+        </div>
+        <div class="fila-dato">
+          <label>Montaje:</label>
+          <span>[Montaje]</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-4">
+      <h3 class="titulo-seccion-modal">Servicios</h3>
+      <div class="datos">
+        <span>No hay servicios</span>
+      </div>
+    </div>
+    <div class="modal-div modal-div-5">
+      <h3 class="titulo-seccion-modal">Equipamientos</h3>
+      <div class="datos">
+        <span>No hay equipamientos</span>
+      </div>
+    </div>
+    <div class="modal-div modal-div-6">
+      <h3 class="titulo-seccion-modal">Totales</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <span>IVA:</span>
+          <span>$0.00</span>
+        </div>
+        <div class="fila-dato">
+          <span>Subtotal:</span>
+          <span>$0.00</span>
+        </div>
+        <div class="fila-dato">
+          <span>Total:</span>
+          <span>$0.00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-botones">
+    <button class="btn-modal btn-aceptar">Aceptar</button>
+    <button class="btn-modal btn-denegar" onclick="window.miModal.close()">
+      Denegar
+    </button>
+  </div>
+</dialog>
 
 {% endblock inicio %}

@@ -6,6 +6,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from BookingRoomApp import models
 from . import serializers, services
+from BookingRoomApp import models
+from . import serializers, services
 import json
 
 try:
@@ -20,10 +22,15 @@ class ListTipoEquipa(APIView):
     def get(self, request):
         tipo_equipa = models.TipoEquipa.objects.all()
         serializer = serializers.TipoEquipaSerializer(tipo_equipa, many=True)
+        tipo_equipa = models.TipoEquipa.objects.all()
+        serializer = serializers.TipoEquipaSerializer(tipo_equipa, many=True)
         return Response(serializer.data)
 
 
+
 class TipoServicioViewSet(viewsets.ModelViewSet):
+    queryset = models.TipoServicio.objects.all()
+    serializer_class = serializers.TipoServicioSerializer
     queryset = models.TipoServicio.objects.all()
     serializer_class = serializers.TipoServicioSerializer
 
@@ -31,9 +38,13 @@ class TipoServicioViewSet(viewsets.ModelViewSet):
 class RolViewSet(viewsets.ModelViewSet):
     queryset = models.Rol.objects.all()
     serializer_class = serializers.RolSerializer
+    queryset = models.Rol.objects.all()
+    serializer_class = serializers.RolSerializer
 
 
 class EstadoCuentaViewSet(viewsets.ModelViewSet):
+    queryset = models.EstadoCuenta.objects.all()
+    serializer_class = serializers.EstadoCuentaSerializer
     queryset = models.EstadoCuenta.objects.all()
     serializer_class = serializers.EstadoCuentaSerializer
 
@@ -41,9 +52,13 @@ class EstadoCuentaViewSet(viewsets.ModelViewSet):
 class TipoClienteViewSet(viewsets.ModelViewSet):
     queryset = models.TipoCliente.objects.all()
     serializer_class = serializers.TipoClienteSerializer
+    queryset = models.TipoCliente.objects.all()
+    serializer_class = serializers.TipoClienteSerializer
 
 
 class CuentaViewSet(viewsets.ModelViewSet):
+    queryset = models.Cuenta.objects.all()
+    serializer_class = serializers.CuentaSerializer
     queryset = models.Cuenta.objects.all()
     serializer_class = serializers.CuentaSerializer
 
@@ -51,11 +66,47 @@ class CuentaViewSet(viewsets.ModelViewSet):
 class TrabajadorViewSet(viewsets.ModelViewSet):
     queryset = models.Trabajador.objects.select_related('rol', 'cuenta').all()
     serializer_class = serializers.TrabajadorSerializer
+    queryset = models.Trabajador.objects.select_related('rol', 'cuenta').all()
+    serializer_class = serializers.TrabajadorSerializer
 
 
 class DatosClienteViewSet(viewsets.ModelViewSet):
     queryset = models.DatosCliente.objects.select_related('tipo_cliente', 'cuenta').all()
     serializer_class = serializers.DatosClienteSerializer
+
+class MobiliarioViewSet(viewsets.ModelViewSet):
+    queryset = models.Mobiliario.objects.all()
+    serializer_class = serializers.MobiliarioSerializer
+
+class InventarioMobViewSet(viewsets.ModelViewSet):
+    queryset = models.InventarioMob.objects.all()
+    serializer_class = serializers.InventarioMobSerializer
+
+class CaracterMobilViewSet(viewsets.ModelViewSet):
+    queryset = models.CaracterMobil.objects.all()
+    serializer_class = serializers.CaracterMobilSerializer
+
+class SalonViewSet(viewsets.ModelViewSet):
+    queryset = models.Salon.objects.all()
+    serializer_class = serializers.SalonSerializer
+
+class RegistrEstadSalonViewSet(viewsets.ModelViewSet):
+    queryset = models.RegistrEstadSalon.objects.all()
+    serializer_class = serializers.RegistrEstadSalonSerializer
+
+class MontajeViewSet(viewsets.ModelViewSet):
+    queryset = models.Montaje.objects.all()
+    serializer_class = serializers.MontajeSerializer
+
+class MontajeMobiliarioViewSet(viewsets.ModelViewSet):
+    queryset = models.MontajeMobiliario.objects.all()
+    serializer_class = serializers.MontajeMobiliarioSerializer
+
+class ReservacionViewSet(viewsets.ModelViewSet):
+    queryset = models.Reservacion.objects.all()
+    serializer_class = serializers.ReservacionSerializer
+
+
 
 
 class EncuestaViewSet(viewsets.ModelViewSet):
@@ -155,6 +206,8 @@ def api_flutter_login(request):
             firebase_uid = decoded['uid']
             
             try:
+                cuenta = models.Cuenta.objects.get(firebase_uid=firebase_uid)
+            except models.Cuenta.DoesNotExist:
                 cuenta = models.Cuenta.objects.get(firebase_uid=firebase_uid)
             except models.Cuenta.DoesNotExist:
                 return JsonResponse({'error': 'Cuenta no registrada en el sistema'}, status=404)
