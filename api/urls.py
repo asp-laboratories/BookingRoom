@@ -10,6 +10,14 @@ router.register(r'tipo-cliente', views.TipoClienteViewSet)
 router.register(r'cuenta', views.CuentaViewSet)
 router.register(r'trabajador', views.TrabajadorViewSet)
 router.register(r'datos-cliente', views.DatosClienteViewSet)
+router.register(r'mobiliario', views.MobiliarioViewSet)
+router.register(r'inventario-mob', views.InventarioMobViewSet)
+router.register(r'caracter-mobil', views.CaracterMobilViewSet)
+router.register(r'salon', views.SalonViewSet)
+router.register(r'estado-salon', views.RegistrEstadSalonViewSet)
+router.register(r'montaje', views.MontajeViewSet)
+router.register(r'montaje-mobiliario', views.MontajeMobiliarioViewSet)
+router.register(r'reservacion', views.ReservacionViewSet)
 
 urlpatterns = router.urls + [
     path('login/', views.api_login, name='api_login'),
