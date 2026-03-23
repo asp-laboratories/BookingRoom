@@ -138,8 +138,15 @@
   margin-bottom: 75px;
 }
 
+#cliente, #reservacion {
+  min-height: 100vh;
+  scroll-margin-top: 80px;
+}
+
 .titulo-seccion {
   margin-left: 50px;
+  height: 100vh;
+
 }
 
 .reservacion-titulo-seccion {
@@ -383,4 +390,20 @@
   cursor: pointer;
   border: none;
   background: none;
+}
+
+.buscar-row-reverse {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.reservacion-buscar-cliente {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.reservacion-buscar-cliente .reservacion-input {
+  flex: 1;
 }
