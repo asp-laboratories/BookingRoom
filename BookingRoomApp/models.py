@@ -2,8 +2,7 @@ from django.db import models
 
 
 # Create your models here.
-
-
+# Modelos de catalogo
 class TipoServicio(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField(blank=True)
@@ -16,6 +15,7 @@ class TipoServicio(models.Model):
     def __str__(self):
         return self.nombre
 
+
 class Rol(models.Model):
     codigo = models.CharField(max_length=5, primary_key=True)
     nombre = models.CharField(max_length=100, unique=True)
@@ -26,7 +26,7 @@ class Rol(models.Model):
 
     def __str__(self):
         return self.codigo
-    
+
 
 class EstadoCuenta(models.Model):
     codigo = models.CharField(max_length=5, primary_key=True)
@@ -39,6 +39,7 @@ class EstadoCuenta(models.Model):
     def __str__(self):
         return self.codigo
 
+
 class TipoCliente(models.Model):
     codigo = models.CharField(max_length=5, primary_key=True)
     nombre = models.CharField(max_length=100)
@@ -50,7 +51,6 @@ class TipoCliente(models.Model):
 
     def __str__(self):
         return self.nombre
-    
 
 
 class Cuenta(models.Model):
@@ -66,7 +66,7 @@ class Cuenta(models.Model):
 
     def __str__(self):
         return self.correo_electronico
-    
+
 
 class Trabajador(models.Model):
     no_empleado = models.CharField(max_length=10, primary_key=True)
@@ -86,7 +86,7 @@ class Trabajador(models.Model):
 
     def __str__(self):
         return self.no_empleado
-    
+
 
 class DatosCliente(models.Model):
     rfc = models.CharField(max_length=13)
@@ -246,3 +246,235 @@ class MetodoPago(models.Model):
 
     def __str__(self):
         return self.codigo
+
+
+# Modelos de entidades con relaciones y asi
+
+class Salon(models.Model):
+    nombre = models.CharField(max_length=50)
+    costo = models.DecimalField()
+    ubicacion = models.CharField(max_length=100)
+    dimenLargo = models.DecimalField()
+    dimenAncho = models.DecimalField()
+    dimenAlto = models.DecimalField()
+    metrosCuadrados = models.DecimalField()
+    maxCapacidad = models.IntegerField()
+    estado_salon = models.ForeignKey(EstadoSalon, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'salon'
+        verbose_name = 'Salon'
+
+    def __str__(self):
+        return self.nombre
+
+
+class Montaje(models.Model):
+    costo = models.DecimalField()
+    salon = models.ForeignKey(Salon, on_delete=models.CASCADE)
+    tipo_montaje = models.ForeignKey(TipoMontaje, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'montaje'
+        verbose_name = 'Montaje'
+
+    def __str__(self):
+        return f"S:{self.salon.pk} TM:{self.tipo_montaje.pk}"
+
+
+class Servicio(models.Model):
+    nombre = models.CharField(max_length=75)
+    descripcion = models.CharField(max_length=150)
+    costo = models.DecimalField()
+    disposicion = models.BooleanField()
+    tipo_servicio = models.ForeignKey(TipoServicio, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'servicio'
+        verbose_name = 'Servicio'
+
+    def __str__(self):
+        return str(self.pk)
+
+
+class Reservacion(models.Model):
+    descripEvento = models.models.CharField(max_length=50)
+    estimaAsistentes = models.IntegerField()
+    fechaReservacion = models.DateField(auto_now_add=True)
+    fechaEvento = models.DateField()
+    horaInicio = models.TimeField()
+    horaFin = models.TimeField()
+    subtotal = models.DecimalField()
+    IVA = models.DecimalField()
+    total = models.DecimalField()
+    cliente = models.ForeignKey(DatosCliente, on_delete=models.CASCADE)
+    montaje = models.ForeignKey(Montaje, on_delete=models.CASCADE)
+    estado_reserva = models.ForeignKey(EstadoReserva, on_delete=models.CASCADE)
+    tipo_evento = models.ForeignKey(TipoEvento, on_delete=models.CASCADE)
+    reserva_servicio = models.ManyToManyField(Servicio)
+    traba_reserva = models.ManyToManyField(Trabajador)
+
+    class Meta:
+        db_table = 'reservacion'
+        verbose_name = 'Reservacion'
+
+    def __str__(self):
+        return str(self.pk)
+    
+
+class Mobiliario(models.Model):
+    nombre = models.CharField(max_length=75)
+    descripcion = models.CharField(max_length=150)
+    costo = models.DecimalField()
+    stock = models.IntegerField()
+    tipo_movil = models.ForeignKey(TipoMobil, on_delete=models.CASCADE)
+    descripcion_mob = models.ManyToManyField(CaracterMobil)
+
+    class Meta:
+        db_table = 'mobiliario'
+        verbose_name = 'Mobiliario'
+
+    def __str__(self):
+        return self.nombre
+
+
+class MontajeMobiliario(models.Model):
+    cantidad = models.IntegerField()
+    completado = models.BooleanField(default=False)
+    montaje = models.ForeignKey(Montaje, on_delete=models.CASCADE)
+    mobiliario = models.ForeignKey(Mobiliario, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'montaje_mobilairio'
+        verbose_name = 'Mobiliarios de un Montaje'
+
+    def __str__(self):
+        return f"Mob:{self.montaje.pk} Mon:{self.mobiliario.pk}"
+
+
+class Equipamiento(models.Model):
+    nombre = models.CharField(max_length=75)
+    descripcion = models.CharField(max_length=150)
+    costo = models.DecimalField()
+    stock = models.IntegerField()
+    tipo_equipa = models.ForeignKey(TipoEquipa, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'equipamiento'
+        verbose_name = 'Equipamiento'
+    
+    def __str__(self):
+        return str(self.pk)
+
+
+class InventarioEquipa(models.Model):
+    equipamiento = models.ForeignKey(Equipamiento, on_delete=models.CASCADE)
+    estado_equipa = models.ForeignKey(EstadoEquipa, on_delete=models.CASCADE)
+    cantidad = models.IntegerField()
+
+    class Meta:
+        db_table = 'inventario_equipa'
+        verbose_name = 'Estado de Equipamientos'
+
+        constraints = [
+            models.UniqueConstraint(
+                fields= ['equipamiento', 'esado_equipa'],
+                name= 'estado_equipamiento'
+            )
+        ]
+
+    def __str__(self):
+        return f"E:{self.equipamiento.pk} E:{self.estado_equipa.pk}"
+
+
+class InventarioMob(models.Model):
+    mobiliario = models.ForeignKey(Mobiliario, on_delete=models.CASCADE)
+    estado_mobil = models.ForeignKey(EstadoMobil, on_delete=models.CASCADE)
+    cantidad = models.IntegerField()
+
+    class Meta:
+        db_table = 'inventario_mobil'
+        verbose_name = "Estado de Mobilarios"
+
+        constraints = [
+            models.UniqueConstraint(
+                fields= ['mobiliario', 'estado_mobil'],
+                name= 'estado_mobiliario'
+            )
+        ]
+
+    def __str__(self):
+        return f"M:{self.mobiliario.pk} E:{self.estado_mobil.pk}"
+
+
+class ReservaEquipa(models.Model):
+    cantidad = models.IntegerField()
+    reservacion = models.ForeignKey(Reservacion, on_delete=models.CASCADE)
+    equipamiento = models.ForeignKey(Equipamiento, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'reserva_equipa'
+        verbose_name = 'Equipamientos de Reserva'
+
+    def __str__(self):
+        return f"R:{self.reservacion.pk} E:{self.equipamiento.pk} C:{self.cantidad}"
+
+
+class RegistrEstadReserva(models.Model):
+    fecha = models.DateField(auto_now=True)
+    reservacion = models.ForeignKey(Reservacion, on_delete=models.CASCADE)
+    estado_reserva = models.ForeignKey(EstadoReserva, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'registr_esta_reserva'
+        verbose_name = 'Registro de estados de Reservacion'
+
+    def __str__(self):
+        return f"R:{self.reservacion.pk} E:{self.estado_reserva.pk}"
+
+
+class RegistrEstadSalon(models.Model):
+    fecha = models.DateField(auto_now=True)
+    salon = models.ForeignKey(Salon, on_delete=models.CASCADE)
+    estado_salon = models.ForeignKey(EstadoSalon, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'registr_esta_salon'
+        verbose_name = 'Registro de estados de Salon'
+    
+    def __str__(self):
+        return f"S:{self.salon.pk} E:{self.estado_salon.pk}"
+
+
+class Encuesta(models.Model):
+    personal = models.IntegerField()
+    equipamiento = models.IntegerField()
+    servicios = models.IntegerField()
+    salon = models.IntegerField()
+    mobiliario = models.IntegerField()
+    reservacion = models.ForeignKey(Reservacion, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'encuesta'
+        verbose_name = 'Encuesta'
+
+    def __str__(self):
+        return str(self.pk)
+    
+
+class Pago(models.Model):
+    nota = models.CharField(max_length=100)
+    monto = models.DecimalField()
+    fecha = models.DateField(auto_now=True)
+    hora = models.TimeField(auto_now=True)
+    no_pago = models.IntegerField()
+    reservacion = models.ForeignKey(Reservacion, on_delete=models.CASCADE)
+    concepto_pago = models.ForeignKey(ConceptoPago, on_delete=models.CASCADE)
+    metodo_pago = models.ForeignKey(MetodoPago, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'pago'
+        verbose_name = 'Pago'
+
+    def __str__(self):
+        return f"P:{self.no_pago} R:{self.reservacion.pk}"

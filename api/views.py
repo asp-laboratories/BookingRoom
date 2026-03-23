@@ -4,12 +4,8 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from BookingRoomApp.models import TipoServicio, Cuenta, Trabajador, Rol, EstadoCuenta, TipoCliente, DatosCliente, TipoEquipa
-from .serializers import (
-    TipoServicioSerializer, RolSerializer, EstadoCuentaSerializer,
-    TipoClienteSerializer, CuentaSerializer, CuentaMinimalSerializer,
-    TrabajadorSerializer, DatosClienteSerializer, LoginResponseSerializer, TipoEquipaSerializer
-)
+from BookingRoomApp import models
+from . import serializers, services
 import json
 
 try:
@@ -22,43 +18,44 @@ except:
 
 class ListTipoEquipa(APIView):
     def get(self, request):
-        tipo_equipa = TipoEquipa.objects.all()
-        serializer = TipoEquipaSerializer(tipo_equipa, many=True)
+        tipo_equipa = models.TipoEquipa.objects.all()
+        serializer = serializers.TipoEquipaSerializer(tipo_equipa, many=True)
         return Response(serializer.data)
 
+
 class TipoServicioViewSet(viewsets.ModelViewSet):
-    queryset = TipoServicio.objects.all()
-    serializer_class = TipoServicioSerializer
+    queryset = models.TipoServicio.objects.all()
+    serializer_class = serializers.TipoServicioSerializer
 
 
 class RolViewSet(viewsets.ModelViewSet):
-    queryset = Rol.objects.all()
-    serializer_class = RolSerializer
+    queryset = models.Rol.objects.all()
+    serializer_class = serializers.RolSerializer
 
 
 class EstadoCuentaViewSet(viewsets.ModelViewSet):
-    queryset = EstadoCuenta.objects.all()
-    serializer_class = EstadoCuentaSerializer
+    queryset = models.EstadoCuenta.objects.all()
+    serializer_class = serializers.EstadoCuentaSerializer
 
 
 class TipoClienteViewSet(viewsets.ModelViewSet):
-    queryset = TipoCliente.objects.all()
-    serializer_class = TipoClienteSerializer
+    queryset = models.TipoCliente.objects.all()
+    serializer_class = serializers.TipoClienteSerializer
 
 
 class CuentaViewSet(viewsets.ModelViewSet):
-    queryset = Cuenta.objects.all()
-    serializer_class = CuentaSerializer
+    queryset = models.Cuenta.objects.all()
+    serializer_class = serializers.CuentaSerializer
 
 
 class TrabajadorViewSet(viewsets.ModelViewSet):
-    queryset = Trabajador.objects.select_related('rol', 'cuenta').all()
-    serializer_class = TrabajadorSerializer
+    queryset = models.Trabajador.objects.select_related('rol', 'cuenta').all()
+    serializer_class = serializers.TrabajadorSerializer
 
 
 class DatosClienteViewSet(viewsets.ModelViewSet):
-    queryset = DatosCliente.objects.select_related('tipo_cliente', 'cuenta').all()
-    serializer_class = DatosClienteSerializer
+    queryset = models.DatosCliente.objects.select_related('tipo_cliente', 'cuenta').all()
+    serializer_class = serializers.DatosClienteSerializer
 
 
 @csrf_exempt
@@ -82,8 +79,8 @@ def api_login(request):
             email = decoded.get('email', '')
             
             try:
-                cuenta = Cuenta.objects.get(firebase_uid=firebase_uid)
-            except Cuenta.DoesNotExist:
+                cuenta = models.Cuenta.objects.get(firebase_uid=firebase_uid)
+            except models.Cuenta.DoesNotExist:
                 return JsonResponse({'error': 'Cuenta no registrada en el sistema'}, status=404)
             
             request.session['cuenta_id'] = cuenta.id
@@ -122,8 +119,8 @@ def api_flutter_login(request):
             firebase_uid = decoded['uid']
             
             try:
-                cuenta = Cuenta.objects.get(firebase_uid=firebase_uid)
-            except Cuenta.DoesNotExist:
+                cuenta = models.Cuenta.objects.get(firebase_uid=firebase_uid)
+            except models.Cuenta.DoesNotExist:
                 return JsonResponse({'error': 'Cuenta no registrada en el sistema'}, status=404)
             
             request.session['cuenta_id'] = cuenta.id
@@ -139,14 +136,14 @@ def api_flutter_login(request):
             }
             
             try:
-                trabajador = Trabajador.objects.select_related('rol').get(cuenta_id=cuenta.id)
+                trabajador = models.Trabajador.objects.select_related('rol').get(cuenta_id=cuenta.id)
                 user_data['tipo'] = 'trabajador'
                 user_data['rol'] = trabajador.rol.codigo
                 user_data['nombre'] = trabajador.nombre
-            except Trabajador.DoesNotExist:
+            except models.Trabajador.DoesNotExist:
                 pass
             
-            serializer = LoginResponseSerializer(user_data)
+            serializer = serializers.LoginResponseSerializer(user_data)
             return JsonResponse({'success': True, 'user': serializer.data})
             
         except Exception as e:
@@ -176,9 +173,9 @@ def api_signup(request):
             email = decoded.get('email', '')
             display_name = decoded.get('name', '')
             
-            estado_cuenta = EstadoCuenta.objects.filter(codigo='ACT').first()
+            estado_cuenta = models.EstadoCuenta.objects.filter(codigo='ACT').first()
             
-            cuenta, created = Cuenta.objects.get_or_create(
+            cuenta, created = models.Cuenta.objects.get_or_create(
                 firebase_uid=firebase_uid,
                 defaults={
                     'nombre_usuario': display_name,

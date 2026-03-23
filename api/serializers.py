@@ -1,14 +1,12 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from BookingRoomApp.models import TipoServicio, Rol, EstadoCuenta, TipoCliente, Cuenta, Trabajador, DatosCliente, TipoEquipa
+from BookingRoomApp import models
 
 
 class TipoEquipaSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TipoEquipa
+        model = models.TipoEquipa
         fields = '__all__'
-
-
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -37,37 +35,37 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class TipoServicioSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TipoServicio
+        model = models.TipoServicio
         fields = '__all__'
 
 
 class RolSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Rol
+        model = models.Rol
         fields = '__all__'
 
 
 class EstadoCuentaSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EstadoCuenta
+        model = models.EstadoCuenta
         fields = '__all__'
 
 
 class TipoClienteSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TipoCliente
+        model = models.TipoCliente
         fields = '__all__'
 
 
 class CuentaSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Cuenta
+        model = models.Cuenta
         fields = '__all__'
 
 
 class CuentaMinimalSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Cuenta
+        model = models.Cuenta
         fields = ['id', 'nombre_usuario', 'correo_electronico']
 
 
@@ -77,7 +75,7 @@ class TrabajadorSerializer(serializers.ModelSerializer):
     cuenta_nombre = serializers.CharField(source='cuenta.nombre_usuario', read_only=True)
     
     class Meta:
-        model = Trabajador
+        model = models.Trabajador
         fields = '__all__'
 
 
@@ -86,7 +84,7 @@ class DatosClienteSerializer(serializers.ModelSerializer):
     cuenta_nombre = serializers.CharField(source='cuenta.nombre_usuario', read_only=True)
     
     class Meta:
-        model = DatosCliente
+        model = models.DatosCliente
         fields = '__all__'
 
 
@@ -96,3 +94,147 @@ class LoginResponseSerializer(serializers.Serializer):
     email = serializers.EmailField()
     tipo = serializers.CharField()
     rol = serializers.CharField(allow_null=True)
+
+
+class EncuestaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Encuesta
+        fields = '__all__'
+
+
+class ReservacionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Reservacion
+        fields = '__all__'
+
+
+class RegistrEstadReservaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.RegistrEstadReserva
+        fields = '__all__'
+
+
+class ReservaEquipaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ReservaEquipa
+        fields = '__all__'
+
+
+class PagoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Pago
+        fields = '__all__'
+
+
+class ConceptoPagoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ConceptoPago
+        fields = '__all__'
+
+
+class MetodoPagoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.MetodoPago
+        fields = '__all__'
+
+
+class SerivicioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Servicio
+        fields = '__all__'
+
+
+class EstadoReservaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.EstadoReserva
+        fields = '__all__'
+
+
+class EquipamientoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Equipamiento
+        fields = '__all__'
+
+
+class InventarioEquipaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.InventarioEquipa
+        fields = '__all__'
+
+
+class EstadoEquipaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.EstadoEquipa
+        fields = '__all__'
+
+
+class EstadoSalonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.EstadoSalon
+        fields = '__all__'
+
+
+class RegistrEstadSalonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.RegistrEstadSalon
+        fields = '__all__'
+
+
+class SalonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Salon
+        fields = '__all__'
+
+
+class TipoEventoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.TipoEvento
+        fields = '__all__'
+
+
+class MontajeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Montaje
+        fields = '__all__'
+
+
+class TipoMontajeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.TipoMontaje
+        fields = '__all__'
+
+
+class MobiliarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Mobiliario
+        fields = '__all__'
+
+
+class MontajeMobiliarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.MontajeMobiliario
+        fields = '__all__'
+
+
+class InventarioMobSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.InventarioMob
+        fields = '__all__'
+
+
+class EstadoMobilSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.EstadoMobil
+        fields = '__all__'
+
+
+class CaracterMobilSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.CaracterMobil
+        fields = '__all__'
+
+
+class TipoMobilSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.TipoMobil
+        fields = '__all__'
