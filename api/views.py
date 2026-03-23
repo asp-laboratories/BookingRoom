@@ -58,6 +58,42 @@ class DatosClienteViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.DatosClienteSerializer
 
 
+class EncuestaViewSet(viewsets.ModelViewSet):
+    queryset = models.Encuesta.objects.select_related('reservacion').all()
+    serializer_class = serializers.EncuestaSerializer
+
+
+class RegistrEstadReservaViewSet(viewsets.ModelViewSet):
+    queryset = models.RegistrEstadReserva.objects.select_related('reservacion', 'estado_reserva').all()
+    serializer_class = serializers.RegistrEstadReservaSerializer
+
+
+class EquipamientoViewSet(viewsets.ModelViewSet):
+    queryset = models.Equipamiento.objects.select_related('tipo_equipa').all()
+    serializer_class = serializers.EquipamientoSerializer
+
+
+class InventarioEquipaViewSet(viewsets.ModelViewSet):
+    queryset = models.InventarioEquipa.objects.select_related('equipamiento', 'estado_equipa').all()
+    serializer_class = serializers.InventarioEquipaSerializer
+
+
+class ReservaEquipaViewSet(viewsets.ModelViewSet):
+    queryset = models.ReservaEquipa.objects.select_related('reservacion', 'equipamiento').all()
+    serializer_class = serializers.ReservaEquipaSerializer
+
+
+class ServicioViewSet(viewsets.ModelViewSet):
+    queryset = models.Servicio.objects.select_related('tipo_servicio').all()
+    serializer_class = serializers.SerivicioSerializer
+
+
+class PagoViewSet(viewsets.ModelViewSet):
+    queryset = models.Pago.objects.select_related('metodo_pago', 'concepto_pago', 'reservacion').all()
+    serializer_class = serializers.PagoSerializer
+
+
+
 @csrf_exempt
 def api_login(request):
     if request.method == 'POST':
