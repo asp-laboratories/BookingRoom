@@ -19,6 +19,7 @@ dist/
 build/
 media/
 staticfiles/
+*migrations/
 
 # Entorno
 .env
