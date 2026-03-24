@@ -238,3 +238,16 @@ class TipoMobilSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.TipoMobil
         fields = '__all__'
+
+
+# Aca van todos los personalizados chamos cuidado con estos q estan canijos
+class MobiliariosMontajeSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    cantidad = serializers.IntegerField()
+
+class MontajeCreacionSerializer(serializers.Serializer):
+    salon = serializers.IntegerField()
+    tipo_montaje = serializers.IntegerField()
+    mobiliarios = MobiliariosMontajeSerializer(many=True)
+
+    

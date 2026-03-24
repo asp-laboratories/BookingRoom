@@ -1,13 +1,12 @@
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from BookingRoomApp import models
-from . import serializers, services
-from BookingRoomApp import models
-from . import serializers, services
+from . import serializers
+from .services import montajeService, reservacionesService
 import json
 
 try:
@@ -27,7 +26,6 @@ class ListTipoEquipa(APIView):
         return Response(serializer.data)
 
 
-
 class TipoServicioViewSet(viewsets.ModelViewSet):
     queryset = models.TipoServicio.objects.all()
     serializer_class = serializers.TipoServicioSerializer
@@ -38,13 +36,9 @@ class TipoServicioViewSet(viewsets.ModelViewSet):
 class RolViewSet(viewsets.ModelViewSet):
     queryset = models.Rol.objects.all()
     serializer_class = serializers.RolSerializer
-    queryset = models.Rol.objects.all()
-    serializer_class = serializers.RolSerializer
 
 
 class EstadoCuentaViewSet(viewsets.ModelViewSet):
-    queryset = models.EstadoCuenta.objects.all()
-    serializer_class = serializers.EstadoCuentaSerializer
     queryset = models.EstadoCuenta.objects.all()
     serializer_class = serializers.EstadoCuentaSerializer
 
@@ -52,20 +46,14 @@ class EstadoCuentaViewSet(viewsets.ModelViewSet):
 class TipoClienteViewSet(viewsets.ModelViewSet):
     queryset = models.TipoCliente.objects.all()
     serializer_class = serializers.TipoClienteSerializer
-    queryset = models.TipoCliente.objects.all()
-    serializer_class = serializers.TipoClienteSerializer
 
 
 class CuentaViewSet(viewsets.ModelViewSet):
     queryset = models.Cuenta.objects.all()
     serializer_class = serializers.CuentaSerializer
-    queryset = models.Cuenta.objects.all()
-    serializer_class = serializers.CuentaSerializer
 
 
 class TrabajadorViewSet(viewsets.ModelViewSet):
-    queryset = models.Trabajador.objects.select_related('rol', 'cuenta').all()
-    serializer_class = serializers.TrabajadorSerializer
     queryset = models.Trabajador.objects.select_related('rol', 'cuenta').all()
     serializer_class = serializers.TrabajadorSerializer
 
@@ -74,39 +62,82 @@ class DatosClienteViewSet(viewsets.ModelViewSet):
     queryset = models.DatosCliente.objects.select_related('tipo_cliente', 'cuenta').all()
     serializer_class = serializers.DatosClienteSerializer
 
+
 class MobiliarioViewSet(viewsets.ModelViewSet):
-    queryset = models.Mobiliario.objects.all()
+    queryset = models.Mobiliario.objects.prefetch_related('caracter_mobi').all()
     serializer_class = serializers.MobiliarioSerializer
+
 
 class InventarioMobViewSet(viewsets.ModelViewSet):
     queryset = models.InventarioMob.objects.all()
     serializer_class = serializers.InventarioMobSerializer
 
+
 class CaracterMobilViewSet(viewsets.ModelViewSet):
     queryset = models.CaracterMobil.objects.all()
     serializer_class = serializers.CaracterMobilSerializer
+
 
 class SalonViewSet(viewsets.ModelViewSet):
     queryset = models.Salon.objects.all()
     serializer_class = serializers.SalonSerializer
 
+
 class RegistrEstadSalonViewSet(viewsets.ModelViewSet):
     queryset = models.RegistrEstadSalon.objects.all()
     serializer_class = serializers.RegistrEstadSalonSerializer
 
+
+# la logica de este view set se repite en varias zonas
 class MontajeViewSet(viewsets.ModelViewSet):
     queryset = models.Montaje.objects.all()
-    serializer_class = serializers.MontajeSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            # para creacion personalizada, entrada de datos en tabla motanej mobiliario
+            return serializers.MontajeCreacionSerializer
+        
+        # serializer normalito par demas accionesaparte de crear
+        return serializers.MontajeSerializer
+
+    # se sobrescribe la creacion de acuerdo a lo q queremos q haga
+    def create(self, request, *args, **kwargs):
+        validador = self.get_serializer(data=request.data)
+        validador.is_valid(raise_exception=True)
+
+        try:
+            new_montaje = montajeService.crear_montaje(validador.validated_data)
+            respuesta = serializers.MontajeSerializer(new_montaje)
+            return Response(respuesta.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error":str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class MontajeMobiliarioViewSet(viewsets.ModelViewSet):
     queryset = models.MontajeMobiliario.objects.all()
     serializer_class = serializers.MontajeMobiliarioSerializer
 
+
 class ReservacionViewSet(viewsets.ModelViewSet):
-    queryset = models.Reservacion.objects.all()
+    queryset = models.Reservacion.objects.select_related('cliente', 'montaje', 'estado_reserva', 'tipo_evento').prefetch_related('servicios', 'trabajador').all()
     serializer_class = serializers.ReservacionSerializer
 
+    def get_serializer_class(self):
+        if self.action == "creation":
+            return serializers.ReservacionCreacionSerializer
+        else:
+            return serializers.ReservacionSerializer
+        
+    def create(self, request, *args, **kwargs):
+        validador = self.get_serializer(data=request.data)
+        validador.is_valid(raise_exception=True)
 
+        try:
+            new_reservacion = reservacionesService.crear_reseracion(validador.validated_data)
+            respeusta = serializers.ReservacionSerializer(new_reservacion)
+            return Response(respeusta, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error":str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class EncuestaViewSet(viewsets.ModelViewSet):
@@ -161,7 +192,7 @@ def api_login(request):
             if len(token) > 10000:
                 return JsonResponse({'error': 'Token inválido'}, status=400)
             
-            decoded = auth.verify_id_token(token)
+            decoded = auth.verify_id_token(token, clock_skew_seconds=10)
             firebase_uid = decoded['uid']
             email = decoded.get('email', '')
             
