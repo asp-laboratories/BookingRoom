@@ -11,6 +11,8 @@ class TipoServicio(models.Model):
     class Meta:
         db_table = 'tipo_servicio'
         verbose_name = "Tipo de servicio"
+        verbose_name_plural = "Tipos de servicios"
+        
     
     def __str__(self):
         return self.nombre
@@ -23,6 +25,7 @@ class Rol(models.Model):
     class Meta:
         db_table = 'rol'
         verbose_name = "Rol"
+        verbose_name_plural = "Roles"
 
     def __str__(self):
         return self.codigo
@@ -35,6 +38,7 @@ class EstadoCuenta(models.Model):
     class Meta:
         db_table = 'estado_cuenta'
         verbose_name = "Estado de cuenta"
+        verbose_name_plural = "Estados de cuenta"
 
     def __str__(self):
         return self.codigo
@@ -48,6 +52,7 @@ class TipoCliente(models.Model):
     class Meta:
         db_table = 'tipo_cliente'
         verbose_name = "Tipo de cliente"
+        verbose_name_plural = "Tipos de clientes"
 
     def __str__(self):
         return self.nombre
@@ -56,13 +61,13 @@ class TipoCliente(models.Model):
 class Cuenta(models.Model):
     nombre_usuario = models.CharField(max_length=100)
     correo_electronico = models.EmailField(unique=True)
-    disposicion = models.BooleanField(default=True)
     firebase_uid = models.CharField(max_length=255, unique=True, null=True, blank=True)
     estado_cuenta = models.ForeignKey(EstadoCuenta, on_delete=models.PROTECT)
 
     class Meta:
         db_table = 'cuenta'
         verbose_name = "Cuenta"
+        verbose_name_plural = "Cuentas"
 
     def __str__(self):
         return self.correo_electronico
@@ -71,10 +76,9 @@ class Cuenta(models.Model):
 class Trabajador(models.Model):
     no_empleado = models.CharField(max_length=10, primary_key=True)
     rfc = models.CharField(max_length=13)
-    nombre_fiscal = models.CharField(max_length=150)
     nombre = models.CharField(max_length=150)
     apellidoPaterno = models.CharField(max_length=150)
-    apelidoMaterno = models.CharField(max_length=150)
+    apelidoMaterno = models.CharField(max_length=150, blank=True, null=True)
     telefono = models.CharField(max_length=15)
     correo_electronico = models.EmailField(unique=True)
     rol = models.ForeignKey(Rol, on_delete=models.PROTECT)
@@ -83,6 +87,7 @@ class Trabajador(models.Model):
     class Meta:
         db_table = 'trabajador'
         verbose_name = "Trabajador"
+        verbose_name_plural = "Trabajadores"
 
     def __str__(self):
         return self.no_empleado
@@ -105,6 +110,7 @@ class DatosCliente(models.Model):
     class Meta:
         db_table = 'datos_cliente'
         verbose_name = "Datos del cliente"
+        verbose_name_plural = "Datos de clientes"
 
     def __str__(self):
         return self.correo_electronico
@@ -124,6 +130,7 @@ class EstadoMobil(models.Model):
     class Meta:
         db_table = 'estado_mobil'
         verbose_name = "Estado de mobiliario"
+        verbose_name_plural = "Estados de mobiliario"
 
     def __str__(self):
         return self.codigo
@@ -135,6 +142,7 @@ class CaracterMobil(models.Model):
     class Meta:
         db_table = 'caracter_mobi'
         verbose_name = "Característica de mobiliario"
+        verbose_name_plural = "Caracteristicas de mobiliarios"
 
     def __str__(self):
         return self.descripcion
@@ -147,6 +155,7 @@ class TipoMobil(models.Model):
     class Meta:
         db_table = 'tipo_mobil'
         verbose_name = "Tipo de mobiliario"
+        verbose_name_plural = "Tipos de mobiliario"
 
     def __str__(self):
         return self.nombre
@@ -159,6 +168,7 @@ class TipoMontaje(models.Model):
     class Meta:
         db_table = 'tipo_montaje'
         verbose_name = "Tipo de montaje"
+        verbose_name_plural = "Tipos de montaje"
 
     def __str__(self):
         return self.nombre
@@ -171,6 +181,7 @@ class TipoEvento(models.Model):
     class Meta:
         db_table = 'tipo_evento'
         verbose_name = "Tipo de evento"
+        verbose_name_plural = "Tipos de evento"
 
     def __str__(self):
         return self.nombre
@@ -182,7 +193,8 @@ class EstadoReserva(models.Model):
 
     class Meta:
         db_table = 'estado_reserva'
-        verbose_name = "Estado de reserva"
+        verbose_name = "Estado de reservacion"
+        verbose_name_plural = "Estados de reservacion"
 
     def __str__(self):
         return self.codigo
@@ -195,6 +207,7 @@ class EstadoSalon(models.Model):
     class Meta:
         db_table = 'estado_salon'
         verbose_name = "Estado de salón"
+        verbose_name_plural = "Estados de salon"
 
     def __str__(self):
         return self.codigo
@@ -207,6 +220,7 @@ class TipoEquipa(models.Model):
     class Meta:
         db_table = 'tipo_equipa'
         verbose_name = "Tipo de equipamiento"
+        verbose_name_plural = "Tipos de equipamiento"
 
     def __str__(self):
         return self.nombre
@@ -219,6 +233,7 @@ class EstadoEquipa(models.Model):
     class Meta:
         db_table = 'estado_equipa'
         verbose_name = "Estado de equipamiento"
+        verbose_name_plural = "Estados de equipamiento"
 
     def __str__(self):
         return self.codigo
@@ -231,6 +246,7 @@ class ConceptoPago(models.Model):
     class Meta:
         db_table = 'concepto_pago'
         verbose_name = "Concepto de pago"
+        verbose_name_plural = "Conceptos de pago"
 
     def __str__(self):
         return self.codigo
@@ -243,6 +259,7 @@ class MetodoPago(models.Model):
     class Meta:
         db_table = 'metodo_pago'
         verbose_name = "Método de pago"
+        verbose_name_plural = "Metodos de pago"
 
     def __str__(self):
         return self.codigo
@@ -264,19 +281,21 @@ class Salon(models.Model):
     class Meta:
         db_table = 'salon'
         verbose_name = 'Salon'
+        verbose_name_plural = "Salones"
 
     def __str__(self):
         return self.nombre
 
 
 class Montaje(models.Model):
-    costo = models.DecimalField(max_digits=10, decimal_places=2)
+    costo = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     salon = models.ForeignKey(Salon, on_delete=models.PROTECT)
     tipo_montaje = models.ForeignKey(TipoMontaje, on_delete=models.PROTECT)
 
     class Meta:
         db_table = 'montaje'
         verbose_name = 'Montaje'
+        verbose_name_plural = "Montajes"
 
     def __str__(self):
         return f"S:{self.salon.pk} TM:{self.tipo_montaje.pk}"
@@ -292,13 +311,14 @@ class Servicio(models.Model):
     class Meta:
         db_table = 'servicio'
         verbose_name = 'Servicio'
+        verbose_name_plural = "Servicios"
 
     def __str__(self):
         return str(self.pk)
 
 
 class Reservacion(models.Model):
-    nombreEvento = models.CharField(max_length=100, null=True)
+    nombreEvento = models.CharField(max_length=100, blank=True, default="")
     descripEvento = models.CharField(max_length=550)
     estimaAsistentes = models.IntegerField()
     fechaReservacion = models.DateField(auto_now_add=True)
@@ -312,12 +332,13 @@ class Reservacion(models.Model):
     montaje = models.ForeignKey(Montaje, on_delete=models.PROTECT)
     estado_reserva = models.ForeignKey(EstadoReserva, on_delete=models.PROTECT)
     tipo_evento = models.ForeignKey(TipoEvento, on_delete=models.PROTECT)
-    reserva_servicio = models.ManyToManyField(Servicio, null=True)
-    traba_reserva = models.ManyToManyField(Trabajador, null=True)
+    trabajador = models.ForeignKey(Trabajador, on_delete=models.PROTECT, default=1)
+    reserva_servicio = models.ManyToManyField(Servicio)
 
     class Meta:
         db_table = 'reservacion'
         verbose_name = 'Reservacion'
+        verbose_name_plural = "Reservaciones"
 
     def __str__(self):
         return str(self.pk)
@@ -334,6 +355,7 @@ class Mobiliario(models.Model):
     class Meta:
         db_table = 'mobiliario'
         verbose_name = 'Mobiliario'
+        verbose_name_plural = "Mobiliarios"
 
     def __str__(self):
         return self.nombre
@@ -346,8 +368,9 @@ class MontajeMobiliario(models.Model):
     mobiliario = models.ForeignKey(Mobiliario, on_delete=models.PROTECT)
 
     class Meta:
-        db_table = 'montaje_mobilairio'
-        verbose_name = 'Mobiliarios de un Montaje'
+        db_table = 'montaje_mobiliario'
+        verbose_name = 'Mobiliarios de un montaje'
+        verbose_name_plural = "Mobilarios de montajes"
 
     def __str__(self):
         return f"Mob:{self.montaje.pk} Mon:{self.mobiliario.pk}"
@@ -363,6 +386,7 @@ class Equipamiento(models.Model):
     class Meta:
         db_table = 'equipamiento'
         verbose_name = 'Equipamiento'
+        verbose_name_plural = "Equipamientos"
     
     def __str__(self):
         return str(self.pk)
@@ -375,7 +399,8 @@ class InventarioEquipa(models.Model):
 
     class Meta:
         db_table = 'inventario_equipa'
-        verbose_name = 'Estado de Equipamientos'
+        verbose_name = 'Inventario de equipamiento'
+        verbose_name_plural = "Inventarios de equipamiento"
 
         constraints = [
             models.UniqueConstraint(
@@ -395,7 +420,8 @@ class InventarioMob(models.Model):
 
     class Meta:
         db_table = 'inventario_mobil'
-        verbose_name = "Estado de Mobilarios"
+        verbose_name = "Inventario de mobilario"
+        verbose_name_plural = "Inventarios de mobiliario"
 
         constraints = [
             models.UniqueConstraint(
@@ -415,7 +441,8 @@ class ReservaEquipa(models.Model):
 
     class Meta:
         db_table = 'reserva_equipa'
-        verbose_name = 'Equipamientos de Reserva'
+        verbose_name = 'Equipamientos de reservacion'
+        verbose_name_plural = "Equipamientos de reservaciones"
 
     def __str__(self):
         return f"R:{self.reservacion.pk} E:{self.equipamiento.pk} C:{self.cantidad}"
@@ -428,7 +455,8 @@ class RegistrEstadReserva(models.Model):
 
     class Meta:
         db_table = 'registr_esta_reserva'
-        verbose_name = 'Registro de estados de Reservacion'
+        verbose_name = 'Registro de estado de reservacion'
+        verbose_name_plural = "Registros de estados de reservaciones"
 
     def __str__(self):
         return f"R:{self.reservacion.pk} E:{self.estado_reserva.pk}"
@@ -441,7 +469,8 @@ class RegistrEstadSalon(models.Model):
 
     class Meta:
         db_table = 'registr_esta_salon'
-        verbose_name = 'Registro de estados de Salon'
+        verbose_name = 'Registro de estado de salon'
+        verbose_name_plural = "Registros de estados de salones"
     
     def __str__(self):
         return f"S:{self.salon.pk} E:{self.estado_salon.pk}"
@@ -458,6 +487,7 @@ class Encuesta(models.Model):
     class Meta:
         db_table = 'encuesta'
         verbose_name = 'Encuesta'
+        verbose_name_plural = "Encuestas"
 
     def __str__(self):
         return str(self.pk)
@@ -477,6 +507,7 @@ class Pago(models.Model):
     class Meta:
         db_table = 'pago'
         verbose_name = 'Pago'
+        verbose_name_plural = "Pagos"
 
     def __str__(self):
         return f"P:{self.no_pago} R:{self.reservacion.pk}"
