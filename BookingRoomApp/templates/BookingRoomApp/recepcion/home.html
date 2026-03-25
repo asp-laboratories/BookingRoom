@@ -1,22 +1,30 @@
-{% extends "BookingRoomApp/base.html" %} {% block inicio %}
+{% extends "BookingRoomApp/base/base.html" %} {% block inicio %}
 
-<h1 class="titulo-seccion ">Bienvenido {{ cuenta.nombre_usuario }} ¿Que vamos a hacer hoy?</h1>
-<div class="parent"  style="margin-top: 20px;">
+<h1 class="titulo-seccion">
+  Bienvenido {{ cuenta.nombre_usuario }} ¿Que vamos a hacer hoy?
+</h1>
+<div class="parent" style="margin-top: 20px">
   <div class="div1" id="calendar"></div>
   <div class="div2">
     <span class="titulo-solicitud">Proximos eventos</span>
-    <div class="contenedor-solicitud">
-      <span>Evento 1</span>
-      <button class="boton-accion boton-beo" onclick="abrirModalBEO()">
+
+    
+    {% for reservacion in reservaciones %}
+          <div class="contenedor-solicitud"  id="cerrar-contenedor">
+      <span> {{reservacion.nombreEvento}} </span>
+      <button class="boton-accion boton-beo">
         Ver BEO
       </button>
     </div>
+    {% endfor %}
+      
+
   </div>
   <div class="div3">
     <h2 class="label-buscar">Buscar</h2>
     <div class="buscar-row">
       <input class="buscar-fecha" type="date" />
-      <button>Buscar</button>
+      <button id="buscar-manual-fechas" onclick="remover()">Buscar</button>
     </div>
   </div>
   <div class="div5">

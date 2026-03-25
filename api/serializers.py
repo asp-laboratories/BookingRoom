@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.db.models import Sum
 from BookingRoomApp import models
 
 
@@ -119,11 +120,47 @@ class ReservaEquipaSerializer(serializers.ModelSerializer):
         model = models.ReservaEquipa
         fields = '__all__'
 
+class FechasReservaciones(serializers.ModelSerializer):
+    class Meta:
+        model = models.Reservacion
+        fields = ['nombreEvento','fechaEvento',]
 
 class PagoSerializer(serializers.ModelSerializer):
+    no_pago = serializers.IntegerField(read_only=True)
+    saldo = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    concepto_pago = serializers.CharField(write_only=True, required=False)
+    metodo_pago = serializers.CharField(write_only=True, required=False)
+    
     class Meta:
         model = models.Pago
-        fields = '__all__'
+        fields = ['nota', 'monto', 'saldo', 'no_pago', 'reservacion', 'concepto_pago', 'metodo_pago', 'fecha', 'hora']
+        read_only_fields = ['fecha', 'hora', 'no_pago', 'saldo']
+    
+    def create(self, validated_data):
+        concepto_codigo = validated_data.pop('concepto_pago', None)
+        metodo_codigo = validated_data.pop('metodo_pago', None)
+        
+        if concepto_codigo:
+            validated_data['concepto_pago'] = models.ConceptoPago.objects.get(codigo=concepto_codigo)
+        if metodo_codigo:
+            validated_data['metodo_pago'] = models.MetodoPago.objects.get(codigo=metodo_codigo)
+        
+        ultimo = models.Pago.objects.order_by('-no_pago').first()
+        validated_data['no_pago'] = (ultimo.no_pago + 1) if ultimo else 1
+        
+        reserva = validated_data['reservacion']
+        monto = validated_data['monto']
+        pagos_previos = models.Pago.objects.filter(reservacion=reserva).count()
+        
+        if pagos_previos >= 2:
+            raise serializers.ValidationError({'error': 'Esta reservación ya tiene los 2 pagos permitidos'})
+        
+        if pagos_previos == 0:
+            validated_data['saldo'] = reserva.total - monto
+        else:
+            validated_data['saldo'] = 0
+        
+        return super().create(validated_data)
 
 
 class ConceptoPagoSerializer(serializers.ModelSerializer):

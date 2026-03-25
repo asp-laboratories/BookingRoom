@@ -466,6 +466,7 @@ class Encuesta(models.Model):
 class Pago(models.Model):
     nota = models.CharField(max_length=100)
     monto = models.DecimalField(max_digits=10, decimal_places=2)
+    saldo = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     fecha = models.DateField(auto_now=True)
     hora = models.TimeField(auto_now=True)
     no_pago = models.IntegerField()

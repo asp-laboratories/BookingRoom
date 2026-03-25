@@ -1,152 +1,185 @@
 .pagos-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f5f5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 100px);
-    padding: 20px;
-    color: #9c5c31;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 100px);
+  padding: 20px;
+  color: #9c5c31;
 }
 
 .pagos-container {
-    margin-top: 100px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    width: 100%;
-    max-width: 100%;
-    padding: 50px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  padding: 0px 70px 0px 70px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .pagos-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .pagos-h2 {
-    margin: 0;
-    font-size: 24px;
-    font-weight: bold;
+  margin: 0;
+  font-size: 24px;
+  font-weight: bold;
 }
 
-.pagos-row {
-    display: flex;
-    gap: 40px;
-    margin-bottom: 20px;
+.pagos-layout {
+  display: flex;
+  gap: 50px;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
-.pagos-field-group {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+.pagos-busqueda {
+  flex: 0 0 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.pagos-label {
-    margin-bottom: 8px;
-    font-size: 16px;
+.pagos-datos-reservacion {
+  flex: 1;
 }
 
-.pagos-input-text {
-    background-color: #d9d9d9;
-    border: none;
-    border-radius: 5px;
-    padding: 12px;
-    outline: none;
-}
-
-.pagos-saldo-text {
-    margin-top: 15px;
-    font-size: 18px;
-}
-
-.pagos-section-title {
-    margin: 25px 0 15px 0;
-    font-size: 18px;
-}
-
-.pagos-options-group {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.pagos-option {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-}
-
-.pagos-input-radio {
-    accent-color: #9c5c31;
-    width: 18px;
-    height: 18px;
-}
-
-.pagos-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 40px;
-    gap: 20px;
-}
-
-.pagos-btn {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.pagos-btn:hover {
-    opacity: 0.9;
-}
-
-.pagos-btn-confirm {
-    background-color: #2e9d36;
-}
-
-.pagos-btn-cancel {
-    background-color: #c9341d;
+.pagos-datos-reservacion .pagos-field-group {
+  margin-bottom: 15px;
 }
 
 @media (max-width: 768px) {
-    .pagos-container {
-        width: 100%;
-        padding: 10px;
-    }
+  .pagos-layout {
+    flex-direction: column;
+    gap: 20px;
+  }
 
-    .pagos-row {
-        flex-direction: column;
-        gap: 15px;
-    }
+  .pagos-busqueda {
+    flex: none;
+  }
+}
 
-    .pagos-header {
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
-    }
+.pagos-row {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 20px;
+}
 
-    .pagos-actions {
-        flex-direction: column;
-    }
+.pagos-field-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
 
-    .pagos-btn {
-        width: 100%;
-    }
+.pagos-label {
+  margin-bottom: 8px;
+  font-size: 16px;
+}
 
-    .pagos-options-group {
-        flex-direction: column;
-        gap: 10px;
-    }
+.pagos-input-text {
+  background-color: #d9d9d9;
+  border: none;
+  border-radius: 5px;
+  padding: 12px;
+  outline: none;
+}
+
+.pagos-saldo-text {
+  margin-top: 15px;
+  font-size: 18px;
+}
+
+.pagos-section-title {
+  margin: 25px 0 15px 0;
+  font-size: 18px;
+}
+
+.pagos-options-group {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.pagos-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.pagos-input-radio {
+  accent-color: #9c5c31;
+  width: 18px;
+  height: 18px;
+}
+
+.pagos-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  gap: 20px;
+}
+
+.pagos-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.pagos-btn:hover {
+  opacity: 0.9;
+}
+
+.pagos-btn-confirm {
+  background-color: #2e9d36;
+}
+
+.pagos-btn-cancel {
+  background-color: #c9341d;
+}
+
+@media (max-width: 768px) {
+  .pagos-container {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .pagos-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .pagos-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .pagos-actions {
+    flex-direction: column;
+  }
+
+  .pagos-btn {
+    width: 100%;
+  }
+
+  .pagos-options-group {
+    flex-direction: column;
+    gap: 10px;
+  }
 }

@@ -1,5 +1,5 @@
 .titulo-seccion{
-  margin: 20px 50px 20px;
+  margin: 50px 50px 50px;
 }
 
 .parent {
@@ -130,12 +130,14 @@
     padding: 10px;
     border: 1px solid #000;
     border-radius: 10px;
+    width: 100%;
 }
 
 .buscar-row{
     display: flex;
     gap: 10px;
     margin: 5px;
+    width: 70%;
 }
 
 @media (max-width: 768px) {

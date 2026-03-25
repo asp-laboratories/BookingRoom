@@ -1,7 +1,7 @@
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from BookingRoomApp import models
@@ -109,6 +109,8 @@ class ReservacionViewSet(viewsets.ModelViewSet):
 
 
 
+
+
 class EncuestaViewSet(viewsets.ModelViewSet):
     queryset = models.Encuesta.objects.select_related('reservacion').all()
     serializer_class = serializers.EncuestaSerializer
@@ -144,6 +146,58 @@ class PagoViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.PagoSerializer
 
 
+class BuscarReservacionView(APIView):
+    def get(self, request):
+        numero = request.GET.get('numero')
+        if not numero:
+            return Response({'error': 'Número de reservación requerido'}, status=400)
+        
+        try:
+            reservacion = models.Reservacion.objects.select_related(
+                'cliente', 'estado_reserva'
+            ).get(pk=numero)
+        except models.Reservacion.DoesNotExist:
+            return Response({'error': 'Reservación no encontrada'}, status=404)
+        
+        # pagos_realizados = models.Pago.objects.filter(reservacion=reservacion).aggregate(
+        #     total_pagado=models.Sum('monto')
+        # )['total_pagado'] or 0
+        
+        # saldo_restante = reservacion.total - pagos_realizados
+        
+        return Response({
+            'id': reservacion.id,
+            'cliente': reservacion.cliente.nombre,
+            'nombre_evento': reservacion.nombreEvento,
+            'descripcion': reservacion.descripEvento,
+            'subtotal': str(reservacion.subtotal),
+            'total': str(reservacion.total),
+            'saldo_restante': 0,
+            'estado': reservacion.estado_reserva.codigo
+        })
+
+class ListarReservacionesView(APIView):
+    def get(self, request):
+        reservaciones = models.Reservacion.objects.all()
+        data = serializers.ReservacionSerializers(reservaciones, many = True).data
+        return Response(data)
+
+class LlenarCalendarioReservaciones(APIView):
+    def get(self, request):
+        from datetime import datetime, date
+        reservaciones = models.Reservacion.objects.all()
+        
+        eventos = []
+        for reservacion in reservaciones:
+            start = datetime.combine(reservacion.fechaEvento, reservacion.horaInicio)
+            end = datetime.combine(reservacion.fechaEvento, reservacion.horaFin)
+            eventos.append({
+                'title': reservacion.nombreEvento,
+                'start': start.isoformat(),
+                'end': end.isoformat(),
+            })
+        
+        return Response(eventos)
 
 @csrf_exempt
 def api_login(request):
@@ -184,7 +238,7 @@ def api_login(request):
             return JsonResponse({'error': str(e)}, status=400)
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)
-
+    
 
 @csrf_exempt
 def api_flutter_login(request):

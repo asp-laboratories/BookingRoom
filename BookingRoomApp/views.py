@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
-from .models import Cuenta, Trabajador, Rol, EstadoCuenta, TipoServicio, TipoEquipa
+from .models import Cuenta, Trabajador, Rol, EstadoCuenta, TipoServicio, TipoEquipa, Reservacion
 
 try:
     import firebase_admin
@@ -50,26 +50,51 @@ def require_login(view_func):
 
 
 def login(request):
-    return render(request, 'BookingRoomApp/login.html')
+    return render(request, 'BookingRoomApp/auth/login.html')
 
 
 def sign_up(request):
-    return render(request, 'BookingRoomApp/sign_up.html')
+    return render(request, 'BookingRoomApp/auth/sign_up.html')
 
 
 def home(request):
     cuenta, rol = get_cuenta_and_rol(request)
     if not cuenta:
         return HttpResponseRedirect(reverse('login'))
+
     
-    return render(request, 'BookingRoomApp/home.html', {
+    return render(request, 'BookingRoomApp/recepcion/home.html', {
         'cuenta': cuenta,
         'rol': rol
     })
 
+class Home(generic.View):
+    template_name = "BookingRoomApp/recepcion/home.html"
+    context = {}
 
-class Reservacion(generic.View):
-    template_name = "BookingRoomApp/reservacion.html"
+    def get(self, request):
+        cuenta, rol = get_cuenta_and_rol(request)
+        if not cuenta:
+            return HttpResponseRedirect(reverse('login'))
+
+        try:
+            trabajador = Trabajador.objects.get(cuenta=cuenta)
+        except Trabajador.DoesNotExist:
+            trabajador = None
+
+        reservaciones = Reservacion.objects.all()[:10]
+
+        context = {
+            "cuenta": cuenta,
+            "trabajador": trabajador,
+            'rol': rol,
+            'reservaciones': reservaciones,
+        }
+        return render(request, self.template_name, context)
+
+
+class ReservacionView(generic.View):
+    template_name = "BookingRoomApp/recepcion/reservacion.html"
 
     def get(self, request):
         cuenta, rol = get_cuenta_and_rol(request)

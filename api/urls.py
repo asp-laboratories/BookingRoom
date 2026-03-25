@@ -30,4 +30,7 @@ urlpatterns = router.urls + [
     path('login/', views.api_login, name='api_login'),
     path('signup/', views.api_signup, name='api_signup'),
     path('flutter-login/', views.api_flutter_login, name='api_flutter_login'),
+    path('buscar-reservacion/', views.BuscarReservacionView.as_view(), name='buscar_reservacion'),
+    path('listar-reservacion/', views.ListarReservacionesView.as_view(), name='listar_reservaciones'),
+    path('calendario-eventos/', views.LlenarCalendarioReservaciones.as_view(), name='calendario_eventos'),
 ]
