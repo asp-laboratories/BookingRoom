@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Historial de reservaciones</title>
+<style>
+    body {
+        background-color: #f2f2f2;
+        font-family: Arial, sans-serif;
+        margin: 0;
+    }
+
+    .container {
+        width: 80%;
+        margin: 50px auto;
+    }
+
+    .titulo {
+        color: #8B4513;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    .contenedor {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    }
+
+    .fila {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+    }
+
+    th {
+        background-color: #eeeeee;
+    }
+
+    .btn {
+        background-color: #0d6efd;
+        color: white;
+        padding: 6px 12px;
+        border: none;
+        border-radius: 5px;
+        font-size: 13px;
+        margin: 2px;
+        cursor: pointer;
+    }
+
+    .btn:hover {
+        background-color: #084298;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.4);
+    }
+
+    .modal-content{
+        background:white;
+        width:70%;
+        margin:4% auto;
+        padding:25px;
+        border-radius:12px;
+        box-shadow:0 0 10px #444;
+        position:relative;
+        max-height:80vh;
+        overflow-y:auto;
+    }
+
+    .modal-pagos{
+        width:420px;
+        max-height:80vh;
+        overflow-y:auto;
+    }
+
+    .close {
+        position: absolute;
+        right: 12px;
+        top: 8px;
+        font-size: 26px;
+        cursor: pointer;
+    }
+
+    .close:hover {
+        color: red;
+    }
+
+    .grid {
+        display: flex;
+        gap: 20px;
+        margin-top: 10px;
+    }
+
+    .card {
+        background: #eeeeee;
+        padding: 15px;
+        border-radius: 10px;
+        flex: 1;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .section-title {
+        text-align: center;
+        margin-top: 20px;
+        font-weight: bold;
+    }
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+<h2 class="titulo">Historial de reservaciones</h2>
+<div class="contenedor">
+    <div class="fila">
+        <input type="text" placeholder="Nombre del cliente">
+        <input type="text" placeholder="Reservación">
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Número</th>
+                <th>Nombre</th>
+                <th>Cliente</th>
+                <th>Fecha de evento</th>
+                <th>Horario</th>
+                <th>Salón</th>
+                <th>Estado</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+
+       <tbody>
+            <tr>
+                <td>1</td>
+                <td>Hacer del baño</td>
+                <td>pepe</td>
+                <td>23/02/2099</td>
+                <td>18:00</td>
+                <td>Salón</td>
+                <td>Confirmado</td>
+
+                <td>
+                    <button class="btn" onclick="abrirPagos()">Ver pagos</button>
+                    <button class="btn" onclick="abrirBEO()">Ver BEO</button>
+                </td>
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+</div>
+
+<div id="modalPagos" class="modal">
+<div class="modal-content modal-pagos">
+    <span class="close" onclick="cerrarPagos()">×</span>
+
+    <h3><b>INFORME DE LA RESERVACIÓN</b></h3>
+
+    <h4>Coste de la reservación</h4>
+    <p>Subtotal: $0</p>
+    <p>IVA: $0</p>
+    <p>Total: $0</p>
+
+    <h4>Pagos de la reservación</h4>
+    <p>Primer pago: $0</p>
+    <p>Segundo pago: $0</p>
+    <p>Saldo: $0</p>
+
+</div>
+
+</div>
+
+<div id="modalBEO" class="modal">
+<div class="modal-content">
+    <span class="close" onclick="cerrarBEO()">×</span>
+
+    <h2 style="text-align:center;">Orden de banquete de evento (BEO)</h2>
+    <div class="grid">
+        <div class="card">
+
+            <h4>Información del cliente</h4>
+
+            <p>Nombre:</p>
+            <p>Teléfono:</p>
+            <p>Correo electrónico:</p>
+            <p>Dirección:</p>
+            <p>RFC:</p>
+            <p>Nombre fiscal:</p>
+
+        </div>
+
+        <div class="card">
+            <h4>Información del evento</h4>
+            <p>Nombre:</p>
+            <p>Descripción:</p>
+            <p>Fecha:</p>
+            <p>Horario:</p>
+            <p>Estado:</p>
+            <p>Estimado de asistentes:</p>
+        </div>
+
+    </div>
+
+    <h4 class="section-title">Configuración del espacio</h4>
+    <div class="card">
+        Salón: <br>
+        Montaje:
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h4>Servicios incluidos</h4>
+            <p>No hay servicios</p>
+        </div>
+
+        <div class="card">
+            <h4>Equipamiento incluidos</h4>
+            <p>No hay equipamientos</p>
+        </div>
+
+    </div>
+
+    <h4 class="section-title">Coste del evento</h4>
+    <div class="card">
+        Subtotal: <br>
+        IVA: <br>
+        Total:
+    </div>
+
+</div>
+
+</div>
+
+<script>
+
+function abrirPagos() {
+    document.getElementById("modalPagos").style.display = "block";
+}
+
+function cerrarPagos() {
+    document.getElementById("modalPagos").style.display = "none";
+}
+
+function abrirBEO() {
+    document.getElementById("modalBEO").style.display = "block";
+}
+
+function cerrarBEO() {
+    document.getElementById("modalBEO").style.display = "none";
+}
+
+window.onclick = function(event) {
+
+    let pagos = document.getElementById("modalPagos");
+    let beo = document.getElementById("modalBEO");
+
+    if (event.target == pagos) {
+        pagos.style.display = "none";
+    }
+
+    if (event.target == beo) {
+        beo.style.display = "none";
+    }
+}
+
+</script>
+
+</body>
+</html>

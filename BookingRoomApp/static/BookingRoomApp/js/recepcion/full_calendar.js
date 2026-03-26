@@ -8,8 +8,12 @@ document.addEventListener('DOMContentLoaded', function() {
         center: 'title',
         right: 'dayGridMonth,timeGridWeek,timeGridDay'
       },
-      events: '/api/calendario-eventos/'
+      eventColor: '#9c5c31',
+      events: '/api/calendario-eventos/',
+      eventBackgroundColor: '#9c5c31',
+      eventBorderColor: '#9c5c31',
+      eventTextColor: '#ffffff',
     });
     calendar.render();
     calendar.updateSize();
-  });z
+  });

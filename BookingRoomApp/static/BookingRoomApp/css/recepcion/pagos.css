@@ -11,6 +11,7 @@
 
 .pagos-container {
   margin-top: 10px;
+  margin-bottom: 50px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -216,4 +217,63 @@
     flex-direction: column;
     gap: 10px;
   }
+}
+
+.historial-modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.historial-modal-content {
+  background: white;
+  width: 70%;
+  margin: 4% auto;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px #444;
+  position: relative;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.historial-modal-content h3 {
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.historial-modal-content h4 {
+  margin: 20px 0 15px 0;
+  font-weight: 600;
+}
+
+.historial-modal-content p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.historial-modal-pagos {
+  width: 450px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 30px;
+}
+
+.historial-close {
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  font-size: 28px;
+  cursor: pointer;
+  color: #888;
+}
+
+.historial-close:hover {
+  color: red;
 }

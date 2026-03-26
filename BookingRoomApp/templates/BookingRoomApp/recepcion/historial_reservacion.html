@@ -38,7 +38,7 @@
 
                     <td class="historial-td">
                         <button class="historial-btn" onclick="abrirPagos()">Ver pagos</button>
-                        <button class="historial-btn" onclick="abrirBEO()">Ver BEO</button>
+                        <button class="historial-btn" onclick="abrirModalBEO()">Ver BEO</button>
                     </td>
                 </tr>
 
@@ -123,6 +123,125 @@
         </div>
     </div>
 </div>
+
+<dialog id="miModal" class="modal-beo">
+  <div class="cabecera-modal">
+    <span class="titulo-modal"
+      >SOLICITUD DE:
+      <span id="modal-titulo-evento"
+        >Orden de banquete de evento (BEO)</span
+      ></span
+    >
+    <button onclick="window.miModal.close()" class="cerrar-modal">X</button>
+  </div>
+
+  <div class="modal-grid">
+    <div class="modal-div modal-div-1">
+      <h3 class="titulo-info-cliente">Información del cliente</h3>
+
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Nombre completo:</label>
+          <span id="cliente-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Correo electrónico:</label>
+          <span id="cliente-correo">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Teléfono:</label>
+          <span id="cliente-telefono">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>RFC:</label>
+          <span id="cliente-rfc">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Nombre fiscal:</label>
+          <span id="cliente-nombre-fiscal">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-2">
+      <h3 class="titulo-seccion-modal">Información del evento</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Nombre:</label>
+          <span id="evento-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Descripción:</label>
+          <span id="evento-descripcion">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Fecha:</label>
+          <span id="evento-fecha">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Horario:</label>
+          <span id="evento-horario">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Estado:</label>
+          <span id="evento-estado">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Asistentes:</label>
+          <span id="evento-asistentes">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-3">
+      <h3 class="titulo-seccion-modal">Salón y Montaje</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Salón:</label>
+          <span id="salon-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Montaje:</label>
+          <span id="salon-montaje">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-4">
+      <h3 class="titulo-seccion-modal">Servicios</h3>
+      <div class="datos">
+        <span id="servicios-lista">No hay servicios</span>
+      </div>
+    </div>
+    <div class="modal-div modal-div-5">
+      <h3 class="titulo-seccion-modal">Equipamientos</h3>
+      <div class="datos">
+        <span>No hay equipamientos</span>
+      </div>
+    </div>
+    <div class="modal-div modal-div-6">
+      <h3 class="titulo-seccion-modal">Totales</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <span>IVA:</span>
+          <span id="total-iva">$0.00</span>
+        </div>
+        <div class="fila-dato">
+          <span>Subtotal:</span>
+          <span id="total-subtotal">$0.00</span>
+        </div>
+        <div class="fila-dato">
+          <span>Total:</span>
+          <span id="total-total">$0.00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-botones">
+    <button class="btn-modal btn-aceptar">Aceptar</button>
+    <button class="btn-modal btn-denegar" onclick="window.miModal.close()">
+      Denegar
+    </button>
+  </div>
+</dialog>
 
 <script src="{% static 'BookingRoomApp/js/reservacion/historial_reservacion.js' %}"></script>
 

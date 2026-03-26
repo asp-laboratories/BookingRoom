@@ -107,6 +107,11 @@
   margin-top: 20px;
 }
 
+/* element.style {
+    height: 65vh;
+    class="reservacion-campo-contenedor reservacion-grid-campos"
+} */
+
 .reservacion-btn {
   flex: 1;
   padding: 10px;

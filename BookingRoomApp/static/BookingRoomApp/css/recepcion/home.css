@@ -228,3 +228,18 @@
     margin-top: 20px;
     font-weight: bold;
 }
+
+.fc-event {
+    background-color: #9c5c31 !important;
+    border-color: #9c5c31 !important;
+    padding: 2px 4px;
+    font-size: 12px;
+}
+
+.fc-daygrid-event {
+    padding: 2px 4px;
+}
+
+.fc-daygrid-day-number {
+    color: #9c5c31;
+}

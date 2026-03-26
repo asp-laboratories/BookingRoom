@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
-from .models import Cuenta, Trabajador, Rol, EstadoCuenta, TipoServicio, TipoEquipa, Reservacion
+from . import models
 
 try:
     import firebase_admin
@@ -19,7 +19,7 @@ def get_user_rol(request):
     if not cuenta_id:
         return None
     try:
-        trabajador = Trabajador.objects.select_related('rol').get(cuenta_id=cuenta_id)
+        trabajador = models.Trabajador.objects.select_related('rol').get(cuenta_id=cuenta_id)
         return trabajador.rol.codigo
     except:
         return None
@@ -30,11 +30,11 @@ def get_cuenta_and_rol(request):
     if not cuenta_id:
         return None, None
     try:
-        cuenta = Cuenta.objects.get(id=cuenta_id)
+        cuenta = models.Cuenta.objects.get(id=cuenta_id)
         try:
-            trabajador = Trabajador.objects.select_related('rol').get(cuenta_id=cuenta_id)
+            trabajador = models.Trabajador.objects.select_related('rol').get(cuenta_id=cuenta_id)
             rol = trabajador.rol.codigo
-        except Trabajador.DoesNotExist:
+        except models.Trabajador.DoesNotExist:
             rol = None
         return cuenta, rol
     except:
@@ -78,7 +78,7 @@ class Home(generic.View):
             return HttpResponseRedirect(reverse('login'))
 
 
-        reservaciones = Reservacion.objects.all()[:10]
+        reservaciones = models.Reservacion.objects.all()[:10]
 
         context = {
             "cuenta": cuenta,
@@ -97,20 +97,20 @@ class ReservacionView(generic.View):
             return HttpResponseRedirect(reverse('login'))
 
         context = {
-            "tipos_servicio": TipoServicio.objects.filter(disposicion=True),
-            "tipos_equipa": TipoEquipa.objects.filter(disposicion=True),
+            "tipos_servicio": models.TipoServicio.objects.filter(disposicion=True),
+            "tipos_equipa": models.TipoEquipa.objects.filter(disposicion=True),
             "rol": rol
         }
         return render(request, self.template_name, context)
 
 class DetallesReservacionView(generic.DetailView):
     template_name = "BookingRoomApp/home/"
-    model = Reservacion
+    model = models.Reservacion
     context_object_name = 'reservacion'
 
 
 def reservacion_detalle_json(request, pk):
-    reserva = get_object_or_404(Reservacion.objects.select_related(
+    reserva = get_object_or_404(models.Reservacion.objects.select_related(
         'cliente', 'montaje__salon', 'montaje__tipo_montaje', 'estado_reserva', 'tipo_evento'
     ), pk=pk)
     
@@ -160,8 +160,8 @@ def trabajadores(request):
     if rol != 'ADMIN':
         return HttpResponseRedirect(reverse('home'))
     
-    roles = Rol.objects.all()
-    trabajadores_list = Trabajador.objects.select_related('cuenta', 'rol').all()
+    roles = models.Rol.objects.all()
+    trabajadores_list = models.Trabajador.objects.select_related('cuenta', 'rol').all()
     
     return render(request, 'BookingRoomApp/administracion/trabajadores.html', {
         'roles': roles,
@@ -171,7 +171,7 @@ def trabajadores(request):
 
 
 def registrar_trabajador(request):
-    estado_cuenta = EstadoCuenta.objects.filter(codigo='ACT').first()
+    estado_cuenta = models.EstadoCuenta.objects.filter(codigo='ACT').first()
     
     if request.method == 'POST':
         form_tipo = request.POST.get('form_tipo')
@@ -221,7 +221,7 @@ def registrar_trabajador(request):
                     except Exception as e:
                         messages.warning(request, f'Firebase no disponible: {str(e)}')
 
-                cuenta = Cuenta.objects.create(
+                cuenta = models.Cuenta.objects.create(
                     nombre_usuario=cuenta_data['nombre_usuario'],
                     correo_electronico=cuenta_data['email'],
                     firebase_uid=firebase_uid,
@@ -229,7 +229,7 @@ def registrar_trabajador(request):
                     disposicion=True
                 )
 
-                Trabajador.objects.create(
+                models.Trabajador.objects.create(
                     no_empleado=no_empleado,
                     rfc=rfc,
                     nombre_fiscal=f"{nombre} {apellido_paterno} {apellido_materno}",
