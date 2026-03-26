@@ -332,7 +332,7 @@ class Reservacion(models.Model):
     montaje = models.ForeignKey(Montaje, on_delete=models.PROTECT)
     estado_reserva = models.ForeignKey(EstadoReserva, on_delete=models.PROTECT)
     tipo_evento = models.ForeignKey(TipoEvento, on_delete=models.PROTECT)
-    trabajador = models.ForeignKey(Trabajador, on_delete=models.PROTECT, default=1)
+    trabajador = models.ForeignKey(Trabajador, on_delete=models.PROTECT, null=True, blank=True, to_field='no_empleado')
     reserva_servicio = models.ManyToManyField(Servicio)
 
     class Meta:

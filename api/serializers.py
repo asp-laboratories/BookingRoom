@@ -109,6 +109,25 @@ class ReservacionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ReservacionCreacionSerializer(serializers.ModelSerializer):
+    trabajador_id = serializers.IntegerField(write_only=True, required=False)
+
+    class Meta:
+        model = models.Reservacion
+        fields = '__all__'
+        extra_kwargs = {'trabajador': {'required': False}}
+
+    def create(self, validated_data):
+        trabajador_id = validated_data.pop('trabajador_id', None)
+        if trabajador_id:
+            try:
+                trabajador = models.Trabajador.objects.get(no_empleado=str(trabajador_id))
+                validated_data['trabajador'] = trabajador
+            except models.Trabajador.DoesNotExist:
+                pass
+        return super().create(validated_data)
+
+
 class RegistrEstadReservaSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.RegistrEstadReserva
@@ -140,13 +159,20 @@ class PagoSerializer(serializers.ModelSerializer):
         concepto_codigo = validated_data.pop('concepto_pago', None)
         metodo_codigo = validated_data.pop('metodo_pago', None)
         
-        if concepto_codigo:
-            validated_data['concepto_pago'] = models.ConceptoPago.objects.get(codigo=concepto_codigo)
-        if metodo_codigo:
-            validated_data['metodo_pago'] = models.MetodoPago.objects.get(codigo=metodo_codigo)
+        try:
+            if concepto_codigo:
+                validated_data['concepto_pago'] = models.ConceptoPago.objects.get(codigo=concepto_codigo)
+        except models.ConceptoPago.DoesNotExist:
+            raise serializers.ValidationError({'concepto_pago': f'Concepto de pago {concepto_codigo} no encontrado'})
+        
+        try:
+            if metodo_codigo:
+                validated_data['metodo_pago'] = models.MetodoPago.objects.get(codigo=metodo_codigo)
+        except models.MetodoPago.DoesNotExist:
+            raise serializers.ValidationError({'metodo_pago': f'Método de pago {metodo_codigo} no encontrado'})
         
         ultimo = models.Pago.objects.order_by('-no_pago').first()
-        validated_data['no_pago'] = (ultimo.no_pago + 1) if ultimo else 1
+        validated_data['no_pago'] = (ultimo.no_pago + 1) if ultimo and ultimo.no_pago else 1
         
         reserva = validated_data['reservacion']
         monto = validated_data['monto']

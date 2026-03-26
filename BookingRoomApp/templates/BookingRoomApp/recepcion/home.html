@@ -6,19 +6,47 @@
 <div class="parent" style="margin-top: 20px">
   <div class="div1" id="calendar"></div>
   <div class="div2">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="openTab(event, 'tab1')">
+        Tab 1
+      </button>
+      <button class="tab-btn" onclick="openTab(event, 'tab2')">Tab 2</button>
+    </div>
+    <div id="tab1" class="tab-content active">Contenido 1</div>
+    <div id="tab2" class="tab-content">Contenido 2</div>
+
     <span class="titulo-solicitud">Proximos eventos</span>
 
-    
     {% for reservacion in reservaciones %}
-          <div class="contenedor-solicitud"  id="cerrar-contenedor">
+    <div class="contenedor-solicitud" id="cerrar-contenedor">
       <span> {{reservacion.nombreEvento}} </span>
-      <button class="boton-accion boton-beo">
-        Ver BEO
-      </button>
+      <button class="boton-accion boton-beo ver-detalles" data-pk="{{ reservacion.pk }}">Ver detalles</button>
     </div>
     {% endfor %}
-      
+    <style>
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      .tab-btn.active {
+        font-weight: bold;
+      }
+    </style>
 
+    <script>
+      function openTab(evt, tabId) {
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((c) => c.classList.remove("active"));
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((b) => b.classList.remove("active"));
+        document.getElementById(tabId).classList.add("active");
+        evt.currentTarget.classList.add("active");
+      }
+    </script>
   </div>
   <div class="div3">
     <h2 class="label-buscar">Buscar</h2>
@@ -39,7 +67,7 @@
 <dialog id="miModal" class="modal-beo">
   <div class="cabecera-modal">
     <span class="titulo-modal"
-      >SOLICITUD DE: Orden de banquete de evento (BEO)</span
+      >SOLICITUD DE: <span id="modal-titulo-evento">Orden de banquete de evento (BEO)</span></span
     >
     <button onclick="window.miModal.close()" class="cerrar-modal">X</button>
   </div>
@@ -51,23 +79,23 @@
       <div class="datos">
         <div class="fila-dato">
           <label>Nombre completo:</label>
-          <span>[Nombre]</span>
+          <span id="cliente-nombre">-</span>
         </div>
         <div class="fila-dato">
           <label>Correo electrónico:</label>
-          <span>[Correo]</span>
+          <span id="cliente-correo">-</span>
         </div>
         <div class="fila-dato">
           <label>Teléfono:</label>
-          <span>[Teléfono]</span>
+          <span id="cliente-telefono">-</span>
         </div>
         <div class="fila-dato">
           <label>RFC:</label>
-          <span>[RFC]</span>
+          <span id="cliente-rfc">-</span>
         </div>
         <div class="fila-dato">
           <label>Nombre fiscal:</label>
-          <span>[Nombre Fiscal]</span>
+          <span id="cliente-nombre-fiscal">-</span>
         </div>
       </div>
     </div>
@@ -76,27 +104,27 @@
       <div class="datos">
         <div class="fila-dato">
           <label>Nombre:</label>
-          <span>[Nombre]</span>
+          <span id="evento-nombre">-</span>
         </div>
         <div class="fila-dato">
           <label>Descripción:</label>
-          <span>[Descripción]</span>
+          <span id="evento-descripcion">-</span>
         </div>
         <div class="fila-dato">
           <label>Fecha:</label>
-          <span>[Fecha]</span>
+          <span id="evento-fecha">-</span>
         </div>
         <div class="fila-dato">
           <label>Horario:</label>
-          <span>[Horario]</span>
+          <span id="evento-horario">-</span>
         </div>
         <div class="fila-dato">
           <label>Estado:</label>
-          <span>[Estado]</span>
+          <span id="evento-estado">-</span>
         </div>
         <div class="fila-dato">
           <label>Asistentes:</label>
-          <span>[Estimado]</span>
+          <span id="evento-asistentes">-</span>
         </div>
       </div>
     </div>
@@ -105,18 +133,18 @@
       <div class="datos">
         <div class="fila-dato">
           <label>Salón:</label>
-          <span>[Salón]</span>
+          <span id="salon-nombre">-</span>
         </div>
         <div class="fila-dato">
           <label>Montaje:</label>
-          <span>[Montaje]</span>
+          <span id="salon-montaje">-</span>
         </div>
       </div>
     </div>
     <div class="modal-div modal-div-4">
       <h3 class="titulo-seccion-modal">Servicios</h3>
       <div class="datos">
-        <span>No hay servicios</span>
+        <span id="servicios-lista">No hay servicios</span>
       </div>
     </div>
     <div class="modal-div modal-div-5">
@@ -130,15 +158,15 @@
       <div class="datos">
         <div class="fila-dato">
           <span>IVA:</span>
-          <span>$0.00</span>
+          <span id="total-iva">$0.00</span>
         </div>
         <div class="fila-dato">
           <span>Subtotal:</span>
-          <span>$0.00</span>
+          <span id="total-subtotal">$0.00</span>
         </div>
         <div class="fila-dato">
           <span>Total:</span>
-          <span>$0.00</span>
+          <span id="total-total">$0.00</span>
         </div>
       </div>
     </div>
@@ -151,5 +179,56 @@
     </button>
   </div>
 </dialog>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.ver-detalles').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const pk = this.dataset.pk;
+            
+            try {
+                const response = await fetch(`/home/${pk}/json/`);
+                if (!response.ok) throw new Error('Error al obtener datos');
+                
+                const data = await response.json();
+                
+                document.getElementById('modal-titulo-evento').textContent = data.nombre_evento || 'Orden de banquete de evento (BEO)';
+                
+                document.getElementById('cliente-nombre').textContent = `${data.cliente.nombre} ${data.cliente.apellido_paterno} ${data.cliente.apellido_materno}`;
+                document.getElementById('cliente-correo').textContent = data.cliente.correo;
+                document.getElementById('cliente-telefono').textContent = data.cliente.telefono;
+                document.getElementById('cliente-rfc').textContent = data.cliente.rfc;
+                document.getElementById('cliente-nombre-fiscal').textContent = data.cliente.nombre_fiscal;
+                
+                document.getElementById('evento-nombre').textContent = data.nombre_evento;
+                document.getElementById('evento-descripcion').textContent = data.descripcion;
+                document.getElementById('evento-fecha').textContent = data.fecha;
+                document.getElementById('evento-horario').textContent = `${data.hora_inicio} - ${data.hora_fin}`;
+                document.getElementById('evento-estado').textContent = data.estado;
+                document.getElementById('evento-asistentes').textContent = data.asistentes;
+                
+                document.getElementById('salon-nombre').textContent = data.salon;
+                document.getElementById('salon-montaje').textContent = data.montaje;
+                
+                const serviciosSpan = document.getElementById('servicios-lista');
+                if (data.servicios && data.servicios.length > 0) {
+                    serviciosSpan.textContent = data.servicios.join(', ');
+                } else {
+                    serviciosSpan.textContent = 'No hay servicios';
+                }
+                
+                document.getElementById('total-iva').textContent = `$${data.iva}`;
+                document.getElementById('total-subtotal').textContent = `$${data.subtotal}`;
+                document.getElementById('total-total').textContent = `$${data.total}`;
+                
+                window.miModal.showModal();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo cargar los detalles de la reservación');
+            }
+        });
+    });
+});
+</script>
 
 {% endblock inicio %}

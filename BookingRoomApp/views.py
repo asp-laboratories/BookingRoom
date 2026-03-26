@@ -1,5 +1,5 @@
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib import messages
 from django.urls import reverse
 from django.views import generic
@@ -77,16 +77,11 @@ class Home(generic.View):
         if not cuenta:
             return HttpResponseRedirect(reverse('login'))
 
-        try:
-            trabajador = Trabajador.objects.get(cuenta=cuenta)
-        except Trabajador.DoesNotExist:
-            trabajador = None
 
         reservaciones = Reservacion.objects.all()[:10]
 
         context = {
             "cuenta": cuenta,
-            "trabajador": trabajador,
             'rol': rol,
             'reservaciones': reservaciones,
         }
@@ -108,7 +103,47 @@ class ReservacionView(generic.View):
         }
         return render(request, self.template_name, context)
 
+class DetallesReservacionView(generic.DetailView):
+    template_name = "BookingRoomApp/home/"
+    model = Reservacion
+    context_object_name = 'reservacion'
 
+
+def reservacion_detalle_json(request, pk):
+    reserva = get_object_or_404(Reservacion.objects.select_related(
+        'cliente', 'montaje__salon', 'montaje__tipo_montaje', 'estado_reserva', 'tipo_evento'
+    ), pk=pk)
+    
+    servicios = list(reserva.reserva_servicio.values_list('nombre', flat=True))
+    
+    data = {
+        'id': reserva.pk,
+        'nombre_evento': reserva.nombreEvento,
+        'descripcion': reserva.descripEvento,
+        'fecha': reserva.fechaEvento.isoformat(),
+        'hora_inicio': reserva.horaInicio.strftime('%H:%M'),
+        'hora_fin': reserva.horaFin.strftime('%H:%M'),
+        'estado': reserva.estado_reserva.nombre,
+        'asistentes': reserva.estimaAsistentes,
+        'salon': reserva.montaje.salon.nombre if reserva.montaje and reserva.montaje.salon else 'N/A',
+        'montaje': reserva.montaje.tipo_montaje.nombre if reserva.montaje and reserva.montaje.tipo_montaje else 'N/A',
+        'tipo_evento': reserva.tipo_evento.nombre if reserva.tipo_evento else 'N/A',
+        'subtotal': str(reserva.subtotal),
+        'iva': str(reserva.IVA),
+        'total': str(reserva.total),
+        'cliente': {
+            'nombre': reserva.cliente.nombre,
+            'apellido_paterno': reserva.cliente.apellidoPaterno,
+            'apellido_materno': reserva.cliente.apelidoMaterno or '',
+            'correo': reserva.cliente.correo_electronico,
+            'telefono': reserva.cliente.telefono,
+            'rfc': reserva.cliente.rfc,
+            'nombre_fiscal': reserva.cliente.nombre_fiscal,
+        },
+        'servicios': servicios,
+    }
+    return JsonResponse(data)
+    
 def servicios(request):
     cuenta, rol = get_cuenta_and_rol(request)
     if not cuenta:

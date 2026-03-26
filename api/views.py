@@ -123,7 +123,7 @@ class ReservacionViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ReservacionSerializer
 
     def get_serializer_class(self):
-        if self.action == "creation":
+        if self.action == "create":
             return serializers.ReservacionCreacionSerializer
         else:
             return serializers.ReservacionSerializer
@@ -190,11 +190,13 @@ class BuscarReservacionView(APIView):
         except models.Reservacion.DoesNotExist:
             return Response({'error': 'Reservación no encontrada'}, status=404)
         
-        # pagos_realizados = models.Pago.objects.filter(reservacion=reservacion).aggregate(
-        #     total_pagado=models.Sum('monto')
-        # )['total_pagado'] or 0
+        pagos_count = models.Pago.objects.filter(reservacion=reservacion).count()
+        ultimo_pago = models.Pago.objects.filter(reservacion=reservacion).order_by('-no_pago').first()
         
-        # saldo_restante = reservacion.total - pagos_realizados
+        if ultimo_pago:
+            saldo = ultimo_pago.saldo
+        else:
+            saldo = reservacion.total
         
         return Response({
             'id': reservacion.id,
@@ -203,8 +205,9 @@ class BuscarReservacionView(APIView):
             'descripcion': reservacion.descripEvento,
             'subtotal': str(reservacion.subtotal),
             'total': str(reservacion.total),
-            'saldo_restante': 0,
-            'estado': reservacion.estado_reserva.codigo
+            'saldo_restante': str(saldo),
+            'pagos_count': pagos_count,
+            'estado': reservacion.estado_reserva.nombre
         })
 
 class ListarReservacionesView(APIView):

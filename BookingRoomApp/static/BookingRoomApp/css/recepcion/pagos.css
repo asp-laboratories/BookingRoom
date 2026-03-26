@@ -30,8 +30,8 @@
 }
 
 .pagos-h2 {
-  margin: 0;
-  font-size: 24px;
+  margin: 15px 0 0 0;
+  font-size: 28px;
   font-weight: bold;
 }
 
@@ -43,18 +43,42 @@
 }
 
 .pagos-busqueda {
-  flex: 0 0 280px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pagos-datos-reservacion {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.pagos-datos-reservacion {
-  flex: 1;
+.pagos-datos-reservacion .pagos-row {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .pagos-datos-reservacion .pagos-field-group {
-  margin-bottom: 15px;
+  margin-bottom: 0;
+}
+
+.pagos-datos-reservacion .pagos-input-text {
+  background-color: rgba(217, 217, 217, 0);
+}
+
+.pagos-btn-buscar {
+  flex: none !important;
+  width: fit-content;
+  width: 70%;
+  margin: 10px 0px 10px 0px;
+}
+
+.pagos-busqueda .pagos-field-group {
+  flex: none;
 }
 
 @media (max-width: 768px) {
@@ -93,6 +117,15 @@
   outline: none;
 }
 
+.pagos-busqueda .pagos-input-text {
+  width: 70%;
+  box-sizing: border-box;
+}
+
+.pagos-datos-reservacion .pagos-input-text {
+  padding: 12px 0px 12px 0px;
+}
+
 .pagos-saldo-text {
   margin-top: 15px;
   font-size: 18px;
@@ -101,6 +134,7 @@
 .pagos-section-title {
   margin: 25px 0 15px 0;
   font-size: 18px;
+  font-weight: 600;
 }
 
 .pagos-options-group {

@@ -4,7 +4,7 @@
 {% block inicio %}
 
 <link rel="stylesheet" href="{% static 'BookingRoomApp/css/recepcion/pagos.css' %}">
-<script src="{% static "BookingRoomApp/js/recepcion/pagos.js" %}" defer></script>
+<script src="{% static "BookingRoomApp/js/recepcion/pagos.js" %}?v=2" defer></script>
 
 <div class="pagos-container">
     <div class="pagos-header">
@@ -34,26 +34,26 @@
             <div class="pagos-row">
                 <div class="pagos-field-group">
                     <label class="pagos-label">Cliente</label>
-                    <input data-field="cliente" type="text" class="pagos-input-text" readonly>
+                    <input data-field="cliente" type="text" class="pagos-input-text" placeholder="Busca en el panel izquierdo para visualizar a el cliente" readonly>
                 </div>
                 <div class="pagos-field-group">
                     <label class="pagos-label">Nombre del evento</label>
-                    <input data-field="nombre_evento" type="text" class="pagos-input-text" readonly>
+                    <input data-field="nombre_evento" type="text" class="pagos-input-text" placeholder="Busca en el panel izquierdo para visualizar el nombre del evento" readonly>
                 </div>
             </div>
 
             <div class="pagos-row">
                 <div class="pagos-field-group">
                     <label class="pagos-label">Subtotal</label>
-                    <input data-field="subtotal" type="text" class="pagos-input-text" readonly>
+                    <input data-field="subtotal" type="text" class="pagos-input-text" placeholder="Busca en el panel izquierdo para visualizar el subtotal" readonly>
                 </div>
                 <div class="pagos-field-group">
-                    <label class="pagos-label">Total</label>
-                    <input data-field="total" type="text" class="pagos-input-text" readonly>
+                    <label class="pagos-label">Total</label> 
+                    <input data-field="total" type="text" class="pagos-input-text" placeholder="Busca en el panel izquierdo para visualizar el total" readonly>
                 </div>
                             <div class="pagos-field-group">
                 <label class="pagos-label">Descripción</label>
-                <input data-field="descripcion" type="text" class="pagos-input-text" readonly>
+                <input data-field="descripcion" type="text" class="pagos-input-text" placeholder="Busca en el panel izquierdo para visualizar la descripcion del evento" readonly>
             </div>
             </div>
         </div>
@@ -67,7 +67,7 @@
         </div>
         <div class="pagos-field-group">
             <label class="pagos-label">Saldo restante</label>
-            <input data-field="saldo" type="text" class="pagos-input-text" readonly>
+            <input id="saldo" data-field="saldo" type="text" class="pagos-input-text" readonly>
         </div>
     </div>
 
