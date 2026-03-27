@@ -1,29 +1,28 @@
 function abrirPagos() {
-    document.getElementById("modalPagos").style.display = "block";
+    document.getElementById("modalPagos").classList.add("mostrar");
 }
 
 function cerrarPagos() {
-    document.getElementById("modalPagos").style.display = "none";
+    document.getElementById("modalPagos").classList.remove("mostrar");
 }
 
 function abrirBEO() {
-    document.getElementById("modalBEO").style.display = "block";
+    document.getElementById("modalBEO").classList.add("mostrar");
 }
 
 function cerrarBEO() {
-    document.getElementById("modalBEO").style.display = "none";
+    document.getElementById("modalBEO").classList.remove("mostrar");
 }
 
 window.onclick = function(event) {
-
     let pagos = document.getElementById("modalPagos");
     let beo = document.getElementById("modalBEO");
 
     if (event.target == pagos) {
-        pagos.style.display = "none";
+        pagos.classList.remove("mostrar");
     }
 
     if (event.target == beo) {
-        beo.style.display = "none";
+        beo.classList.remove("mostrar");
     }
 }

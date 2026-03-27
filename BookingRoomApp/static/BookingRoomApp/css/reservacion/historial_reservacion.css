@@ -80,10 +80,16 @@
   background: rgba(0, 0, 0, 0.4);
 }
 
+.historial-modal.mostrar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .historial-modal-content {
   background: white;
   width: 70%;
-  margin: 4% auto;
+  max-width: 800px;
   padding: 25px;
   border-radius: 12px;
   box-shadow: 0 0 10px #444;
@@ -173,10 +179,16 @@
   background: rgba(0, 0, 0, 0.4);
 }
 
+.modal-beo-info.mostrar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .modal-beo-content {
   background: white;
   width: 70%;
-  margin: 4% auto;
+  max-width: 900px;
   padding: 25px;
   border-radius: 12px;
   box-shadow: 0 0 10px #444;
@@ -216,3 +228,16 @@
   margin-top: 20px;
   font-weight: bold;
 }
+
+
+/* .titulo-modal-pago .campos-modal-pago{
+  
+} */
+
+.campos-modal-pago{
+  margin-bottom: 15px; 
+}
+
+.titulo-modal-pago{
+  margin-bottom: 10px;  
+} 

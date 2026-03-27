@@ -1,33 +1,38 @@
-{% extends "BookingRoomApp/base/base.html" %}
-{% load static %}
+{% extends "BookingRoomApp/base/base.html" %} {% load static %} {% block inicio %}
 
-{% block inicio %}
-
-<link rel="stylesheet" href="{% static 'BookingRoomApp/css/reservacion/historial_reservacion.css' %}">
+<link
+  rel="stylesheet"
+  href="{% static 'BookingRoomApp/css/reservacion/historial_reservacion.css' %}"
+/>
 
 <div class="historial-container">
-    <h2 class="historial-titulo">Historial de reservaciones</h2>
-    <div class="historial-contenedor">
-        <div class="historial-fila">
-            <input type="text" placeholder="Nombre del cliente" class="historial-input">
-            <input type="text" placeholder="Reservación" class="historial-input">
-        </div>
-        <table class="historial-tabla">
-            <thead>
-                <tr>
-                    <th class="historial-th">Número</th>
-                    <th class="historial-th">Nombre</th>
-                    <th class="historial-th">Cliente</th>
-                    <th class="historial-th">Fecha de evento</th>
-                    <th class="historial-th">Horario</th>
-                    <th class="historial-th">Salón</th>
-                    <th class="historial-th">Estado</th>
-                    <th class="historial-th">Acción</th>
-                </tr>
-            </thead>
+  <h2 class="historial-titulo">Historial de reservaciones</h2>
+  <div class="historial-contenedor">
+    <div class="historial-fila">
+      <input
+        type="text"
+        placeholder="Nombre del cliente"
+        class="historial-input"
+      />
+      <input type="text" placeholder="Reservación" class="historial-input" />
+    </div>
+    <table class="historial-tabla">
+      <thead>
+        <tr>
+          <th class="historial-th">Número</th>
+          <th class="historial-th">Nombre del evento</th>
+          <th class="historial-th">Cliente</th>
+          <th class="historial-th">Fecha de reservacion</th>
+          <th class="historial-th">Horario</th>
+          <th class="historial-th">Hora de creacion</th>
+          <th class="historial-th">Salón</th>
+          <th class="historial-th">Estado</th>
+          <th class="historial-th">Acción</th>
+        </tr>
+      </thead>
 
-            <tbody>
-                <tr>
+      <tbody>
+        <!-- <tr>
                     <td class="historial-td">1</td>
                     <td class="historial-td">Hacer del baño</td>
                     <td class="historial-td">pepe</td>
@@ -40,88 +45,115 @@
                         <button class="historial-btn" onclick="abrirPagos()">Ver pagos</button>
                         <button class="historial-btn" onclick="abrirModalBEO()">Ver BEO</button>
                     </td>
-                </tr>
+                </tr> -->
 
-            </tbody>
+        {% for reservacion in reservaciones %}
 
-        </table>
+        <tr>
+          <td class="historial-td">{{reservacion.id}}</td>
+          <td class="historial-td">{{reservacion.nombreEvento}}</td>
+          <td class="historial-td">{{reservacion.cliente.nombre}}</td>
+          <td class="historial-td">{{reservacion.fechaEvento}}</td>
+          <td class="historial-td">{{reservacion.horaInicio}} - {{reservacion.horaFin}}</td>
+          <td class="historial-td">Hora</td>
+          <td class="historial-td">{{reservacion.montaje.salon.nombre}}</td>
+          <td class="historial-td">{{reservacion.estado_reserva.nombre}}</td>
 
-    </div>
-
+          <td class="historial-td">
+            <button
+              class="historial-btn ver-pagos"
+              data-pk="{{ reservacion.id }}"
+              onclick="abrirPagos()"
+            >
+              Ver pagos
+            </button>
+            <button
+              class="historial-btn ver-detalles"
+              data-pk="{{ reservacion.id }}"
+              onclick="abrirModalBEO()"
+            >
+              Ver BEO
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 
 <div id="modalPagos" class="historial-modal">
-    <div class="historial-modal-content historial-modal-pagos">
-        <span class="historial-close" onclick="cerrarPagos()">×</span>
+  <div class="historial-modal-content historial-modal-pagos">
+    <span class="historial-close" onclick="cerrarPagos()">×</span>
 
-        <h3><b>INFORME DE LA RESERVACIÓN</b></h3>
+    <h3 class="titulo-modal-pago campos-modal-pago">
+      <b>INFORME DE LA RESERVACIÓN</b>
+    </h3>
 
-        <h4>Coste de la reservación</h4>
-        <p>Subtotal: $0</p>
-        <p>IVA: $0</p>
-        <p>Total: $0</p>
+    <h4 class="titulo-modal-pago campos-modal-pago">Coste de la reservación</h4>
+    <p class="campos-modal-pago" id="subtotal-modal">Subtotal: $0</p>
+    <p class="campos-modal-pago" id="iva-modal">IVA: $0</p>
+    <p class="campos-modal-pago" id="total-modal">Total: $0</p>
 
-        <h4>Pagos de la reservación</h4>
-        <p>Primer pago: $0</p>
-        <p>Segundo pago: $0</p>
-        <p>Saldo: $0</p>
-
-    </div>
-
+    <h4 class="titulo-modal-pago campos-modal-pago">Pagos de la reservación</h4>
+    <p class="campos-modal-pago" id="primer-pago">Primer pago: $0</p>
+    <p class="campos-modal-pago" id="segundo-pago">Segundo pago: $0</p>
+    <p class="campos-modal-pago" id="saldo">Saldo: $0</p>
+  </div>
 </div>
 
 <div id="modalBEO" class="modal-beo-info">
-    <div class="modal-beo-content">
-        <span class="modal-beo-close" onclick="cerrarBEO()">×</span>
+  <div class="modal-beo-content">
+    <span class="modal-beo-close" onclick="cerrarBEO()">×</span>
 
-        <h2 style="text-align:center;">Orden de banquete de evento (BEO)</h2>
-        <div class="modal-beo-grid">
-            <div class="modal-beo-card">
-                <h4>Información del cliente</h4>
-                <p>Nombre:</p>
-                <p>Teléfono:</p>
-                <p>Correo electrónico:</p>
-                <p>Dirección:</p>
-                <p>RFC:</p>
-                <p>Nombre fiscal:</p>
-            </div>
+    <h2 style="text-align: center">Orden de banquete de evento (BEO)</h2>
+    <div class="modal-beo-grid">
+      <div class="modal-beo-card">
+        <h4>Información del cliente</h4>
+        <p>Nombre:</p>
+        <p>Teléfono:</p>
+        <p>Correo electrónico:</p>
+        <p>Dirección:</p>
+        <p>RFC:</p>
+        <p>Nombre fiscal:</p>
+      </div>
 
-            <div class="modal-beo-card">
-                <h4>Información del evento</h4>
-                <p>Nombre:</p>
-                <p>Descripción:</p>
-                <p>Fecha:</p>
-                <p>Horario:</p>
-                <p>Estado:</p>
-                <p>Estimado de asistentes:</p>
-            </div>
-        </div>
-
-        <h4 class="modal-beo-section-title">Configuración del espacio</h4>
-        <div class="modal-beo-card">
-            Salón: <br>
-            Montaje:
-        </div>
-
-        <div class="modal-beo-grid">
-            <div class="modal-beo-card">
-                <h4>Servicios incluidos</h4>
-                <p>No hay servicios</p>
-            </div>
-
-            <div class="modal-beo-card">
-                <h4>Equipamiento incluidos</h4>
-                <p>No hay equipamientos</p>
-            </div>
-        </div>
-
-        <h4 class="modal-beo-section-title">Coste del evento</h4>
-        <div class="modal-beo-card">
-            Subtotal: <br>
-            IVA: <br>
-            Total:
-        </div>
+      <div class="modal-beo-card">
+        <h4>Información del evento</h4>
+        <p>Nombre:</p>
+        <p>Descripción:</p>
+        <p>Fecha:</p>
+        <p>Horario:</p>
+        <p>Estado:</p>
+        <p>Estimado de asistentes:</p>
+      </div>
     </div>
+
+    <h4 class="modal-beo-section-title">Configuración del espacio</h4>
+    <div class="modal-beo-card">
+      Salón: <br />
+      Montaje:
+    </div>
+
+    <div class="modal-beo-grid">
+      <div class="modal-beo-card">
+        <h4>Servicios incluidos</h4>
+        <p>No hay servicios</p>
+      </div>
+
+      <div class="modal-beo-card">
+        <h4>Equipamiento incluidos</h4>
+        <p>No hay equipamientos</p>
+      </div>
+    </div>
+
+    <h4 class="modal-beo-section-title">Coste del evento</h4>
+    <div class="modal-beo-card">
+      Subtotal: <br />
+      IVA: <br />
+      Total:
+    </div>
+  </div>
 </div>
 
 <dialog id="miModal" class="modal-beo">
@@ -244,5 +276,37 @@
 </dialog>
 
 <script src="{% static 'BookingRoomApp/js/reservacion/historial_reservacion.js' %}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".ver-pagos").forEach((btn) => {
+      btn.addEventListener("click", async function () {
+        const pk = this.dataset.pk;
 
+        try {
+          const response = await fetch(`/recepcion/historial/${pk}/json/`);
+          if (!response.ok) throw new Error("Error al obtener datos");
+
+          const data = await response.json();
+
+          document.getElementById("subtotal-modal").textContent = `Subtotal: $${data.subtotal}`;
+          document.getElementById("iva-modal").textContent = `IVA: $${data.iva}`;
+          document.getElementById("total-modal").textContent = `Total: $${data.total}`;
+          document.getElementById("primer-pago").textContent = `Primer pago: $${data.primer_pago}`;
+          document.getElementById("segundo-pago").textContent = `Segundo pago: $${data.segundo_pago}`;
+          
+          if (data.saldo == "0.00") {
+            document.getElementById("saldo").textContent = `Saldo: $${data.saldo} (Pago completado)`;
+          } else {
+            document.getElementById("saldo").textContent = `Saldo: $${data.saldo}`;
+          }
+
+          document.getElementById("modalPagos").classList.add("mostrar");
+        } catch (error) {
+          console.error("Error:", error);
+          alert("No se pudo cargar los pagos");
+        }
+      });
+    });
+  });
+</script>
 {% endblock inicio %}
