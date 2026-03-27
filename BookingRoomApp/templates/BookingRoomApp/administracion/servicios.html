@@ -10,7 +10,9 @@
   <h2>Registrar servicios</h2>
 
   <div class="administrador-formularios">
-    <form class="administrador-seccionFlex">
+    <form class="administrador-seccionFlex" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="form_servicios" value="servicio">
       <div class="administrador-seccionFlex">
         <label class="administrador-label"
           >Nombre:
@@ -26,11 +28,11 @@
         <label class="administrador-label"
           >Tipo:
           <div class="administrador-seccionTipos">
-            <select name="rolSeleccionado" id="itemAsig" class="administrador-select" required>
+            <select name="tipo_servicio" id="itemAsig" class="administrador-select" required>
               <option value disabled selected hidden>Seleccionar</option>
-              <option value="1">Recepcionista</option>
-              <option value="2">Almacenista</option>
-              <option value="3">Coordinador</option>
+              {% for tipo in tipo_servicio %}
+              <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+              {% endfor %}
             </select>
             <button type="button" class="administrador-botonCrearTipo">Crear Tipo</button>
           </div>
@@ -52,7 +54,8 @@
           >Costo:
           <br />
           <input
-            type="text"
+            type="number"
+            step="0.01"
             placeholder="Costo"
             name="costoServicio"
             class="administrador-input"
@@ -95,15 +98,21 @@
       </thead>
 
       <tbody class="administrador-tbody">
+        {% for servicio in servicios %}
         <tr>
-          <td class="administrador-td">1</td>
-          <td class="administrador-td">Servicio A</td>
-          <td class="administrador-td">Tipo 1</td>
-          <td class="administrador-td">Descripcion del servicio</td>
-          <td class="administrador-td">$500</td>
-          <td class="administrador-td">Activo</td>
-          <td class="administrador-td"><img class="administrador-img" src="/document.png" /></td>
+          <td class="administrador-td">{{ servicio.id }}</td>
+          <td class="administrador-td">{{ servicio.nombre }}</td>
+          <td class="administrador-td">{{ servicio.tipo_servicio.nombre }}</td>
+          <td class="administrador-td">{{ servicio.descripcion }}</td>
+          <td class="administrador-td">${{ servicio.costo }}</td>
+          <td class="administrador-td">{% if servicio.disposicion %}Activo{% else %}Inactivo{% endif %}</td>
+          <td class="administrador-td"><img class="administrador-img" src="{% static 'BookingRoomApp/img/document.png' %}" /></td>
         </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="administrador-td">No hay servicios registrados</td>
+        </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>

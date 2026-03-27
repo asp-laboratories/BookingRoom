@@ -101,11 +101,10 @@ class HistorialReservacionViw(generic.View):
         if not cuenta:
             return HttpResponseRedirect(reverse("login"))
         reservaciones = models.Reservacion.objects.select_related(
-                "cliente",
-                "estado_reserva",
-                "montaje__salon",
-            )
-        
+            "cliente",
+            "estado_reserva",
+            "montaje__salon",
+        )
 
         self.context = {"reservaciones": reservaciones, "rol": rol}
 
@@ -183,19 +182,19 @@ def reservacion_detalle_json(request, pk):
 
 def historial_detalle(request, pk):
     reservacion = get_object_or_404(models.Reservacion, pk=pk)
-    
-    pagos = models.Pago.objects.filter(reservacion=reservacion).order_by('no_pago')
-    
+
+    pagos = models.Pago.objects.filter(reservacion=reservacion).order_by("no_pago")
+
     primer_pago = 0
     segundo_pago = 0
-    
+
     for pago in pagos:
         if pago.no_pago == 1:
             primer_pago = pago.monto
         elif pago.no_pago == 2:
             segundo_pago = pago.monto
-    
-    ultimo_pago = pagos.order_by('-no_pago').first()
+
+    ultimo_pago = pagos.order_by("-no_pago").first()
     saldo = ultimo_pago.saldo if ultimo_pago else reservacion.total
 
     data = {
@@ -204,18 +203,66 @@ def historial_detalle(request, pk):
         "iva": str(reservacion.IVA),
         "primer_pago": str(primer_pago),
         "segundo_pago": str(segundo_pago),
-        "saldo": str(saldo)
+        "saldo": str(saldo),
     }
 
     return JsonResponse(data)
+
+
+# def servicios(request):
+#     cuenta, rol = get_cuenta_and_rol(request)
+#     if not cuenta:
+#         return HttpResponseRedirect(reverse("login"))
+
+#     return render(request, "BookingRoomApp/administracion/servicios.html", {"rol": rol})
+
+class Servicios(generic.ListView):
+    template_name = "BookingRoomApp/administracion/servicios.html"
+
+    def get(self, request):
+        cuenta, rol = get_cuenta_and_rol(request)
+        if not cuenta:
+            return HttpResponseRedirect(reverse("login"))
+        
+        servicios = models.Servicio.objects.select_related('tipo_servicio').all()
+        tipo_servicio = models.TipoServicio.objects.filter(disposicion=True)
+
+        return render(request, self.template_name, {
+            'servicios': servicios,
+            'tipo_servicio': tipo_servicio,
+            'rol': rol
+        })
 
 
 def servicios(request):
     cuenta, rol = get_cuenta_and_rol(request)
     if not cuenta:
         return HttpResponseRedirect(reverse("login"))
+    
+    if request.method == "POST":
+        form_servicios = request.POST.get('form_servicios')
 
-    return render(request, "BookingRoomApp/administracion/servicios.html", {"rol": rol})
+        if form_servicios == "servicio":
+            nombre = request.POST.get('nameServicio')
+            descripcion = request.POST.get('descripcion')
+            costo = request.POST.get('costoServicio')
+            tipo_servicio_id = request.POST.get('tipo_servicio')
+            
+            tipo_servicio = models.TipoServicio.objects.get(pk=tipo_servicio_id)
+
+            models.Servicio.objects.create(
+                nombre=nombre,
+                descripcion=descripcion,
+                costo=costo,
+                disposicion=True,
+                tipo_servicio=tipo_servicio
+            )
+    
+    return HttpResponseRedirect(reverse("servicios"))
+
+
+
+
 
 
 def trabajadores(request):
@@ -324,12 +371,50 @@ def registrar_trabajador(request):
     return HttpResponseRedirect(reverse("trabajadores"))
 
 
-def salones(request):
-    cuenta, rol = get_cuenta_and_rol(request)
-    if not cuenta:
-        return HttpResponseRedirect(reverse("login"))
+class Salones(generic.ListView):
+    template_name = "BookingRoomApp/administracion/salones.html"
+    context_object_name = 'salones'
+    
+    def get(self, request):
+        cuenta, rol = get_cuenta_and_rol(request)
+        if not cuenta:
+            return HttpResponseRedirect(reverse("login"))
+        
+        salones = models.Salon.objects.select_related('estado_salon').all()
+        estados = models.EstadoSalon.objects.all()
+        
+        return render(request, self.template_name, {
+            'salones': salones,
+            'estados': estados,
+            'rol': rol
+        })
 
-    return render(request, "BookingRoomApp/administracion/salones.html", {"rol": rol})
+
+
+def registrar_salones(request):
+    if request.method == "POST":
+        form_salones = request.POST.get("form_salones")
+
+        if form_salones == "salon":
+            nombre = request.POST.get("nameSalon")
+            costo = request.POST.get("costoSalon")
+            ubicacion = request.POST.get("ubicacionSalon")
+            altura = request.POST.get("alturaSalon")
+            ancho = request.POST.get("anchoSalon")
+            largo = request.POST.get("largoSalon")
+            metros = request.POST.get("meCuadra")
+
+            models.Salon.objects.create(
+                nombre=nombre,
+                costo=costo,
+                ubicacion=ubicacion,
+                dimenLargo=largo,
+                dimenAncho=ancho,
+                dimenAlto=altura,
+                metrosCuadrados=metros,
+                maxCapacidad=50,
+                estado_salon="ACT",
+            )
 
 
 def mobiliario(request):
@@ -342,14 +427,50 @@ def mobiliario(request):
     )
 
 
+class Equipamientos(generic.ListView):
+    template_name = "BookingRoomApp/administracion/equipamiento.html"
+
+    def get(self, request):
+        cuenta, rol = get_cuenta_and_rol(request)
+        if not cuenta:
+            return HttpResponseRedirect(reverse("login"))
+        
+        equipamientos = models.Equipamiento.objects.select_related('tipo_equipa').all()
+        tipos_equipa = models.TipoEquipa.objects.filter(disposicion=True)
+
+        return render(request, self.template_name, {
+            'equipamientos': equipamientos,
+            'tipos_equipa': tipos_equipa,
+            'rol': rol
+        })
+
+
 def equipamiento(request):
     cuenta, rol = get_cuenta_and_rol(request)
     if not cuenta:
         return HttpResponseRedirect(reverse("login"))
+    
+    if request.method == "POST":
+        form_equipamiento = request.POST.get('form_equipamiento')
 
-    return render(
-        request, "BookingRoomApp/administracion/equipamiento.html", {"rol": rol}
-    )
+        if form_equipamiento == "equipamiento":
+            nombre = request.POST.get('nameEquipamiento')
+            descripcion = request.POST.get('descripcion')
+            costo = request.POST.get('costoEquipamiento')
+            stock = request.POST.get('stockEquipamiento')
+            tipo_equipa_id = request.POST.get('tipo_equipa')
+            
+            tipo_equipa = models.TipoEquipa.objects.get(pk=tipo_equipa_id)
+
+            models.Equipamiento.objects.create(
+                nombre=nombre,
+                descripcion=descripcion,
+                costo=costo,
+                stock=stock,
+                tipo_equipa=tipo_equipa
+            )
+    
+    return HttpResponseRedirect(reverse("equipamiento"))
 
 
 # def historial_reservacion(request):

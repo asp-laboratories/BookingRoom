@@ -13,7 +13,11 @@
 
     <div class="administrador-formularios">
 
-        <form class="administrador-seccionFlex">
+
+        <form class="administrador-seccionFlex" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="form_salones" value="salon">
+
             <!--Segundo form par registrar dattos de trabajador-->
             <div class="administrador-segInputs">
                 <label class="administrador-label">Salon: <br>
@@ -39,24 +43,28 @@
 
                 <label class="administrador-label">Altura: <br>
                     <input class="administrador-input"
-                        type="text"
+                        type="number"
                         placeholder="Altura"
                         name="alturaSalon"
+                        id="altura-s"
                         required /></label>
 
                 <label class="administrador-label">Ancho: <br>
                     <input class="administrador-input"
-                        type="text"
+                        type="number"
                         placeholder="Ancho"
                         name="anchoSalon"
+                        id="ancho-s"
                         required /></label>
 
                 <label class="administrador-label">Largo: <br>
                     <input class="administrador-input"
-                        type="text"
+                        type="number"
                         placeholder="Largo"
                         name="largoSalon"
+                        id="largo-s"
                         required /></label>
+
 
                 <!-- Aca checar pa q genere automaticamente los metros cuadrados -->
                 <label class="administrador-label">Metros cuadrados: <br>
@@ -64,7 +72,10 @@
                         type="text"
                         placeholder="Metros cuadrados"
                         name="meCuadra"
-                        required /></label>
+                        id="metros"
+                        required 
+                        readonly
+                        /></label>
             </div>
 
             <button class="administrador-paGuarar"
@@ -105,18 +116,22 @@
             </thead>
 
             <tbody class="administrador-tbody">
-                <!-- aca va la logica del for onde se imprimen todos los trabajadores-->
+                {% for salon in salones %}
                 <tr>
-                    <td class="administrador-td">tomson</td>
-                    <td class="administrador-td">oe</td>
-                    <td class="administrador-td">tomson</td>
-                    <td
-                        class="administrador-td">tomseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeon</td>
-                    <td class="administrador-td">tomsogn</td>
-                    <td class="administrador-td">tomson</td>
-                    <td class="administrador-td">tomson</td>
-                    <td class="administrador-td"><img class="administrador-img" src="/document.png"></td>
+                    <td class="administrador-td">{{ salon.id }}</td>
+                    <td class="administrador-td">{{ salon.nombre }}</td>
+                    <td class="administrador-td">${{ salon.costo }}</td>
+                    <td class="administrador-td">{{ salon.ubicacion }}</td>
+                    <td class="administrador-td">{{ salon.dimenLargo }}x{{ salon.dimenAncho }}x{{ salon.dimenAlto }}</td>
+                    <td class="administrador-td">{{ salon.metrosCuadrados }}</td>
+                    <td class="administrador-td">{{ salon.estado_salon.nombre }}</td>
+                    <td class="administrador-td"><img class="administrador-img" src="{% static 'BookingRoomApp/img/document.png' %}"></td>
                 </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="administrador-td">No hay salones registrados</td>
+                </tr>
+                {% endfor %}
             </tbody>
 
         </table>
@@ -124,5 +139,23 @@
     </div>
 
 </div>
+                <script>
+const ancho = document.getElementById('ancho-s')
+const largo = document.getElementById('largo-s')
+const metros = document.getElementById('metros')
+
+function actualizarTotal() {
+    const resultado2 = parseFloat(ancho.value) || 0
+    const resultado3 = parseFloat(largo.value) || 0
+    metros.value = resultado2 * resultado3
+}
+
+ancho.addEventListener('input', actualizarTotal)
+largo.addEventListener('input', actualizarTotal)
+
+
+
+
+                </script>
 
 {% endblock inicio %}
