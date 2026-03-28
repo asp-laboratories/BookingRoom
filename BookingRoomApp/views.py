@@ -413,28 +413,7 @@ class Salones(generic.ListView):
             )
 
         return HttpResponseRedirect(reverse("salones"))
-        form_salones = request.POST.get("form_salones")
 
-        if form_salones == "salon":
-            nombre = request.POST.get("nameSalon")
-            costo = request.POST.get("costoSalon")
-            ubicacion = request.POST.get("ubicacionSalon")
-            altura = request.POST.get("alturaSalon")
-            ancho = request.POST.get("anchoSalon")
-            largo = request.POST.get("largoSalon")
-            metros = request.POST.get("meCuadra")
-
-            models.Salon.objects.create(
-                nombre=nombre,
-                costo=costo,
-                ubicacion=ubicacion,
-                dimenLargo=largo,
-                dimenAncho=ancho,
-                dimenAlto=altura,
-                metrosCuadrados=metros,
-                maxCapacidad=50,
-                estado_salon="ACT",
-            )
 
 
 class Mobiliarios(generic.ListView):
