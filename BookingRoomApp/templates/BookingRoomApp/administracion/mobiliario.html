@@ -11,33 +11,32 @@
 
     <h2>Registrar mobiliarios</h2>
 
-    <div class="administrador-formularios">
+    <div class="administrador-formularios" id="mobiliario-admin">
 
-        <form class="administrador-seccionFlex">
-            <!--Segundo form par registrar dattos de trabajador-->
+        <form class="administrador-seccionFlex" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="form_mobiliarios" value="mobiliario">
+            
             <div class="administrador-inputsAlgos">
 
                 <div class="administrador-datosMobiliario">
                     <label class="administrador-label">Nombre:
                         <input class="administrador-input" type="text"
                             placeholder="Nombre"
-                            name="nameServicio" required />
+                            name="nameMobiliario" required />
                     </label>
 
                     <label class="administrador-label">Tipo:
                         <div class="administrador-seccionTipos">
                             <select class="administrador-select"
-                                name="rolSeleccionado"
+                                name="tipo_mobil"
                                 id="itemAsig"
                                 required>
                                 <option value disabled selected
-                                    hidden>Tanga</option>
-                                <option
-                                    value="1">Recepcionista</option>
-                                <option
-                                    value="2">Almacenista</option>
-                                <option
-                                    value="3">Coordinador</option>
+                                    hidden>Seleccionar</option>
+                                {% for tipo in tipos_mobil %}
+                                <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                                {% endfor %}
                             </select>
                             <button type="button"
                                 class="administrador-botonCrearTipo">Crear
@@ -52,36 +51,32 @@
                     </label>
 
                     <label class="administrador-label">Costo:
-                        <input class="administrador-input" type="text"
+                        <input class="administrador-input" type="number" step="0.01"
                             placeholder="Costo"
-                            name="costoServicio" required />
+                            name="costoMobiliario" required />
                     </label>
 
                     <label class="administrador-label">Stock total:
-                        <input class="administrador-input" type="text"
+                        <input class="administrador-input" type="number"
                             placeholder="Cantidad"
                             name="stockTotal" required />
                     </label>
                 </div>
 
-                <div class="administrador-seccionCarac">
+                <div class="administrador-seccionCarac" >
                     <label class="administrador-label">Total caracteristicas:
                         <div class="administrador-totalCarac">
                             <button class="administrador-agregar-quitar"
-                                type="button">-</button>
-                            <span id="cantidadCaracteristicas">1</span>
-                            <button class="administrador-agregar-quitar"
-                                type="button">+</button>
+                                type="button" onclick="disminuirTotalInputs()">-</button>
+                            <input id="cantidadCaracteristicas" name="cantidad_caracteristicas" type="number" readonly/>
+                            <button id="agregar" class="administrador-agregar-quitar"
+                                type="button" onclick="aumentarTotalInputs()">+</button>
                         </div>
                     </label>
 
-                    <!-- ACa es la seccion dodne se imprimmen todas las cajitas de ingresos pa las caracteristicas del mobiliario -->
-                    <label class="administrador-label">Caracteristica 1:
-                        <input class="administrador-input" type="text"
-                            placeholder="Cantidad"
-                            name="caracterostoca-1" required />
+                    <div id="contenedor-caracteristicas">
 
-                    </label>
+                    </div>
                 </div>
 
             </div>
@@ -99,8 +94,8 @@
 
         <div class="administrador-entradaBusquedas">
             <input class="administrador-input" type="text"
-                placeholder="Buscar servicio"
-                name="busqTraba" required />
+                placeholder="Buscar mobiliario"
+                name="busqMobil" required />
 
             <button class="administrador-busqAlgo" type="submit">Buscar</button>
         </div>
@@ -121,17 +116,21 @@
             </thead>
 
             <tbody class="administrador-tbody">
-                <!-- aca va la logica del for onde se imprimen todos los trabajadores-->
+                {% for mobil in mobiliarios %}
                 <tr>
-                    <td class="administrador-td">tomson</td>
-                    <td class="administrador-td">oe</td>
-                    <td class="administrador-td">tomson</td>
-                    <td
-                        class="administrador-td">tomseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeon</td>
-                    <td class="administrador-td">tomsogn</td>
-                    <td class="administrador-td">tomson</td>
-                    <td class="administrador-td"><img class="administrador-img" src="/document.png"></td>
+                    <td class="administrador-td">{{ mobil.id }}</td>
+                    <td class="administrador-td">{{ mobil.nombre }}</td>
+                    <td class="administrador-td">{{ mobil.tipo_movil.nombre }}</td>
+                    <td class="administrador-td">{{ mobil.descripcion }}</td>
+                    <td class="administrador-td">${{ mobil.costo }}</td>
+                    <td class="administrador-td">{{ mobil.stock }}</td>
+                    <td class="administrador-td"><img class="administrador-img" src="{% static 'BookingRoomApp/img/document.png' %}"></td>
                 </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="administrador-td">No hay mobiliarios registrados</td>
+                </tr>
+                {% endfor %}
             </tbody>
 
         </table>
@@ -139,5 +138,7 @@
     </div>
 
 </div>
+
+<script src="{% static 'BookingRoomApp/js/administracion/crear-input.js' %}"></script>
 
 {% endblock inicio %}
