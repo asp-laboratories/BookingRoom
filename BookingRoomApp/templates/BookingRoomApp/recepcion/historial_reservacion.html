@@ -1,4 +1,7 @@
-{% extends "BookingRoomApp/base/base.html" %} {% load static %} {% block inicio %}
+{% extends "BookingRoomApp/base/base.html" %}
+{% load static %}
+
+{% block inicio %}
 
 <link
   rel="stylesheet"
@@ -6,80 +9,75 @@
 />
 
 <div class="historial-container">
-  <h2 class="historial-titulo">Historial de reservaciones</h2>
-  <div class="historial-contenedor">
-    <div class="historial-fila">
-      <input
-        type="text"
-        placeholder="Nombre del cliente"
-        class="historial-input"
-      />
-      <input type="text" placeholder="Reservación" class="historial-input" />
-    </div>
-    <table class="historial-tabla">
-      <thead>
-        <tr>
-          <th class="historial-th">Número</th>
-          <th class="historial-th">Nombre del evento</th>
-          <th class="historial-th">Cliente</th>
-          <th class="historial-th">Fecha de reservacion</th>
-          <th class="historial-th">Horario</th>
-          <th class="historial-th">Hora de creacion</th>
-          <th class="historial-th">Salón</th>
-          <th class="historial-th">Estado</th>
-          <th class="historial-th">Acción</th>
-        </tr>
-      </thead>
+  <h2 class="historial-titulo">Historial de reservaciones <small>({{ reservacion_total }} total)</small></h2>
+  
+  <form method="GET" action="" class="historial-fila">
+    <input
+      type="text"
+      placeholder="Buscar por nombre del evento o cliente"
+      class="historial-input"
+      name="nombre"
+      value="{{ nombre|default:'' }}"
+    />
+    
+    <select name="estado" id="filtro-estado" class="historial-input">
+      <option value="">Todos los estados</option>
+      {% for est in estados %}
+      <option value="{{ est.codigo }}">{{ est.nombre }}</option>
+      {% endfor %}
+    </select>
+    
+    <button type="submit" class="historial-btn">Buscar</button>
+    <a href="{% url 'historial_reservacion' %}"><button type="button" class="historial-btn">Limpiar</button></a>
+  </form>
 
-      <tbody>
-        <!-- <tr>
-                    <td class="historial-td">1</td>
-                    <td class="historial-td">Hacer del baño</td>
-                    <td class="historial-td">pepe</td>
-                    <td class="historial-td">23/02/2099</td>
-                    <td class="historial-td">18:00</td>
-                    <td class="historial-td">Salón</td>
-                    <td class="historial-td">Confirmado</td>
+  <table class="historial-tabla">
+    <thead>
+      <tr>
+        <th class="historial-th">Número</th>
+        <th class="historial-th">Nombre del evento</th>
+        <th class="historial-th">Cliente</th>
+        <th class="historial-th">Fecha de evento</th>
+        <th class="historial-th">Horario</th>
+        <th class="historial-th">Salón</th>
+        <th class="historial-th">Estado</th>
+        <th class="historial-th">Acción</th>
+      </tr>
+    </thead>
 
-                    <td class="historial-td">
-                        <button class="historial-btn" onclick="abrirPagos()">Ver pagos</button>
-                        <button class="historial-btn" onclick="abrirModalBEO()">Ver BEO</button>
-                    </td>
-                </tr> -->
+    <tbody>
+      {% for reservacion in reservaciones %}
+      <tr>
+        <td class="historial-td">{{reservacion.id}}</td>
+        <td class="historial-td">{{reservacion.nombreEvento}}</td>
+        <td class="historial-td">{{reservacion.cliente.nombre}}</td>
+        <td class="historial-td">{{reservacion.fechaEvento}}</td>
+        <td class="historial-td">{{reservacion.horaInicio}} - {{reservacion.horaFin}}</td>
+        <td class="historial-td">{{reservacion.montaje.salon.nombre}}</td>
+        <td class="historial-td">{{reservacion.estado_reserva.nombre}}</td>
 
-        {% for reservacion in reservaciones %}
-
-        <tr>
-          <td class="historial-td">{{reservacion.id}}</td>
-          <td class="historial-td">{{reservacion.nombreEvento}}</td>
-          <td class="historial-td">{{reservacion.cliente.nombre}}</td>
-          <td class="historial-td">{{reservacion.fechaEvento}}</td>
-          <td class="historial-td">{{reservacion.horaInicio}} - {{reservacion.horaFin}}</td>
-          <td class="historial-td">Hora</td>
-          <td class="historial-td">{{reservacion.montaje.salon.nombre}}</td>
-          <td class="historial-td">{{reservacion.estado_reserva.nombre}}</td>
-
-          <td class="historial-td">
-            <button
-              class="historial-btn ver-pagos"
-              data-pk="{{ reservacion.id }}"
-              onclick="abrirPagos()"
-            >
-              Ver pagos
-            </button>
-            <button
-              class="historial-btn ver-detalles"
-              data-pk="{{ reservacion.id }}"
-              onclick="abrirModalBEO()"
-            >
-              Ver BEO
-            </button>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+        <td class="historial-td">
+          <button
+            class="historial-btn ver-pagos"
+            data-pk="{{ reservacion.id }}"
+          >
+            Ver pagos
+          </button>
+          <button
+            class="historial-btn ver-detalles"
+            data-pk="{{ reservacion.id }}"
+          >
+            Ver BEO
+          </button>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" class="historial-td">No hay reservaciones</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 
 <div id="modalPagos" class="historial-modal">
@@ -153,160 +151,65 @@
       IVA: <br />
       Total:
     </div>
+
+    <div class="modal-botones">
+      <button class="btn-modal btn-aceptar">Aceptar</button>
+      <button class="btn-modal btn-denegar">Denegar</button>
+    </div>
   </div>
 </div>
-
-<dialog id="miModal" class="modal-beo">
-  <div class="cabecera-modal">
-    <span class="titulo-modal"
-      >SOLICITUD DE:
-      <span id="modal-titulo-evento"
-        >Orden de banquete de evento (BEO)</span
-      ></span
-    >
-    <button onclick="window.miModal.close()" class="cerrar-modal">X</button>
-  </div>
-
-  <div class="modal-grid">
-    <div class="modal-div modal-div-1">
-      <h3 class="titulo-info-cliente">Información del cliente</h3>
-
-      <div class="datos">
-        <div class="fila-dato">
-          <label>Nombre completo:</label>
-          <span id="cliente-nombre">-</span>
-        </div>
-        <div class="fila-dato">
-          <label>Correo electrónico:</label>
-          <span id="cliente-correo">-</span>
-        </div>
-        <div class="fila-dato">
-          <label>Teléfono:</label>
-          <span id="cliente-telefono">-</span>
-        </div>
-        <div class="fila-dato">
-          <label>RFC:</label>
-          <span id="cliente-rfc">-</span>
-        </div>
-        <div class="fila-dato">
-          <label>Nombre fiscal:</label>
-          <span id="cliente-nombre-fiscal">-</span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-div modal-div-2">
-      <h3 class="titulo-seccion-modal">Información del evento</h3>
-      <div class="datos">
-        <div class="fila-dato">
-          <label>Nombre:</label>
-          <span id="evento-nombre">-</span>
-        </div>
-        <div class="fila-dato">
-          <label>Descripción:</label>
-          <span id="evento-descripcion">-</span>
-        </div>
-        <div class="fila-dato">
-          <label>Fecha:</label>
-          <span id="evento-fecha">-</span>
-        </div>
-        <div class="fila-dato">
-          <label>Horario:</label>
-          <span id="evento-horario">-</span>
-        </div>
-        <div class="fila-dato">
-          <label>Estado:</label>
-          <span id="evento-estado">-</span>
-        </div>
-        <div class="fila-dato">
-          <label>Asistentes:</label>
-          <span id="evento-asistentes">-</span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-div modal-div-3">
-      <h3 class="titulo-seccion-modal">Salón y Montaje</h3>
-      <div class="datos">
-        <div class="fila-dato">
-          <label>Salón:</label>
-          <span id="salon-nombre">-</span>
-        </div>
-        <div class="fila-dato">
-          <label>Montaje:</label>
-          <span id="salon-montaje">-</span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-div modal-div-4">
-      <h3 class="titulo-seccion-modal">Servicios</h3>
-      <div class="datos">
-        <span id="servicios-lista">No hay servicios</span>
-      </div>
-    </div>
-    <div class="modal-div modal-div-5">
-      <h3 class="titulo-seccion-modal">Equipamientos</h3>
-      <div class="datos">
-        <span>No hay equipamientos</span>
-      </div>
-    </div>
-    <div class="modal-div modal-div-6">
-      <h3 class="titulo-seccion-modal">Totales</h3>
-      <div class="datos">
-        <div class="fila-dato">
-          <span>IVA:</span>
-          <span id="total-iva">$0.00</span>
-        </div>
-        <div class="fila-dato">
-          <span>Subtotal:</span>
-          <span id="total-subtotal">$0.00</span>
-        </div>
-        <div class="fila-dato">
-          <span>Total:</span>
-          <span id="total-total">$0.00</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-botones">
-    <button class="btn-modal btn-aceptar">Aceptar</button>
-    <button class="btn-modal btn-denegar" onclick="window.miModal.close()">
-      Denegar
-    </button>
-  </div>
-</dialog>
 
 <script src="{% static 'BookingRoomApp/js/reservacion/historial_reservacion.js' %}"></script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".ver-pagos").forEach((btn) => {
-      btn.addEventListener("click", async function () {
+      btn.addEventListener("click", function () {
         const pk = this.dataset.pk;
-
-        try {
-          const response = await fetch(`/recepcion/historial/${pk}/json/`);
-          if (!response.ok) throw new Error("Error al obtener datos");
-
-          const data = await response.json();
-
-          document.getElementById("subtotal-modal").textContent = `Subtotal: $${data.subtotal}`;
-          document.getElementById("iva-modal").textContent = `IVA: $${data.iva}`;
-          document.getElementById("total-modal").textContent = `Total: $${data.total}`;
-          document.getElementById("primer-pago").textContent = `Primer pago: $${data.primer_pago}`;
-          document.getElementById("segundo-pago").textContent = `Segundo pago: $${data.segundo_pago}`;
-          
-          if (data.saldo == "0.00") {
-            document.getElementById("saldo").textContent = `Saldo: $${data.saldo} (Pago completado)`;
-          } else {
+        fetch(`/recepcion/historial/${pk}/json/`)
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("subtotal-modal").textContent = `Subtotal: $${data.subtotal}`;
+            document.getElementById("iva-modal").textContent = `IVA: $${data.iva}`;
+            document.getElementById("total-modal").textContent = `Total: $${data.total}`;
+            document.getElementById("primer-pago").textContent = `Primer pago: $${data.primer_pago}`;
+            document.getElementById("segundo-pago").textContent = `Segundo pago: $${data.segundo_pago}`;
             document.getElementById("saldo").textContent = `Saldo: $${data.saldo}`;
-          }
+            document.getElementById("modalPagos").classList.add("mostrar");
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("No se pudo cargar los pagos");
+          });
+      });
+    });
 
-          document.getElementById("modalPagos").classList.add("mostrar");
-        } catch (error) {
-          console.error("Error:", error);
-          alert("No se pudo cargar los pagos");
-        }
+    document.querySelectorAll(".ver-detalles").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        document.getElementById("modalBEO").classList.add("mostrar");
       });
     });
   });
+
+  function cerrarPagos() {
+    document.getElementById("modalPagos").classList.remove("mostrar");
+  }
+
+  function cerrarBEO() {
+    document.getElementById("modalBEO").classList.remove("mostrar");
+  }
+
+  window.onclick = function (event) {
+    let pagos = document.getElementById("modalPagos");
+    let beo = document.getElementById("modalBEO");
+
+    if (event.target == pagos) {
+      pagos.classList.remove("mostrar");
+    }
+
+    if (event.target == beo) {
+      beo.classList.remove("mostrar");
+    }
+  };
 </script>
+
 {% endblock inicio %}

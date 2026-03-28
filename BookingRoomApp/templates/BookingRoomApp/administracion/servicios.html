@@ -7,6 +7,8 @@
 
 <div class="administrador-contenido">
   <h1 class="titulo-seccion">Servicios</h1>
+
+  <div>Cantidad de servicios registrados {{serviciosTotal}}</div>
   <h2>Registrar servicios</h2>
 
   <div class="administrador-formularios">
@@ -67,19 +69,39 @@
     </form>
   </div>
 
-  <form class="administrador-seccionBusq">
-    <h3 class="administrador-tituloSeccion">Busqueda</h3>
+  <form class="administrador-seccionBusq" method="GET">
+    <h3 class="administrador-tituloSeccion">Búsqueda</h3>
 
     <div class="administrador-entradaBusquedas">
       <input
         type="text"
         placeholder="Buscar servicio"
-        name="busqTraba"
+        name="nombre"
         class="administrador-input"
-        required
+        value="{{ nombre|default:'' }}"
       />
 
+      <select name="tipo" id="filtro-tipo" class="administrador-select">
+        <option value="">Todos los tipos</option>
+        {% for tipo in tipo_servicio %}
+        <option value="{{ tipo.id }}" {% if tipo == filtro_tipo %}selected{% endif %}>{{ tipo.nombre }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="orden" id="filtro-orden" class="administrador-select">
+        <option value="">Ordenar por</option>
+        <option value="costo_asc" {% if orden == 'costo_asc' %}selected{% endif %}>Menor a mayor costo</option>
+        <option value="costo_desc" {% if orden == 'costo_desc' %}selected{% endif %}>Mayor a menor costo</option>
+      </select>
+
+      <select name="disposicion" id="filtro-disposicion" class="administrador-select">
+        <option value="">Todos</option>
+        <option value="true" {% if disposicion == 'true' %}selected{% endif %}>Activos</option>
+        <option value="false" {% if disposicion == 'false' %}selected{% endif %}>Inactivos</option>
+      </select>
+
       <button class="administrador-busqAlgo" type="submit">Buscar</button>
+      <a href="{% url 'servicios' %}"><button type="button" class="administrador-busqAlgo">Limpiar</button></a>
     </div>
   </form>
 
@@ -92,7 +114,7 @@
           <th class="administrador-th">Tipo</th>
           <th class="administrador-th">Descripcion</th>
           <th class="administrador-th">Costo</th>
-          <th class="administrador-th">Disposicion</th>
+          <th class="administrador-th">Estado</th>
           <th class="administrador-th">Editar</th>
         </tr>
       </thead>
@@ -103,9 +125,15 @@
           <td class="administrador-td">{{ servicio.id }}</td>
           <td class="administrador-td">{{ servicio.nombre }}</td>
           <td class="administrador-td">{{ servicio.tipo_servicio.nombre }}</td>
-          <td class="administrador-td">{{ servicio.descripcion }}</td>
+          <td class="administrador-td" contenteditable="true" style="text-wrap: wrap; text-align: left;">{{ servicio.descripcion }}</td>
           <td class="administrador-td">${{ servicio.costo }}</td>
-          <td class="administrador-td">{% if servicio.disposicion %}Activo{% else %}Inactivo{% endif %}</td>
+          <td class="administrador-td">
+            {% if servicio.disposicion %}
+            <span style="color: green;">Activo</span>
+            {% else %}
+            <span style="color: red;">Inactivo</span>
+            {% endif %}
+          </td>
           <td class="administrador-td"><img class="administrador-img" src="{% static 'BookingRoomApp/img/document.png' %}" /></td>
         </tr>
         {% empty %}

@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Q
 from . import models
 
 try:
@@ -94,21 +95,42 @@ class Home(generic.View):
 
 class HistorialReservacionViw(generic.View):
     template_name = "BookingRoomApp/recepcion/historial_reservacion.html"
-    context = {}
 
     def get(self, request):
         cuenta, rol = get_cuenta_and_rol(request)
         if not cuenta:
             return HttpResponseRedirect(reverse("login"))
+        
         reservaciones = models.Reservacion.objects.select_related(
             "cliente",
             "estado_reserva",
             "montaje__salon",
         )
+        estados = models.EstadoReserva.objects.all()
+        reservacion_total = models.Reservacion.objects.count()
 
-        self.context = {"reservaciones": reservaciones, "rol": rol}
+        nombre = request.GET.get('nombre', '')
+        estado_filtro = request.GET.get('estado', '')
+        
+        if nombre:
+            reservaciones = reservaciones.filter(
+                Q(nombreEvento__icontains=nombre) |
+                Q(cliente__nombre__icontains=nombre)
+            )
+        
+        if estado_filtro:
+            reservaciones = reservaciones.filter(estado_reserva__codigo=estado_filtro)
 
-        return render(request, self.template_name, self.context)
+        reservaciones = reservaciones.order_by('-id').all()
+
+        return render(request, self.template_name, {
+            "reservaciones": reservaciones,
+            "estados": estados,
+            "rol": rol,
+            "nombre": nombre,
+            "estado_filtro": estado_filtro,
+            "reservacion_total": reservacion_total
+        })
 
 
 class ReservacionView(generic.View):
@@ -224,14 +246,48 @@ class Servicios(generic.ListView):
         cuenta, rol = get_cuenta_and_rol(request)
         if not cuenta:
             return HttpResponseRedirect(reverse("login"))
-
-        servicios = models.Servicio.objects.select_related("tipo_servicio").all()
+        
+        servicios = models.Servicio.objects.select_related("tipo_servicio")
+        serviciosTotal = models.Servicio.objects.count()
         tipo_servicio = models.TipoServicio.objects.filter(disposicion=True)
+        
+        nombre = request.GET.get('nombre', '')
+        tipo = request.GET.get('tipo', '')
+        orden = request.GET.get('orden', '')
+        disposicion = request.GET.get('disposicion', '')
+        
+        if nombre:
+            servicios = servicios.filter(nombre__icontains=nombre)
+        
+        if tipo:
+            servicios = servicios.filter(tipo_servicio_id=tipo)
+        
+        if orden == 'costo_asc':
+            servicios = servicios.order_by('costo')
+        elif orden == 'costo_desc':
+            servicios = servicios.order_by('-costo')
+        else:
+            servicios = servicios.order_by('-id')
+        
+        if disposicion == 'true':
+            servicios = servicios.filter(disposicion=True)
+        elif disposicion == 'false':
+            servicios = servicios.filter(disposicion=False)
+        
+        servicios = servicios.all()
 
         return render(
             request,
             self.template_name,
-            {"servicios": servicios, "tipo_servicio": tipo_servicio, "rol": rol},
+            {
+                "servicios": servicios,
+                "tipo_servicio": tipo_servicio,
+                "rol": rol,
+                "nombre": nombre,
+                "orden": orden,
+                "disposicion": disposicion,
+                "serviciosTotal": serviciosTotal,
+            },
         )
 
     def post(self, request):
@@ -260,22 +316,57 @@ class Servicios(generic.ListView):
         return HttpResponseRedirect(reverse("servicios"))
 
 
+class Trabajadores(generic.ListView):
+    template_name = "BookingRoomApp/administracion/trabajadores.html"
+
+    def get(self, request):
+        cuenta, rol = get_cuenta_and_rol(request)
+        if not cuenta:
+            return HttpResponseRedirect(reverse("login"))
+
+        if rol != "ADMIN":
+            return HttpResponseRedirect(reverse("home"))
+
+        trabajadores_list = models.Trabajador.objects.select_related("cuenta", "rol")
+        roles = models.Rol.objects.all()
+        trabajador_total = models.Trabajador.objects.count()
+
+        nombre = request.GET.get('nombre', '')
+        no_empleado = request.GET.get('no_empleado', '')
+        rol_filtro = request.GET.get('rol', '')
+        
+        if nombre:
+            trabajadores_list = trabajadores_list.filter(
+                Q(nombre__icontains=nombre) |
+                Q(apellidoPaterno__icontains=nombre) |
+                Q(apelidoMaterno__icontains=nombre)
+            )
+        
+        if no_empleado:
+            trabajadores_list = trabajadores_list.filter(no_empleado__icontains=no_empleado)
+        
+        if rol_filtro:
+            trabajadores_list = trabajadores_list.filter(rol_id=rol_filtro)
+
+        trabajadores_list = trabajadores_list.all()
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "roles": roles,
+                "trabajadores": trabajadores_list,
+                "rol": rol,
+                "nombre": nombre,
+                "no_empleado": no_empleado,
+                "rol_filtro": rol_filtro,
+                "trabajador_total": trabajador_total
+            },
+        )
+
+
 def trabajadores(request):
-    cuenta, rol = get_cuenta_and_rol(request)
-    if not cuenta:
-        return HttpResponseRedirect(reverse("login"))
-
-    if rol != "ADMIN":
-        return HttpResponseRedirect(reverse("home"))
-
-    roles = models.Rol.objects.all()
-    trabajadores_list = models.Trabajador.objects.select_related("cuenta", "rol").all()
-
-    return render(
-        request,
-        "BookingRoomApp/administracion/trabajadores.html",
-        {"roles": roles, "trabajadores": trabajadores_list, "rol": rol},
-    )
+    return HttpResponseRedirect(reverse("trabajadores"))
 
 
 def registrar_trabajador(request):
@@ -375,14 +466,46 @@ class Salones(generic.ListView):
         if not cuenta:
             return HttpResponseRedirect(reverse("login"))
 
-        salones = models.Salon.objects.select_related("estado_salon").all()
+        salones = models.Salon.objects.select_related("estado_salon")
         estados = models.EstadoSalon.objects.all()
+        salon_total = models.Salon.objects.count()
+
+        nombre = request.GET.get('nombre', '')
+        estado = request.GET.get('estado', '')
+        orden = request.GET.get('orden', '')
+        
+        if nombre:
+            salones = salones.filter(nombre__icontains=nombre)
+        
+        if estado:
+            salones = salones.filter(estado_salon_id=estado)
+        
+        if orden == 'costo_asc':
+            salones = salones.order_by('costo')
+        elif orden == 'costo_desc':
+            salones = salones.order_by('-costo')
+        elif orden == 'nombre':
+            salones = salones.order_by('nombre')
+        else:
+            salones = salones.order_by('-id')
+
+        salones = salones.all()
 
         return render(
             request,
             self.template_name,
-            {"salones": salones, "estados": estados, "rol": rol},
+            {
+                "salones": salones,
+                "estados": estados,
+                "rol": rol,
+                "nombre": nombre,
+                "estado": estado,
+                "orden": orden,
+                "salon_total": salon_total
+            },
         )
+
+
 
     def post(self, request):
         cuenta, rol = get_cuenta_and_rol(request)
@@ -424,13 +547,36 @@ class Mobiliarios(generic.ListView):
         if not cuenta:
             return HttpResponseRedirect(reverse("login"))
         
-        mobiliarios = models.Mobiliario.objects.select_related('tipo_movil').prefetch_related('descripcion_mob').all()
+        mobiliarios = models.Mobiliario.objects.select_related('tipo_movil').prefetch_related('descripcion_mob')
         tipos_mobil = models.TipoMobil.objects.filter(disposicion=True)
+        mobiliario_total = models.Mobiliario.objects.count()
+
+        nombre = request.GET.get('nombre', '')
+        tipo = request.GET.get('tipo', '')
+        orden = request.GET.get('orden', '')
+        
+        if nombre:
+            mobiliarios = mobiliarios.filter(nombre__icontains=nombre)
+        
+        if tipo:
+            mobiliarios = mobiliarios.filter(tipo_movil_id=tipo)
+        
+        if orden == 'costo_asc':
+            mobiliarios = mobiliarios.order_by('costo')
+        elif orden == 'costo_desc':
+            mobiliarios = mobiliarios.order_by('-costo')
+        else:
+            mobiliarios = mobiliarios.order_by('-id')
+
+        mobiliarios = mobiliarios.all()
 
         return render(request, self.template_name, {
             'mobiliarios': mobiliarios,
             'tipos_mobil': tipos_mobil,
-            'rol': rol
+            'rol': rol,
+            'nombre': nombre,
+            'orden': orden,
+            'mobiliario_total': mobiliario_total
         })
 
     def post(self, request):
@@ -477,14 +623,42 @@ class Equipamientos(generic.ListView):
         if not cuenta:
             return HttpResponseRedirect(reverse("login"))
 
-        equipamientos = models.Equipamiento.objects.select_related("tipo_equipa").all()
+        equipamientos = models.Equipamiento.objects.select_related("tipo_equipa")
         tipos_equipa = models.TipoEquipa.objects.filter(disposicion=True)
+        equipamiento_total = models.Equipamiento.objects.count()
+
+        nombre = request.GET.get('nombre', '')
+        tipo = request.GET.get('tipo', '')
+        orden = request.GET.get('orden', '')
+        
+        if nombre:
+            equipamientos = equipamientos.filter(nombre__icontains=nombre)
+        
+        if tipo:
+            equipamientos = equipamientos.filter(tipo_equipa_id=tipo)
+        
+        if orden == 'costo_asc':
+            equipamientos = equipamientos.order_by('costo')
+        elif orden == 'costo_desc':
+            equipamientos = equipamientos.order_by('-costo')
+        else:
+            equipamientos = equipamientos.order_by('-id')
+
+        equipamientos = equipamientos.all()
 
         return render(
             request,
             self.template_name,
-            {"equipamientos": equipamientos, "tipos_equipa": tipos_equipa, "rol": rol},
+            {
+                "equipamientos": equipamientos,
+                "tipos_equipa": tipos_equipa,
+                "rol": rol,
+                'nombre': nombre,
+                'orden': orden,
+                'equipamiento_total': equipamiento_total
+            },
         )
+    
 
     def post(self, request):
         cuenta, rol = get_cuenta_and_rol(request)

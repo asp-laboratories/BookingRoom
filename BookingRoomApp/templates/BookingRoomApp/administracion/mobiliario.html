@@ -7,7 +7,7 @@
     href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
 
 <div class="administrador-contenido">
-    <h1 class="titulo-seccion">Mobiliarios</h1>
+    <h1 class="titulo-seccion">Mobiliarios <small>({{ mobiliario_total }} total)</small></h1>
 
     <h2>Registrar mobiliarios</h2>
 
@@ -67,10 +67,10 @@
                     <label class="administrador-label">Total caracteristicas:
                         <div class="administrador-totalCarac">
                             <button class="administrador-agregar-quitar"
-                                type="button" onclick="disminuirTotalInputs()">-</button>
+                                type="button" onclick="disminuirTotalInputs(event)">-</button>
                             <input id="cantidadCaracteristicas" name="cantidad_caracteristicas" type="number" readonly/>
                             <button id="agregar" class="administrador-agregar-quitar"
-                                type="button" onclick="aumentarTotalInputs()">+</button>
+                                type="button" onclick="aumentarTotalInputs(event)">+</button>
                         </div>
                     </label>
 
@@ -88,16 +88,29 @@
 
     </div>
 
-    <form class="administrador-seccionBusq">
-
-        <h3 class="administrador-tituloSeccion">Busqueda</h3>
+    <form class="administrador-seccionBusq" method="GET">
+        <h3 class="administrador-tituloSeccion">Búsqueda</h3>
 
         <div class="administrador-entradaBusquedas">
             <input class="administrador-input" type="text"
                 placeholder="Buscar mobiliario"
-                name="busqMobil" required />
+                name="nombre" value="{{ nombre|default:'' }}" />
+
+            <select name="tipo" id="filtro-tipo" class="administrador-select">
+                <option value="">Todos los tipos</option>
+                {% for tipo in tipos_mobil %}
+                <option value="{{ tipo.id }}" {% if tipo.id|slugify == tipo %}selected{% endif %}>{{ tipo.nombre }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="orden" id="filtro-orden" class="administrador-select">
+                <option value="">Ordenar por</option>
+                <option value="costo_asc" {% if orden == 'costo_asc' %}selected{% endif %}>Menor a mayor costo</option>
+                <option value="costo_desc" {% if orden == 'costo_desc' %}selected{% endif %}>Mayor a menor costo</option>
+            </select>
 
             <button class="administrador-busqAlgo" type="submit">Buscar</button>
+            <a href="{% url 'mobiliario' %}"><button type="button" class="administrador-busqAlgo">Limpiar</button></a>
         </div>
     </form>
 

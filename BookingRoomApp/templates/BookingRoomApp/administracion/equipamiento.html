@@ -7,7 +7,7 @@
     href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
 
 <div class="administrador-contenido">
-    <h1 class="titulo-seccion">Equipamientos</h1>
+    <h1 class="titulo-seccion">Equipamientos <small>({{ equipamiento_total }} total)</small></h1>
 
     <h2>Registrar equipamientos</h2>
 
@@ -62,15 +62,28 @@
 
     </div>
 
-    <form class="administrador-seccionBusq">
-
-        <h3 class="administrador-tituloSeccion">Busqueda</h3>
+    <form class="administrador-seccionBusq" method="GET">
+        <h3 class="administrador-tituloSeccion">Búsqueda</h3>
 
         <div class="administrador-entradaBusquedas">
             <input class="administrador-input" type="text" placeholder="Buscar equipamiento"
-                name="busqEquipamiento" required />
+                name="nombre" value="{{ nombre|default:'' }}" />
+
+            <select name="tipo" id="filtro-tipo" class="administrador-select">
+                <option value="">Todos los tipos</option>
+                {% for tipo in tipos_equipa %}
+                <option value="{{ tipo.id }}" {% if tipo.id|slugify == tipo %}selected{% endif %}>{{ tipo.nombre }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="orden" id="filtro-orden" class="administrador-select">
+                <option value="">Ordenar por</option>
+                <option value="costo_asc" {% if orden == 'costo_asc' %}selected{% endif %}>Menor a mayor costo</option>
+                <option value="costo_desc" {% if orden == 'costo_desc' %}selected{% endif %}>Mayor a menor costo</option>
+            </select>
 
             <button class="administrador-busqAlgo" type="submit">Buscar</button>
+            <a href="{% url 'equipamiento' %}"><button type="button" class="administrador-busqAlgo">Limpiar</button></a>
         </div>
     </form>
 

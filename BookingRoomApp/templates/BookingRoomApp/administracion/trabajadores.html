@@ -7,7 +7,7 @@
     href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
 
 <div class="administrador-contenido">
-    <h1 class="titulo-seccion">Trabajadores</h1>
+    <h1 class="titulo-seccion">Trabajadores <small>({{ trabajador_total }} total)</small></h1>
 
     <h2>Registrar trabajadores</h2>
 
@@ -130,27 +130,34 @@
         </form>
     </div>
 
-    <form class="administrador-seccionBusq">
-
-        <h3 class="administrador-tituloSeccion">Busqueda</h3>
+    <form class="administrador-seccionBusq" method="GET">
+        <h3 class="administrador-tituloSeccion">Búsqueda</h3>
 
         <div class="administrador-entradaBusquedas">
             <input
                 type="text"
-                placeholder="Buscar trabajador"
-                name="busqTraba"
+                placeholder="Buscar por nombre"
+                name="nombre"
                 class="administrador-input"
-                required />
+                value="{{ nombre|default:'' }}" />
 
-            <select name="rolSeleccionado" id="itemBusq"
+            <input
+                type="text"
+                placeholder="Buscar por No. Empleado"
+                name="no_empleado"
+                class="administrador-input"
+                value="{{ no_empleado|default:'' }}" />
+
+            <select name="rol" id="filtro-rol"
                 class="administrador-select">
-                <option value selected hidden>Ningun seleccionado</option>
+                <option value="">Todos los roles</option>
                 {% for rol in roles %}
-                <option value="{{ rol.codigo }}">{{ rol.nombre }}</option>
+                <option value="{{ rol.codigo }}" {% if rol.codigo == rol_filtro %}selected{% endif %}>{{ rol.nombre }}</option>
                 {% endfor %}
             </select>
 
-            <button class="administrador-paGuarar" type="submit">Buscar</button>
+            <button class="administrador-busqAlgo" type="submit">Buscar</button>
+            <a href="{% url 'trabajadores' %}"><button type="button" class="administrador-busqAlgo">Limpiar</button></a>
         </div>
     </form>
 
@@ -182,7 +189,11 @@
                     <td class="administrador-td">{{ trabajador.correo_electronico }}</td>
                     <td class="administrador-td">{{ trabajador.rol.nombre }}</td>
                     <td class="administrador-td"><img class="administrador-img"
-                            src="/document.png"></td>
+                            src="{% static 'BookingRoomApp/img/document.png' %}"></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="administrador-td">No hay trabajadores registrados</td>
                 </tr>
                 {% endfor %}
             </tbody>

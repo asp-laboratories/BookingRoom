@@ -7,18 +7,16 @@
     href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
 
 <div class="administrador-contenido">
-    <h1 class="titulo-seccion">Salones</h1>
+    <h1 class="titulo-seccion">Salones <small>({{ salon_total }} total)</small></h1>
 
     <h2>Registrar salones</h2>
 
     <div class="administrador-formularios">
 
-
         <form class="administrador-seccionFlex" method="POST">
         {% csrf_token %}
         <input type="hidden" name="form_salones" value="salon">
 
-            <!--Segundo form par registrar dattos de trabajador-->
             <div class="administrador-segInputs">
                 <label class="administrador-label">Salon: <br>
                     <input class="administrador-input"
@@ -29,7 +27,8 @@
 
                 <label class="administrador-label">Costo: <br>
                     <input class="administrador-input"
-                        type="text"
+                        type="number"
+                        step="0.01"
                         placeholder="Costo"
                         name="costoSalon"
                         required /></label>
@@ -65,8 +64,6 @@
                         id="largo-s"
                         required /></label>
 
-
-                <!-- Aca checar pa q genere automaticamente los metros cuadrados -->
                 <label class="administrador-label">Metros cuadrados: <br>
                     <input class="administrador-input"
                         type="text"
@@ -85,18 +82,32 @@
 
     </div>
 
-    <form class="administrador-seccionBusq">
-
-        <h3 class="administrador-tituloSeccion">Busqueda</h3>
+    <form class="administrador-seccionBusq" method="GET">
+        <h3 class="administrador-tituloSeccion">Búsqueda</h3>
 
         <div class="administrador-entradaBusquedas">
             <input class="administrador-input"
                 type="text"
                 placeholder="Buscar salon"
-                name="busqTraba"
-                required />
+                name="nombre"
+                value="{{ nombre|default:'' }}" />
 
-            <button class="administrador-paGuarar" type="submit">Buscar</button>
+            <select name="estado" id="filtro-estado" class="administrador-select">
+                <option value="">Todos los estados</option>
+                {% for estado in estados %}
+                <option value="{{ estado.id }}" {% if estado.id|slugify == estado %}selected{% endif %}>{{ estado.nombre }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="orden" id="filtro-orden" class="administrador-select">
+                <option value="">Ordenar por</option>
+                <option value="nombre" {% if orden == 'nombre' %}selected{% endif %}>Nombre</option>
+                <option value="costo_asc" {% if orden == 'costo_asc' %}selected{% endif %}>Menor a mayor costo</option>
+                <option value="costo_desc" {% if orden == 'costo_desc' %}selected{% endif %}>Mayor a menor costo</option>
+            </select>
+
+            <button class="administrador-busqAlgo" type="submit">Buscar</button>
+            <a href="{% url 'salones' %}"><button type="button" class="administrador-busqAlgo">Limpiar</button></a>
         </div>
     </form>
 
@@ -139,23 +150,20 @@
     </div>
 
 </div>
-                <script>
-const ancho = document.getElementById('ancho-s')
-const largo = document.getElementById('largo-s')
-const metros = document.getElementById('metros')
+
+<script>
+const ancho = document.getElementById('ancho-s');
+const largo = document.getElementById('largo-s');
+const metros = document.getElementById('metros');
 
 function actualizarTotal() {
-    const resultado2 = parseFloat(ancho.value) || 0
-    const resultado3 = parseFloat(largo.value) || 0
-    metros.value = resultado2 * resultado3
+    const resultado2 = parseFloat(ancho.value) || 0;
+    const resultado3 = parseFloat(largo.value) || 0;
+    metros.value = resultado2 * resultado3;
 }
 
-ancho.addEventListener('input', actualizarTotal)
-largo.addEventListener('input', actualizarTotal)
-
-
-
-
-                </script>
+ancho.addEventListener('input', actualizarTotal);
+largo.addEventListener('input', actualizarTotal);
+</script>
 
 {% endblock inicio %}
