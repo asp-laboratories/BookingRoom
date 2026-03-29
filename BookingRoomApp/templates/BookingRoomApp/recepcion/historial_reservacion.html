@@ -9,7 +9,16 @@
 />
 
 <div class="historial-container">
-  <h2 class="historial-titulo">Historial de reservaciones <small>({{ reservacion_total }} total)</small></h2>
+  <h2 class="historial-titulo">Historial de reservaciones</h2>
+
+  <div class="indicador">
+    <div>
+        Cantidad de reservaciones:
+    </div>
+    <div class="cantidad">
+        {{reservacion_total}}
+    </div>
+  </div>
   
   <form method="GET" action="" class="historial-fila">
     <input

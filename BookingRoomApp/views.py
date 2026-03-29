@@ -248,7 +248,7 @@ class Servicios(generic.ListView):
             return HttpResponseRedirect(reverse("login"))
         
         servicios = models.Servicio.objects.select_related("tipo_servicio")
-        serviciosTotal = models.Servicio.objects.count()
+        servicio_total = models.Servicio.objects.count()
         tipo_servicio = models.TipoServicio.objects.filter(disposicion=True)
         
         nombre = request.GET.get('nombre', '')
@@ -286,7 +286,7 @@ class Servicios(generic.ListView):
                 "nombre": nombre,
                 "orden": orden,
                 "disposicion": disposicion,
-                "serviciosTotal": serviciosTotal,
+                "servicio_total": servicio_total,
             },
         )
 

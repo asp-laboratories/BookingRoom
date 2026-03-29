@@ -6,12 +6,20 @@
 <link rel="stylesheet"
     href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
 
-<div class="administrador-contenido">
-    <h1 class="titulo-seccion">Mobiliarios <small>({{ mobiliario_total }} total)</small></h1>
+<div class="administrador-contenido administrador-registro-contenido">
+    <h1 class="titulo-seccion">Registro de Mobiliarios</h1>
 
-    <h2>Registrar mobiliarios</h2>
+    <div class="indicador">
+        <div>
+            Cantidad de mobiliarios:
+        </div>
+        <div class="cantidad">
+            {{mobiliario_total}}
+        </div>
+    </div>
 
     <div class="administrador-formularios" id="mobiliario-admin">
+    <h2 class="administrador-tituloSeccion">Registrar mobiliario</h2>
 
         <form class="administrador-seccionFlex" method="POST">
             {% csrf_token %}
@@ -137,7 +145,13 @@
                     <td class="administrador-td">{{ mobil.descripcion }}</td>
                     <td class="administrador-td">${{ mobil.costo }}</td>
                     <td class="administrador-td">{{ mobil.stock }}</td>
-                    <td class="administrador-td"><img class="administrador-img" src="{% static 'BookingRoomApp/img/document.png' %}"></td>
+                    <td class="administrador-td">
+                        <a class="boton-editar">
+                            <svg class="icono blanco">
+                                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-edit"></use>
+                            </svg>
+                        </a>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>

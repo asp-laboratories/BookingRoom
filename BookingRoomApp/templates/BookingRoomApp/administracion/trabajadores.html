@@ -6,10 +6,17 @@
 <link rel="stylesheet"
     href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
 
-<div class="administrador-contenido">
-    <h1 class="titulo-seccion">Trabajadores <small>({{ trabajador_total }} total)</small></h1>
+<div class="administrador-contenido administrador-registro-contenido">
+    <h1 class="titulo-seccion">Registro de Trabajadores</h1>
 
-    <h2>Registrar trabajadores</h2>
+    <div class="indicador">
+        <div>
+            Cantidad de trabajadores:
+        </div>
+        <div class="cantidad">
+            {{trabajador_total}}
+        </div>
+    </div>
 
     {% if messages %}
         {% for message in messages %}
@@ -18,7 +25,7 @@
     {% endif %}
 
     <div class="administrador-formularios">
-        <h3 class="administrador-tituloSeccion">Usuario</h3>
+        <h3 class="administrador-tituloSeccion">Crear cuenta</h3>
         <form class="administrador-seccionFlex" method="POST" action="{% url 'registrar_trabajador' %}">
             {% csrf_token %}
             <input type="hidden" name="form_tipo" value="cuenta">
@@ -62,7 +69,7 @@
     </div>
 
     <div class="administrador-formularios">
-        <h3 class="administrador-tituloSeccion">Trabajador</h3>
+        <h3 class="administrador-tituloSeccion">Datos del Trabajador</h3>
         <form class="administrador-seccionFlex" method="POST" action="{% url 'registrar_trabajador' %}">
             {% csrf_token %}
             <input type="hidden" name="form_tipo" value="trabajador">
@@ -188,8 +195,13 @@
                     <td class="administrador-td">{{ trabajador.telefono }}</td>
                     <td class="administrador-td">{{ trabajador.correo_electronico }}</td>
                     <td class="administrador-td">{{ trabajador.rol.nombre }}</td>
-                    <td class="administrador-td"><img class="administrador-img"
-                            src="{% static 'BookingRoomApp/img/document.png' %}"></td>
+                    <td class="administrador-td">
+                        <a class="boton-editar">
+                            <svg class="icono blanco">
+                                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-edit"></use>
+                            </svg>
+                        </a>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>

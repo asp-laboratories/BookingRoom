@@ -5,17 +5,28 @@
 
 <link rel="stylesheet" href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
 
-<div class="administrador-contenido">
-  <h1 class="titulo-seccion">Servicios</h1>
+<div class="administrador-contenido administrador-registro-contenido">
+  <h1 class="titulo-seccion">Registro de Servicios</h1>
 
-  <div>Cantidad de servicios registrados {{serviciosTotal}}</div>
-  <h2>Registrar servicios</h2>
+
+      <div class="indicador">
+        <div>
+            Cantidad de servicios:
+        </div>
+        <div class="cantidad">
+            {{servicio_total}}
+        </div>
+      </div>
+
 
   <div class="administrador-formularios">
+  <h2 class="administrador-tituloSeccion">Registrar servicio</h2>
+
     <form class="administrador-seccionFlex" method="POST">
         {% csrf_token %}
         <input type="hidden" name="form_servicios" value="servicio">
-      <div class="administrador-seccionFlex">
+      
+        <div class="administrador-seccionFlex">
         <label class="administrador-label"
           >Nombre:
           <input
@@ -134,7 +145,13 @@
             <span style="color: red;">Inactivo</span>
             {% endif %}
           </td>
-          <td class="administrador-td"><img class="administrador-img" src="{% static 'BookingRoomApp/img/document.png' %}" /></td>
+          <td class="administrador-td">
+            <a class="boton-editar">
+                <svg class="icono blanco">
+                    <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-edit"></use>
+                </svg>
+            </a>
+          </td>
         </tr>
         {% empty %}
         <tr>

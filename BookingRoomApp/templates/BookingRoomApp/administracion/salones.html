@@ -6,12 +6,20 @@
 <link rel="stylesheet"
     href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
 
-<div class="administrador-contenido">
-    <h1 class="titulo-seccion">Salones <small>({{ salon_total }} total)</small></h1>
+<div class="administrador-contenido administrador-registro-contenido">
+    <h1 class="titulo-seccion">Registro de Salones</h1>
 
-    <h2>Registrar salones</h2>
+    <div class="indicador">
+        <div>
+            Cantidad de salones:
+        </div>
+        <div class="cantidad">
+            {{salon_total}}
+        </div>
+    </div>
 
     <div class="administrador-formularios">
+    <h2 class="administrador-tituloSeccion" >Registrar salon</h2>
 
         <form class="administrador-seccionFlex" method="POST">
         {% csrf_token %}
@@ -136,7 +144,13 @@
                     <td class="administrador-td">{{ salon.dimenLargo }}x{{ salon.dimenAncho }}x{{ salon.dimenAlto }}</td>
                     <td class="administrador-td">{{ salon.metrosCuadrados }}</td>
                     <td class="administrador-td">{{ salon.estado_salon.nombre }}</td>
-                    <td class="administrador-td"><img class="administrador-img" src="{% static 'BookingRoomApp/img/document.png' %}"></td>
+                    <td class="administrador-td">
+                        <a class="boton-editar">
+                            <svg class="icono blanco">
+                                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-edit"></use>
+                            </svg>
+                        </a>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>

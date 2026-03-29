@@ -11,10 +11,47 @@
   padding: 15px;
 }
 
+.administrador-input{
+  border-right: 2px solid var(--color-primario);
+  border-bottom: 2px solid var(--color-primario);
+  margin-top: 10px;
 
+}
+
+.administrador-input:focus{
+  border: none;
+  outline: 2px solid var(--color-primario);
+}
+
+.administrador-registro-contenido {
+  margin: 2%;
+}
 
 .administrador-select {
   cursor: pointer;
+  border: 1px solid var(--color-primario);
+  border-radius: 5px;
+  padding: 10px 15px;
+  font-size: 14px;
+  background-color: white;
+  color: #333;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239c5c31' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 35px;
+}
+
+.administrador-select:focus {
+  border: none;
+  outline: 1px solid var(--color-primario);
+  outline-offset: 1px;
+}
+
+.administrador-select option {
+  padding: 10px;
+  background-color: white;
 }
 
 .administrador-label {
@@ -48,8 +85,32 @@
   gap: 5px;
 }
 
+.indicador {
+  background-color: #9b582b;
+  width: 350px;
+  height: 170px;
+  border-radius: 10px;
+  font-weight: bold;
+  color: white;
+  padding: 10px;
+  font-size: 1.5em;
+  margin-bottom: 1%;
+  box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 3.2px;
+}
+
+.cantidad {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 2em;
+}
+
+.titulo-seccion {
+  margin: 0% 0% 2% 0%;
+}
+
 .administrador-tituloSeccion {
-  margin: 0;
+  margin-bottom: 2%;
+  font-size: 1.2em;
 }
 
 .administrador-formularios,
@@ -64,7 +125,6 @@
   margin-bottom: 15px;
   margin-right: 10px;
 
-
   border-radius: 5px;
 }
 
@@ -73,8 +133,16 @@
 }
 
 .administrador-seccionBusq {
-  padding: 5px;
+  padding: 10px;
   gap: 5px;
+}
+
+.administrador-seccionBusq .administrador-tituloSeccion {
+  margin: 0;
+}
+
+.administrador-seccionBusq .administrador-input {
+  margin: 0;
 }
 
 .administrador-datosMobiliario {
@@ -124,9 +192,49 @@
   align-self: flex-end;
 }
 
+.administrador-entradaBusquedas a.administrador-busqAlgo {
+  display: block;
+  width: auto;
+  padding: 10px 50px;
+  background-color: var(--color-terciario);
+  color: white;
+  text-decoration: none;
+  border-radius: 10px;
+  margin-left: 10px;
+  line-height: 1;
+  border: none;
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: bold;
+}
+
 .administrador-seccionCarac {
   display: flex;
   flex-direction: column;
+}
+
+.boton-editar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: var(--color-boton-accion);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.boton-editar:hover {
+  background-color: var(--color-secundario);
+}
+
+.boton-editar svg {
+  width: 20px;
+  height: 20px;
+}
+
+.boton-editar .icono {
+  fill: white;
 }
 
 .administrador-botonCrearTipo {
@@ -139,6 +247,7 @@
   width: 100%;
   gap: 5px;
   flex-wrap: wrap;
+  margin-top: 10px;
 }
 
 .administrador-seccionTipos select {
@@ -152,10 +261,18 @@
 
 .administrador-entradaBusquedas {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   padding: 5px;
   gap: 5px;
   width: 100%;
+}
+
+.administrador-entradaBusquedas > * {
+  align-self: center;
+}
+
+.administrador-entradaBusquedas a {
+  align-self: center;
 }
 
 .administrador-entradaBusquedas input {
@@ -178,12 +295,11 @@
   overflow-y: auto;
   border-radius: 5px;
   background-color: transparent;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .administrador-tabla {
-  border-collapse: collapse;
   width: 100%;
+  border-collapse: collapse;
   table-layout: fixed;
 }
 
@@ -196,6 +312,20 @@
   top: 0;
   background-color: var(--color-primario);
   color: #fff;
+  border: 1px solid var(--color-primario) !important;
+  box-shadow: none;
+}
+
+.administrador-thead {
+  border: none;
+}
+
+.administrador-thead tr {
+  border: none;
+}
+
+.administrador-thead th + th {
+  border-left: none;
 }
 
 .administrador-td,
@@ -205,14 +335,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   border: 1px solid rgba(155, 88, 43, 0.3);
-
   padding: 10px;
-}
-
-.administrador-img {
-  background-color: #2b5f9b;
-  border-radius: 5px;
-  cursor: pointer;
 }
 
 .administrador-inputGrid {
@@ -221,7 +344,7 @@
   display: grid;
   grid-template-columns: repeat(4, auto);
   justify-items: start;
-  gap: 5px;
+  gap: 10px;
 }
 
 @media (width <= 850px) {
@@ -287,4 +410,8 @@
   .equipamiento-tabla {
     min-width: 600px;
   }
+}
+
+.administrador-busqAlgo{
+  background-color: var(--color-boton-accion);
 }
