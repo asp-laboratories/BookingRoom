@@ -240,4 +240,97 @@
 
 .titulo-modal-pago{
   margin-bottom: 10px;  
+}
+
+dialog.modal-editar {
+  border: none;
+  width: 420px;
+  max-width: 90%;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 0 10px #444;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+}
+
+dialog.modal-editar::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.modal-editar-content {
+  width: 100%;
+  position: relative;
+}
+
+.modal-editar-content label {
+  display: block;
+  margin: 8px 0 4px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.modal-editar-content input,
+.modal-editar-content select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.modal-editar-content input:disabled {
+  background-color: #eee;
+  cursor: not-allowed;
+}
+
+.modal-editar-content details {
+  margin-bottom: 10px;
+  background: #f9f9f9;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.modal-editar-content details summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 5px 0;
+}
+
+.modal-editar-content .modal-botones {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-editar-content .btn-modal {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.modal-editar-content .btn-aceptar {
+  background-color: #198754;
+  color: white;
+}
+
+.modal-editar-content .btn-aceptar:hover {
+  background-color: #157347;
+}
+
+.modal-editar-content .btn-denegar {
+  background-color: #dc3545;
+  color: white;
+}
+
+.modal-editar-content .btn-denegar:hover {
+  background-color: #bb2d3b;
 } 

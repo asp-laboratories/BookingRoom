@@ -1,7 +1,6 @@
 {% extends "BookingRoomApp/base/base.html" %}
-{% load static %}
-
-{% block inicio %}
+ {% load static %} 
+ {% block inicio %}
 
 <link
   rel="stylesheet"
@@ -11,15 +10,6 @@
 <div class="historial-container">
   <h2 class="historial-titulo">Historial de reservaciones</h2>
 
-  <div class="indicador">
-    <div>
-        Cantidad de reservaciones:
-    </div>
-    <div class="cantidad">
-        {{reservacion_total}}
-    </div>
-  </div>
-  
   <form method="GET" action="" class="historial-fila">
     <input
       type="text"
@@ -28,16 +18,18 @@
       name="nombre"
       value="{{ nombre|default:'' }}"
     />
-    
+
     <select name="estado" id="filtro-estado" class="historial-input">
       <option value="">Todos los estados</option>
       {% for est in estados %}
       <option value="{{ est.codigo }}">{{ est.nombre }}</option>
       {% endfor %}
     </select>
-    
+
     <button type="submit" class="historial-btn">Buscar</button>
-    <a href="{% url 'historial_reservacion' %}"><button type="button" class="historial-btn">Limpiar</button></a>
+    <a href="{% url 'historial_reservacion' %}"
+      ><button type="button" class="historial-btn">Limpiar</button></a
+    >
   </form>
 
   <table class="historial-tabla">
@@ -61,7 +53,9 @@
         <td class="historial-td">{{reservacion.nombreEvento}}</td>
         <td class="historial-td">{{reservacion.cliente.nombre}}</td>
         <td class="historial-td">{{reservacion.fechaEvento}}</td>
-        <td class="historial-td">{{reservacion.horaInicio}} - {{reservacion.horaFin}}</td>
+        <td class="historial-td">
+          {{reservacion.horaInicio}} - {{reservacion.horaFin}}
+        </td>
         <td class="historial-td">{{reservacion.montaje.salon.nombre}}</td>
         <td class="historial-td">{{reservacion.estado_reserva.nombre}}</td>
 
@@ -73,10 +67,17 @@
             Ver pagos
           </button>
           <button
-            class="historial-btn ver-detalles"
+            class="historial-btn ver-beo"
             data-pk="{{ reservacion.id }}"
           >
             Ver BEO
+          </button>
+
+          <button
+            class="historial-btn editar-reservacion"
+            data-pk="{{ reservacion.id }}"
+          >
+            Editar
           </button>
         </td>
       </tr>
@@ -109,64 +110,204 @@
   </div>
 </div>
 
-<div id="modalBEO" class="modal-beo-info">
-  <div class="modal-beo-content">
-    <span class="modal-beo-close" onclick="cerrarBEO()">×</span>
+<dialog id="modalEditar" class="modal-editar">
+  <div class="modal-editar-content">
+    <span class="historial-close" onclick="cerrarEditar()">×</span>
 
-    <h2 style="text-align: center">Orden de banquete de evento (BEO)</h2>
-    <div class="modal-beo-grid">
-      <div class="modal-beo-card">
-        <h4>Información del cliente</h4>
-        <p>Nombre:</p>
-        <p>Teléfono:</p>
-        <p>Correo electrónico:</p>
-        <p>Dirección:</p>
-        <p>RFC:</p>
-        <p>Nombre fiscal:</p>
-      </div>
+    <h3 class="titulo-modal-pago campos-modal-pago">
+      <b>EDITAR RESERVACIÓN</b>
+    </h3>
 
-      <div class="modal-beo-card">
-        <h4>Información del evento</h4>
-        <p>Nombre:</p>
-        <p>Descripción:</p>
-        <p>Fecha:</p>
-        <p>Horario:</p>
-        <p>Estado:</p>
-        <p>Estimado de asistentes:</p>
-      </div>
-    </div>
+    <details open>
+      <summary>
+        <h4 class="titulo-modal-pago campos-modal-pago">Datos del cliente</h4>
+      </summary>
 
-    <h4 class="modal-beo-section-title">Configuración del espacio</h4>
-    <div class="modal-beo-card">
-      Salón: <br />
-      Montaje:
-    </div>
+      <label>Nombre</label>
+      <input type="text" id="edit-cliente-nombre">
 
-    <div class="modal-beo-grid">
-      <div class="modal-beo-card">
-        <h4>Servicios incluidos</h4>
-        <p>No hay servicios</p>
-      </div>
+      <label>Correo</label>
+      <input type="text" id="edit-cliente-correo">
 
-      <div class="modal-beo-card">
-        <h4>Equipamiento incluidos</h4>
-        <p>No hay equipamientos</p>
-      </div>
-    </div>
+      <label>Teléfono</label>
+      <input type="text" id="edit-cliente-telefono">
 
-    <h4 class="modal-beo-section-title">Coste del evento</h4>
-    <div class="modal-beo-card">
-      Subtotal: <br />
-      IVA: <br />
-      Total:
-    </div>
+      <label>RFC</label>
+      <input type="text" id="edit-cliente-rfc">
+
+      <label>Nombre fiscal</label>
+      <input type="text" id="edit-cliente-nombre-fiscal">
+    </details>
+
+    <details open>
+      <summary>
+        <h4 class="titulo-modal-pago campos-modal-pago">Datos del evento</h4>
+      </summary>
+
+      <label>Nombre del evento</label>
+      <input type="text" id="edit-evento-nombre">
+
+      <label>Descripción</label>
+      <input type="text" id="edit-evento-descripcion">
+
+      <label>Fecha</label>
+      <input type="date" id="edit-evento-fecha">
+
+      <label>Hora de inicio</label>
+      <input type="time" id="edit-evento-hora-inicio">
+
+      <label>Hora de fin</label>
+      <input type="time" id="edit-evento-hora-fin">
+
+      <label>Cambiar estado</label>
+      <select id="edit-evento-estado">
+        {% for est in estados %}
+        <option value="{{ est.codigo }}">{{ est.nombre }}</option>
+        {% endfor %}
+      </select>
+
+      <label>Asistentes</label>
+      <input type="number" id="edit-evento-asistentes">
+    </details>
+
+    <details open>
+      <summary>
+        <h4 class="titulo-modal-pago campos-modal-pago">Espacio físico</h4>
+      </summary>
+
+      <label>Salón</label>
+      <input type="text" id="edit-salon-nombre" disabled>
+
+      <label>Montaje</label>
+      <input type="text" id="edit-salon-montaje" disabled>
+    </details>
 
     <div class="modal-botones">
-      <button class="btn-modal btn-aceptar">Aceptar</button>
-      <button class="btn-modal btn-denegar">Denegar</button>
+      <button class="btn-modal btn-aceptar" id="btn-guardar-edicion">Guardar cambios</button>
+      <button class="btn-modal btn-denegar" onclick="cerrarEditar()">
+        Cancelar
+      </button>
     </div>
   </div>
-</div>
+</dialog>
+
+<dialog id="modalBEO" class="modal-beo">
+  <div class="cabecera-modal">
+    <span class="titulo-modal"
+      >SOLICITUD DE:
+      <span id="beo-titulo-evento">Orden de banquete de evento (BEO)</span></span
+    >
+    <button onclick="window.modalBEO.close()" class="cerrar-modal">X</button>
+  </div>
+
+  <div class="modal-grid">
+    <div class="modal-div modal-div-1">
+      <h3 class="titulo-info-cliente">Información del cliente</h3>
+
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Nombre completo:</label>
+          <span id="beo-cliente-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Correo electrónico:</label>
+          <span id="beo-cliente-correo">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Teléfono:</label>
+          <span id="beo-cliente-telefono">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>RFC:</label>
+          <span id="beo-cliente-rfc">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Nombre fiscal:</label>
+          <span id="beo-cliente-nombre-fiscal">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-2">
+      <h3 class="titulo-seccion-modal">Información del evento</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Nombre:</label>
+          <span id="beo-evento-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Descripción:</label>
+          <span id="beo-evento-descripcion">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Fecha:</label>
+          <span id="beo-evento-fecha">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Horario:</label>
+          <span id="beo-evento-horario">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Estado:</label>
+          <span id="beo-evento-estado">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Asistentes:</label>
+          <span id="beo-evento-asistentes">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-3">
+      <h3 class="titulo-seccion-modal">Salón y Montaje</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Salón:</label>
+          <span id="beo-salon-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Montaje:</label>
+          <span id="beo-salon-montaje">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-4">
+      <h3 class="titulo-seccion-modal">Servicios</h3>
+      <div class="datos">
+        <span id="beo-servicios-lista">No hay servicios</span>
+      </div>
+    </div>
+    <div class="modal-div modal-div-5">
+      <h3 class="titulo-seccion-modal">Equipamientos</h3>
+      <div class="datos">
+        <span id="beo-equipamientos-lista">No hay equipamientos</span>
+      </div>
+    </div>
+    <div class="modal-div modal-div-6">
+      <h3 class="titulo-seccion-modal">Totales</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <span>IVA:</span>
+          <span id="beo-total-iva">$0.00</span>
+        </div>
+        <div class="fila-dato">
+          <span>Subtotal:</span>
+          <span id="beo-total-subtotal">$0.00</span>
+        </div>
+        <div class="fila-dato">
+          <span>Total:</span>
+          <span id="beo-total-total">$0.00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-botones">
+    <button class="btn-modal btn-aceptar">Aceptar</button>
+    <button class="btn-modal btn-denegar" onclick="window.modalBEO.close()">
+      Denegar
+    </button>
+  </div>
+</dialog>
+
 
 <script src="{% static 'BookingRoomApp/js/reservacion/historial_reservacion.js' %}"></script>
 <script>
@@ -177,12 +318,18 @@
         fetch(`/recepcion/historial/${pk}/json/`)
           .then((response) => response.json())
           .then((data) => {
-            document.getElementById("subtotal-modal").textContent = `Subtotal: $${data.subtotal}`;
-            document.getElementById("iva-modal").textContent = `IVA: $${data.iva}`;
-            document.getElementById("total-modal").textContent = `Total: $${data.total}`;
-            document.getElementById("primer-pago").textContent = `Primer pago: $${data.primer_pago}`;
-            document.getElementById("segundo-pago").textContent = `Segundo pago: $${data.segundo_pago}`;
-            document.getElementById("saldo").textContent = `Saldo: $${data.saldo}`;
+            document.getElementById("subtotal-modal").textContent =
+              `Subtotal: $${data.subtotal}`;
+            document.getElementById("iva-modal").textContent =
+              `IVA: $${data.iva}`;
+            document.getElementById("total-modal").textContent =
+              `Total: $${data.total}`;
+            document.getElementById("primer-pago").textContent =
+              `Primer pago: $${data.primer_pago}`;
+            document.getElementById("segundo-pago").textContent =
+              `Segundo pago: $${data.segundo_pago}`;
+            document.getElementById("saldo").textContent =
+              `Saldo: $${data.saldo}`;
             document.getElementById("modalPagos").classList.add("mostrar");
           })
           .catch((error) => {
@@ -192,9 +339,114 @@
       });
     });
 
-    document.querySelectorAll(".ver-detalles").forEach((btn) => {
-      btn.addEventListener("click", function () {
-        document.getElementById("modalBEO").classList.add("mostrar");
+    document.querySelectorAll(".ver-beo").forEach((btn) => {
+      btn.addEventListener("click", async function () {
+        const pk = this.dataset.pk;
+
+        try {
+          const response = await fetch(`/home/${pk}/json/`);
+          if (!response.ok) throw new Error("Error al obtener datos");
+
+          const data = await response.json();
+
+          document.getElementById("beo-titulo-evento").textContent =
+            data.nombre_evento || "Orden de banquete de evento (BEO)";
+
+          document.getElementById("beo-cliente-nombre").textContent =
+            `${data.cliente.nombre} ${data.cliente.apellido_paterno} ${data.cliente.apellido_materno}`;
+          document.getElementById("beo-cliente-correo").textContent =
+            data.cliente.correo;
+          document.getElementById("beo-cliente-telefono").textContent =
+            data.cliente.telefono;
+          document.getElementById("beo-cliente-rfc").textContent = data.cliente.rfc;
+          document.getElementById("beo-cliente-nombre-fiscal").textContent =
+            data.cliente.nombre_fiscal;
+
+          document.getElementById("beo-evento-nombre").textContent =
+            data.nombre_evento;
+          document.getElementById("beo-evento-descripcion").textContent =
+            data.descripcion;
+          document.getElementById("beo-evento-fecha").textContent = data.fecha;
+          document.getElementById("beo-evento-horario").textContent =
+            `${data.hora_inicio} - ${data.hora_fin}`;
+          document.getElementById("beo-evento-estado").textContent = data.estado;
+          document.getElementById("beo-evento-asistentes").textContent =
+            data.asistentes;
+
+          document.getElementById("beo-salon-nombre").textContent = data.salon;
+          document.getElementById("beo-salon-montaje").textContent = data.montaje;
+
+          const serviciosSpan = document.getElementById("beo-servicios-lista");
+          if (data.servicios && data.servicios.length > 0) {
+            serviciosSpan.textContent = data.servicios.join(", ");
+          } else {
+            serviciosSpan.textContent = "No hay servicios";
+          }
+
+          document.getElementById("beo-total-iva").textContent = `$${data.iva}`;
+          document.getElementById("beo-total-subtotal").textContent =
+            `$${data.subtotal}`;
+          document.getElementById("beo-total-total").textContent = `$${data.total}`;
+
+          window.modalBEO.showModal();
+        } catch (error) {
+          console.error("Error:", error);
+          alert("No se pudo cargar los detalles de la reservación");
+        }
+      });
+    });
+
+    document.querySelectorAll(".editar-reservacion").forEach((btn) => {
+      btn.addEventListener("click", async function () {
+        const pk = this.dataset.pk;
+
+        try {
+          const response = await fetch(`/home/${pk}/json/`);
+          if (!response.ok) throw new Error("Error al obtener datos");
+
+          const data = await response.json();
+
+          document.getElementById("edit-cliente-nombre").value =
+            `${data.cliente.nombre} ${data.cliente.apellido_paterno} ${data.cliente.apellido_materno}`.trim();
+          document.getElementById("edit-cliente-correo").value =
+            data.cliente.correo || "";
+          document.getElementById("edit-cliente-telefono").value =
+            data.cliente.telefono || "";
+          document.getElementById("edit-cliente-rfc").value =
+            data.cliente.rfc || "";
+          document.getElementById("edit-cliente-nombre-fiscal").value =
+            data.cliente.nombre_fiscal || "";
+
+          document.getElementById("edit-evento-nombre").value =
+            data.nombre_evento || "";
+          document.getElementById("edit-evento-descripcion").value =
+            data.descripcion || "";
+          document.getElementById("edit-evento-fecha").value = data.fecha || "";
+          document.getElementById("edit-evento-hora-inicio").value =
+            data.hora_inicio || "";
+          document.getElementById("edit-evento-hora-fin").value =
+            data.hora_fin || "";
+          document.getElementById("edit-evento-asistentes").value =
+            data.asistentes || "";
+
+          const estadoSelect = document.getElementById("edit-evento-estado");
+          for (let option of estadoSelect.options) {
+            if (option.textContent === data.estado) {
+              option.selected = true;
+              break;
+            }
+          }
+
+          document.getElementById("edit-salon-nombre").value = data.salon || "";
+          document.getElementById("edit-salon-montaje").value = data.montaje || "";
+
+          document.getElementById("btn-guardar-edicion").dataset.pk = pk;
+
+          window.modalEditar.showModal();
+        } catch (error) {
+          console.error("Error:", error);
+          alert("No se pudo cargar los datos para editar");
+        }
       });
     });
   });
@@ -203,22 +455,11 @@
     document.getElementById("modalPagos").classList.remove("mostrar");
   }
 
-  function cerrarBEO() {
-    document.getElementById("modalBEO").classList.remove("mostrar");
+  function cerrarEditar() {
+    window.modalEditar.close();
   }
-
-  window.onclick = function (event) {
-    let pagos = document.getElementById("modalPagos");
-    let beo = document.getElementById("modalBEO");
-
-    if (event.target == pagos) {
-      pagos.classList.remove("mostrar");
-    }
-
-    if (event.target == beo) {
-      beo.classList.remove("mostrar");
-    }
-  };
 </script>
+
+
 
 {% endblock inicio %}
