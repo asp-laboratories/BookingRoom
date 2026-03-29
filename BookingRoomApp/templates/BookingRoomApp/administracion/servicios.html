@@ -5,6 +5,9 @@
 
 <link rel="stylesheet" href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
 
+{% include "BookingRoomApp/includes/alert-confirmar.html" %}
+{% include "BookingRoomApp/includes/alert-cancelar.html" %}
+
 <div class="administrador-contenido administrador-registro-contenido">
   <h1 class="titulo-seccion">Registro de Servicios</h1>
 
@@ -76,7 +79,16 @@
           />
         </label>
       </div>
-      <button class="administrador-paGuarar" type="submit">Guardar</button>
+      <button class="administrador-paGuarar" type="button" onclick="mostrarConfirmacion()">Guardar</button>
+    </form>
+    
+    <form id="form-servicio" method="POST" style="display: none;">
+        {% csrf_token %}
+        <input type="hidden" name="form_servicios" value="servicio">
+        <input type="hidden" name="nameServicio" id="hidden-nombre">
+        <input type="hidden" name="tipo_servicio" id="hidden-tipo">
+        <input type="hidden" name="descripcion" id="hidden-descripcion">
+        <input type="hidden" name="costoServicio" id="hidden-costo">
     </form>
   </div>
 
@@ -126,31 +138,46 @@
           <th class="administrador-th">Descripcion</th>
           <th class="administrador-th">Costo</th>
           <th class="administrador-th">Estado</th>
-          <th class="administrador-th">Editar</th>
+          <th class="administrador-th">Acciones</th>
         </tr>
       </thead>
 
-      <tbody class="administrador-tbody">
+      <tbody class="administrador-tbody" id="tabla-servicios">
         {% for servicio in servicios %}
-        <tr>
-          <td class="administrador-td">{{ servicio.id }}</td>
-          <td class="administrador-td">{{ servicio.nombre }}</td>
-          <td class="administrador-td">{{ servicio.tipo_servicio.nombre }}</td>
-          <td class="administrador-td" contenteditable="true" style="text-wrap: wrap; text-align: left;">{{ servicio.descripcion }}</td>
-          <td class="administrador-td">${{ servicio.costo }}</td>
-          <td class="administrador-td">
+        <tr data-id="{{ servicio.id }}" 
+            data-tipo-id="{{ servicio.tipo_servicio.id }}"
+            data-nombre="{{ servicio.nombre }}"
+            data-descripcion="{{ servicio.descripcion }}"
+            data-costo="{{ servicio.costo }}"
+            data-disposicion="{{ servicio.disposicion|yesno:'true,false' }}">
+          <td class="administrador-td servicio-id">{{ servicio.id }}</td>
+          <td class="administrador-td celda-nombre">{{ servicio.nombre }}</td>
+          <td class="administrador-td celda-tipo">{{ servicio.tipo_servicio.nombre }}</td>
+          <td class="administrador-td celda-descripcion">{{ servicio.descripcion }}</td>
+          <td class="administrador-td celda-costo">${{ servicio.costo }}</td>
+          <td class="administrador-td celda-disposicion">
             {% if servicio.disposicion %}
-            <span style="color: green;">Activo</span>
+            <span class="estado-badge activo">Activo</span>
             {% else %}
-            <span style="color: red;">Inactivo</span>
+            <span class="estado-badge inactivo">Inactivo</span>
             {% endif %}
           </td>
-          <td class="administrador-td">
-            <a class="boton-editar">
-                <svg class="icono blanco">
-                    <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-edit"></use>
-                </svg>
-            </a>
+          <td class="administrador-td servicio-acciones">
+            <button type="button" class="btn-editar" onclick="editarRegistro({{ servicio.id }})" title="Editar">
+              <svg class="icono blanco">
+                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-edit"></use>
+              </svg>
+            </button>
+            <button type="button" class="btn-guardar" style="display: none;" onclick="guardarRegistro({{ servicio.id }})" title="Guardar">
+              <svg class="icono blanco">
+                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-save"></use>
+              </svg>
+            </button>
+            <button type="button" class="btn-cancelar" style="display: none;" onclick="cancelarEdicionInline({{ servicio.id }})" title="Cancelar">
+              <svg class="icono blanco">
+                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-cancel"></use>
+              </svg>
+            </button>
           </td>
         </tr>
         {% empty %}
@@ -162,5 +189,93 @@
     </table>
   </div>
 </div>
+
+<style>
+  .servicio-edicion input,
+  .servicio-edicion select {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+  
+  .servicio-edicion select {
+    min-width: 80px;
+  }
+  
+  .btn-editar, .btn-guardar, .btn-cancelar {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-editar {
+    background-color: #0d6efd;
+  }
+  
+  .btn-editar:hover {
+    background-color: #084298;
+  }
+  
+  .btn-guardar {
+    background-color: var(--color-boton-guardar);
+  }
+  
+  .btn-guardar:hover {
+    background-color: #157347;
+  }
+  
+  .btn-cancelar {
+    background-color: var(--color-boton-cancelar);
+  }
+  
+  .btn-cancelar:hover {
+    background-color: #CA301B;
+  }
+  
+  .estado-badge {
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  
+  .estado-badge.activo {
+    background-color: #d1e7dd;
+    color: #0f5132;
+  }
+  
+  .estado-badge.inactivo {
+    background-color: #f8d7da;
+    color: #842029;
+  }
+</style>
+
+<script src="{% static 'BookingRoomApp/js/inline-edit.js' %}"></script>
+<script>
+  const tiposServicio = [
+    {% for tipo in tipo_servicio %}
+      { id: {{ tipo.id }}, nombre: "{{ tipo.nombre }}" },
+    {% endfor %}
+  ];
+  
+  configurarInlineEdit({
+    nombreSingular: 'servicio',
+    urlActualizar: '/administracion/servicios/0/actualizar/',
+    campoObligatorio: 'nombre',
+    campoNombre: 'nombre',
+    campos: [
+      { nombre: 'nombre', clase: 'celda-nombre', tipo: 'texto' },
+      { nombre: 'tipo_servicio', clase: 'celda-tipo', tipo: 'select-db', opcionesVar: 'tiposServicio', dataAttr: 'tipoId' },
+      { nombre: 'descripcion', clase: 'celda-descripcion', tipo: 'texto' },
+      { nombre: 'costo', clase: 'celda-costo', tipo: 'numero' },
+      { nombre: 'disposicion', clase: 'celda-disposicion', tipo: 'booleano' }
+    ]
+  });
+</script>
 
 {% endblock inicio %}

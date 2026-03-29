@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
+from django.db import transaction
 from . import models
 
 try:
@@ -129,7 +130,8 @@ class HistorialReservacionViw(generic.View):
             "rol": rol,
             "nombre": nombre,
             "estado_filtro": estado_filtro,
-            "reservacion_total": reservacion_total
+            "reservacion_total": reservacion_total,
+            "messages": messages.get_messages(request),
         })
 
 
@@ -287,6 +289,7 @@ class Servicios(generic.ListView):
                 "orden": orden,
                 "disposicion": disposicion,
                 "servicio_total": servicio_total,
+                "messages": messages.get_messages(request),
             },
         )
 
@@ -313,7 +316,214 @@ class Servicios(generic.ListView):
                 tipo_servicio=tipo_servicio,
             )
 
+            messages.success(request, f'El servicio: {nombre} fue registrado exitosamente')
+
         return HttpResponseRedirect(reverse("servicios"))
+
+
+@csrf_exempt
+def actualizar_servicio(request, pk):
+    if request.method == 'POST':
+        try:
+            servicio = models.Servicio.objects.get(pk=pk)
+            
+            nombre = request.POST.get('nombre')
+            descripcion = request.POST.get('descripcion')
+            costo = request.POST.get('costo')
+            tipo_servicio_id = request.POST.get('tipo_servicio')
+            disposicion = request.POST.get('disposicion') == 'true'
+            
+            if nombre:
+                servicio.nombre = nombre
+            if descripcion:
+                servicio.descripcion = descripcion
+            if costo:
+                servicio.costo = costo
+            if tipo_servicio_id:
+                tipo_servicio = models.TipoServicio.objects.get(pk=tipo_servicio_id)
+                servicio.tipo_servicio = tipo_servicio
+            
+            servicio.disposicion = disposicion
+            servicio.save()
+            
+            messages.success(request, f'Servicio "{servicio.nombre}" actualizado correctamente')
+            return HttpResponseRedirect(reverse('servicios'))
+            
+        except models.Servicio.DoesNotExist:
+            messages.error(request, 'Servicio no encontrado')
+            return HttpResponseRedirect(reverse('servicios'))
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+            return HttpResponseRedirect(reverse('servicios'))
+    
+    return HttpResponseRedirect(reverse('servicios'))
+
+
+def actualizar_salon(request, pk):
+    if request.method == 'POST':
+        try:
+            salon = models.Salon.objects.get(pk=pk)
+            
+            nombre = request.POST.get('nombre')
+            costo = request.POST.get('costo')
+            ubicacion = request.POST.get('ubicacion')
+            dimenLargo = request.POST.get('dimenLargo')
+            dimenAncho = request.POST.get('dimenAncho')
+            dimenAlto = request.POST.get('dimenAlto')
+            metrosCuadrados = request.POST.get('metrosCuadrados')
+            maxCapacidad = request.POST.get('maxCapacidad')
+            estado_salon_codigo = request.POST.get('estado_salon')
+            
+            if nombre:
+                salon.nombre = nombre
+            if costo:
+                salon.costo = costo
+            if ubicacion:
+                salon.ubicacion = ubicacion
+            if dimenLargo:
+                salon.dimenLargo = dimenLargo
+            if dimenAncho:
+                salon.dimenAncho = dimenAncho
+            if dimenAlto:
+                salon.dimenAlto = dimenAlto
+            if metrosCuadrados:
+                salon.metrosCuadrados = metrosCuadrados
+            if maxCapacidad:
+                salon.maxCapacidad = maxCapacidad
+            if estado_salon_codigo:
+                estado = models.EstadoSalon.objects.get(codigo=estado_salon_codigo)
+                salon.estado_salon = estado
+            
+            salon.save()
+            
+            messages.success(request, f'Salón "{salon.nombre}" actualizado correctamente')
+            return HttpResponseRedirect(reverse('salones'))
+            
+        except models.Salon.DoesNotExist:
+            messages.error(request, 'Salón no encontrado')
+            return HttpResponseRedirect(reverse('salones'))
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+            return HttpResponseRedirect(reverse('salones'))
+    
+    return HttpResponseRedirect(reverse('salones'))
+
+
+def actualizar_mobiliario(request, pk):
+    if request.method == 'POST':
+        try:
+            mobiliario = models.Mobiliario.objects.get(pk=pk)
+            
+            nombre = request.POST.get('nombre')
+            descripcion = request.POST.get('descripcion')
+            costo = request.POST.get('costo')
+            stock = request.POST.get('stock')
+            tipo_movil_id = request.POST.get('tipo_movil')
+            
+            if nombre:
+                mobiliario.nombre = nombre
+            if descripcion:
+                mobiliario.descripcion = descripcion
+            if costo:
+                mobiliario.costo = costo
+            if stock:
+                mobiliario.stock = stock
+            if tipo_movil_id:
+                tipo_movil = models.TipoMobil.objects.get(pk=tipo_movil_id)
+                mobiliario.tipo_movil = tipo_movil
+            
+            mobiliario.save()
+            
+            messages.success(request, f'Mobiliario "{mobiliario.nombre}" actualizado correctamente')
+            return HttpResponseRedirect(reverse('mobiliario'))
+            
+        except models.Mobiliario.DoesNotExist:
+            messages.error(request, 'Mobiliario no encontrado')
+            return HttpResponseRedirect(reverse('mobiliario'))
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+            return HttpResponseRedirect(reverse('mobiliario'))
+    
+    return HttpResponseRedirect(reverse('mobiliario'))
+
+
+def actualizar_equipamiento(request, pk):
+    if request.method == 'POST':
+        try:
+            equipamiento = models.Equipamiento.objects.get(pk=pk)
+            
+            nombre = request.POST.get('nombre')
+            descripcion = request.POST.get('descripcion')
+            costo = request.POST.get('costo')
+            stock = request.POST.get('stock')
+            tipo_equipa_id = request.POST.get('tipo_equipa')
+            
+            if nombre:
+                equipamiento.nombre = nombre
+            if descripcion:
+                equipamiento.descripcion = descripcion
+            if costo:
+                equipamiento.costo = costo
+            if stock:
+                equipamiento.stock = stock
+            if tipo_equipa_id:
+                tipo_equipa = models.TipoEquipa.objects.get(pk=tipo_equipa_id)
+                equipamiento.tipo_equipa = tipo_equipa
+            
+            equipamiento.save()
+            
+            messages.success(request, f'Equipamiento "{equipamiento.nombre}" actualizado correctamente')
+            return HttpResponseRedirect(reverse('equipamiento'))
+            
+        except models.Equipamiento.DoesNotExist:
+            messages.error(request, 'Equipamiento no encontrado')
+            return HttpResponseRedirect(reverse('equipamiento'))
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+            return HttpResponseRedirect(reverse('equipamiento'))
+    
+    return HttpResponseRedirect(reverse('equipamiento'))
+
+
+def actualizar_trabajador(request, pk):
+    if request.method == 'POST':
+        try:
+            trabajador = models.Trabajador.objects.get(pk=pk)
+            
+            nombre = request.POST.get('nombre')
+            apellidoPaterno = request.POST.get('apellidoPaterno')
+            apellidoMaterno = request.POST.get('apellidoMaterno')
+            telefono = request.POST.get('telefono')
+            rfc = request.POST.get('rfc')
+            rol_codigo = request.POST.get('rol')
+            
+            if nombre:
+                trabajador.nombre = nombre
+            if apellidoPaterno:
+                trabajador.apellidoPaterno = apellidoPaterno
+            if apellidoMaterno:
+                trabajador.apelidoMaterno = apellidoMaterno
+            if telefono:
+                trabajador.telefono = telefono
+            if rfc:
+                trabajador.rfc = rfc
+            if rol_codigo:
+                rol = models.Rol.objects.get(codigo=rol_codigo)
+                trabajador.rol = rol
+            
+            trabajador.save()
+            
+            messages.success(request, f'Trabajador "{trabajador.nombre}" actualizado correctamente')
+            return HttpResponseRedirect(reverse('trabajadores'))
+            
+        except models.Trabajador.DoesNotExist:
+            messages.error(request, 'Trabajador no encontrado')
+            return HttpResponseRedirect(reverse('trabajadores'))
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+            return HttpResponseRedirect(reverse('trabajadores'))
+    
+    return HttpResponseRedirect(reverse('trabajadores'))
 
 
 class Trabajadores(generic.ListView):
@@ -360,7 +570,8 @@ class Trabajadores(generic.ListView):
                 "nombre": nombre,
                 "no_empleado": no_empleado,
                 "rol_filtro": rol_filtro,
-                "trabajador_total": trabajador_total
+                "trabajador_total": trabajador_total,
+                "messages": messages.get_messages(request),
             },
         )
 
@@ -501,7 +712,8 @@ class Salones(generic.ListView):
                 "nombre": nombre,
                 "estado": estado,
                 "orden": orden,
-                "salon_total": salon_total
+                "salon_total": salon_total,
+                "messages": messages.get_messages(request),
             },
         )
 
@@ -534,6 +746,8 @@ class Salones(generic.ListView):
                 maxCapacidad=50,
                 estado_salon=models.EstadoSalon.objects.get(codigo="DIS"),
             )
+
+            messages.success(request, f'El salón: {nombre} fue registrado exitosamente')
 
         return HttpResponseRedirect(reverse("salones"))
 
@@ -576,7 +790,8 @@ class Mobiliarios(generic.ListView):
             'rol': rol,
             'nombre': nombre,
             'orden': orden,
-            'mobiliario_total': mobiliario_total
+            'mobiliario_total': mobiliario_total,
+            'messages': messages.get_messages(request),
         })
 
     def post(self, request):
@@ -611,6 +826,8 @@ class Mobiliarios(generic.ListView):
                         descripcion=caracteristica_desc
                     )
                     mobiliario.descripcion_mob.add(caracteristica)
+            
+            messages.success(request, f'El mobiliario: {nombre} fue registrado exitosamente')
         
         return HttpResponseRedirect(reverse("mobiliario"))
 
@@ -655,7 +872,8 @@ class Equipamientos(generic.ListView):
                 "rol": rol,
                 'nombre': nombre,
                 'orden': orden,
-                'equipamiento_total': equipamiento_total
+                'equipamiento_total': equipamiento_total,
+                'messages': messages.get_messages(request),
             },
         )
     
@@ -683,6 +901,8 @@ class Equipamientos(generic.ListView):
                 stock=stock,
                 tipo_equipa=tipo_equipa,
             )
+
+            messages.success(request, f'El equipamiento: {nombre} fue registrado exitosamente')
 
         return HttpResponseRedirect(reverse("equipamiento"))
 
@@ -731,3 +951,62 @@ def estadisticas(request):
     return render(
         request, "BookingRoomApp/administracion/estadisticas.html", {"rol": rol}
     )
+
+
+@csrf_exempt
+def actualizar_reservacion(request, pk):
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                reservacion = models.Reservacion.objects.select_related('cliente').get(pk=pk)
+                cliente = reservacion.cliente
+
+                if request.POST.get('cliente_nombre'):
+                    cliente.nombre = request.POST.get('cliente_nombre')
+                if request.POST.get('cliente_apellido_paterno'):
+                    cliente.apellidoPaterno = request.POST.get('cliente_apellido_paterno')
+                if request.POST.get('cliente_apellido_materno'):
+                    cliente.apelidoMaterno = request.POST.get('cliente_apellido_materno')
+                if request.POST.get('cliente_correo'):
+                    cliente.correo_electronico = request.POST.get('cliente_correo')
+                if request.POST.get('cliente_telefono'):
+                    cliente.telefono = request.POST.get('cliente_telefono')
+                if request.POST.get('cliente_rfc'):
+                    cliente.rfc = request.POST.get('cliente_rfc')
+                if request.POST.get('cliente_nombre_fiscal'):
+                    cliente.nombre_fiscal = request.POST.get('cliente_nombre_fiscal')
+                cliente.save()
+
+                if request.POST.get('evento_nombre'):
+                    reservacion.nombreEvento = request.POST.get('evento_nombre')
+                if request.POST.get('evento_descripcion'):
+                    reservacion.descripEvento = request.POST.get('evento_descripcion')
+                if request.POST.get('evento_fecha'):
+                    reservacion.fechaEvento = request.POST.get('evento_fecha')
+                if request.POST.get('evento_hora_inicio'):
+                    reservacion.horaInicio = request.POST.get('evento_hora_inicio')
+                if request.POST.get('evento_hora_fin'):
+                    reservacion.horaFin = request.POST.get('evento_hora_fin')
+                if request.POST.get('evento_asistentes'):
+                    reservacion.estimaAsistentes = request.POST.get('evento_asistentes')
+
+                estado_codigo = request.POST.get('evento_estado', '')
+                if estado_codigo:
+                    estado = models.EstadoReserva.objects.get(codigo=estado_codigo)
+                    reservacion.estado_reserva = estado
+
+                reservacion.save()
+
+            messages.success(request, 'Reservación actualizada correctamente')
+            return JsonResponse({'success': True, 'redirect': reverse('historial_reservacion')})
+        except models.Reservacion.DoesNotExist:
+            messages.error(request, 'Reservación no encontrada')
+            return JsonResponse({'success': False, 'message': 'Reservación no encontrada'}, status=404)
+        except models.EstadoReserva.DoesNotExist:
+            messages.error(request, 'Estado no encontrado')
+            return JsonResponse({'success': False, 'message': 'Estado no encontrado'}, status=400)
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+    
+    return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)

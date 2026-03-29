@@ -6,6 +6,9 @@
 <link rel="stylesheet"
     href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
 
+{% include "BookingRoomApp/includes/alert-confirmar.html" %}
+{% include "BookingRoomApp/includes/alert-cancelar.html" %}
+
 <div class="administrador-contenido administrador-registro-contenido">
     <h1 class="titulo-seccion">Registro de Mobiliarios</h1>
 
@@ -90,8 +93,19 @@
             </div>
 
             <button class="administrador-paGuarar"
-                type="submit">Guardar</button>
+                type="button" onclick="mostrarConfirmacion()">Guardar</button>
 
+        </form>
+
+        <form id="form-mobiliario" method="POST" style="display: none;">
+            {% csrf_token %}
+            <input type="hidden" name="form_mobiliarios" value="mobiliario">
+            <input type="hidden" name="nameMobiliario" id="hidden-nombre">
+            <input type="hidden" name="tipo_mobil" id="hidden-tipo">
+            <input type="hidden" name="descripcion" id="hidden-descripcion">
+            <input type="hidden" name="costoMobiliario" id="hidden-costo">
+            <input type="hidden" name="stockTotal" id="hidden-stock">
+            <input type="hidden" name="cantidad_caracteristicas" id="hidden-caracteristicas">
         </form>
 
     </div>
@@ -138,19 +152,34 @@
 
             <tbody class="administrador-tbody">
                 {% for mobil in mobiliarios %}
-                <tr>
+                <tr data-id="{{ mobil.id }}"
+                    data-nombre="{{ mobil.nombre }}"
+                    data-descripcion="{{ mobil.descripcion }}"
+                    data-costo="{{ mobil.costo }}"
+                    data-stock="{{ mobil.stock }}"
+                    data-tipo-id="{{ mobil.tipo_movil.id }}">
                     <td class="administrador-td">{{ mobil.id }}</td>
-                    <td class="administrador-td">{{ mobil.nombre }}</td>
-                    <td class="administrador-td">{{ mobil.tipo_movil.nombre }}</td>
-                    <td class="administrador-td">{{ mobil.descripcion }}</td>
-                    <td class="administrador-td">${{ mobil.costo }}</td>
-                    <td class="administrador-td">{{ mobil.stock }}</td>
-                    <td class="administrador-td">
-                        <a class="boton-editar">
+                    <td class="administrador-td celda-nombre">{{ mobil.nombre }}</td>
+                    <td class="administrador-td celda-tipo">{{ mobil.tipo_movil.nombre }}</td>
+                    <td class="administrador-td celda-descripcion">{{ mobil.descripcion }}</td>
+                    <td class="administrador-td celda-costo">${{ mobil.costo }}</td>
+                    <td class="administrador-td celda-stock">{{ mobil.stock }}</td>
+                    <td class="administrador-td servicio-acciones">
+                        <button type="button" class="btn-editar" onclick="editarRegistro({{ mobil.id }})" title="Editar">
                             <svg class="icono blanco">
                                 <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-edit"></use>
                             </svg>
-                        </a>
+                        </button>
+                        <button type="button" class="btn-guardar" style="display: none;" onclick="guardarRegistro({{ mobil.id }})" title="Guardar">
+                            <svg class="icono blanco">
+                                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-save"></use>
+                            </svg>
+                        </button>
+                        <button type="button" class="btn-cancelar" style="display: none;" onclick="cancelarEdicionInline({{ mobil.id }})" title="Cancelar">
+                            <svg class="icono blanco">
+                                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-cancel"></use>
+                            </svg>
+                        </button>
                     </td>
                 </tr>
                 {% empty %}
@@ -166,6 +195,63 @@
 
 </div>
 
+<style>
+  .btn-editar, .btn-guardar, .btn-cancelar {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-editar {
+    background-color: #0d6efd;
+  }
+  
+  .btn-editar:hover {
+    background-color: #084298;
+  }
+  
+  .btn-guardar {
+    background-color: #198754;
+  }
+  
+  .btn-guardar:hover {
+    background-color: #157347;
+  }
+  
+  .btn-cancelar {
+    background-color: #dc3545;
+  }
+  
+  .btn-cancelar:hover {
+    background-color: #ca301b;
+  }
+</style>
+
 <script src="{% static 'BookingRoomApp/js/administracion/crear-input.js' %}"></script>
+<script src="{% static 'BookingRoomApp/js/inline-edit.js' %}"></script>
+<script>
+const tiposMobil = [
+    {% for tipo in tipos_mobil %}
+        { id: {{ tipo.id }}, nombre: "{{ tipo.nombre }}" },
+    {% endfor %}
+];
+
+configurarInlineEdit({
+    nombreSingular: 'mobiliario',
+    urlActualizar: '/administracion/mobiliario/0/actualizar/',
+    campoObligatorio: 'nombre',
+    campoNombre: 'nombre',
+    campos: [
+        { nombre: 'nombre', clase: 'celda-nombre', tipo: 'texto' },
+        { nombre: 'tipo_movil', clase: 'celda-tipo', tipo: 'select-db', opcionesVar: 'tiposMobil', dataAttr: 'tipoId' },
+        { nombre: 'descripcion', clase: 'celda-descripcion', tipo: 'texto' },
+        { nombre: 'costo', clase: 'celda-costo', tipo: 'numero' },
+        { nombre: 'stock', clase: 'celda-stock', tipo: 'entero' }
+    ]
+});
+</script>
 
 {% endblock inicio %}

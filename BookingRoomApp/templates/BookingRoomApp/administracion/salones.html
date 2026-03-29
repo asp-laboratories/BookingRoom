@@ -6,6 +6,9 @@
 <link rel="stylesheet"
     href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
 
+{% include "BookingRoomApp/includes/alert-confirmar.html" %}
+{% include "BookingRoomApp/includes/alert-cancelar.html" %}
+
 <div class="administrador-contenido administrador-registro-contenido">
     <h1 class="titulo-seccion">Registro de Salones</h1>
 
@@ -84,8 +87,20 @@
             </div>
 
             <button class="administrador-paGuarar"
-                type="submit">Guardar</button>
+                type="button" onclick="mostrarConfirmacion()">Guardar</button>
 
+        </form>
+
+        <form id="form-salon" method="POST" style="display: none;">
+            {% csrf_token %}
+            <input type="hidden" name="form_salones" value="salon">
+            <input type="hidden" name="nameSalon" id="hidden-nombre">
+            <input type="hidden" name="costoSalon" id="hidden-costo">
+            <input type="hidden" name="ubicacionSalon" id="hidden-ubicacion">
+            <input type="hidden" name="alturaSalon" id="hidden-altura">
+            <input type="hidden" name="anchoSalon" id="hidden-ancho">
+            <input type="hidden" name="largoSalon" id="hidden-largo">
+            <input type="hidden" name="meCuadra" id="hidden-metros">
         </form>
 
     </div>
@@ -136,20 +151,39 @@
 
             <tbody class="administrador-tbody">
                 {% for salon in salones %}
-                <tr>
+                <tr data-id="{{ salon.id }}"
+                    data-nombre="{{ salon.nombre }}"
+                    data-costo="{{ salon.costo }}"
+                    data-ubicacion="{{ salon.ubicacion }}"
+                    data-dimen-largo="{{ salon.dimenLargo }}"
+                    data-dimen-ancho="{{ salon.dimenAncho }}"
+                    data-dimen-alto="{{ salon.dimenAlto }}"
+                    data-metros-cuadrados="{{ salon.metrosCuadrados }}"
+                    data-max-capacidad="{{ salon.maxCapacidad }}"
+                    data-estado-codigo="{{ salon.estado_salon.codigo }}">
                     <td class="administrador-td">{{ salon.id }}</td>
-                    <td class="administrador-td">{{ salon.nombre }}</td>
-                    <td class="administrador-td">${{ salon.costo }}</td>
-                    <td class="administrador-td">{{ salon.ubicacion }}</td>
-                    <td class="administrador-td">{{ salon.dimenLargo }}x{{ salon.dimenAncho }}x{{ salon.dimenAlto }}</td>
+                    <td class="administrador-td celda-nombre">{{ salon.nombre }}</td>
+                    <td class="administrador-td celda-costo">${{ salon.costo }}</td>
+                    <td class="administrador-td celda-ubicacion">{{ salon.ubicacion }}</td>
+                    <td class="administrador-td celda-dimensiones">{{ salon.dimenLargo }}x{{ salon.dimenAncho }}x{{ salon.dimenAlto }}</td>
                     <td class="administrador-td">{{ salon.metrosCuadrados }}</td>
-                    <td class="administrador-td">{{ salon.estado_salon.nombre }}</td>
-                    <td class="administrador-td">
-                        <a class="boton-editar">
+                    <td class="administrador-td celda-estado">{{ salon.estado_salon.nombre }}</td>
+                    <td class="administrador-td servicio-acciones">
+                        <button type="button" class="btn-editar" onclick="editarRegistro({{ salon.id }})" title="Editar">
                             <svg class="icono blanco">
                                 <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-edit"></use>
                             </svg>
-                        </a>
+                        </button>
+                        <button type="button" class="btn-guardar" style="display: none;" onclick="guardarRegistro({{ salon.id }})" title="Guardar">
+                            <svg class="icono blanco">
+                                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-save"></use>
+                            </svg>
+                        </button>
+                        <button type="button" class="btn-cancelar" style="display: none;" onclick="cancelarEdicionInline({{ salon.id }})" title="Cancelar">
+                            <svg class="icono blanco">
+                                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-cancel"></use>
+                            </svg>
+                        </button>
                     </td>
                 </tr>
                 {% empty %}
@@ -165,6 +199,42 @@
 
 </div>
 
+<style>
+  .btn-editar, .btn-guardar, .btn-cancelar {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-editar {
+    background-color: #0d6efd;
+  }
+  
+  .btn-editar:hover {
+    background-color: #084298;
+  }
+  
+  .btn-guardar {
+    background-color: #198754;
+  }
+  
+  .btn-guardar:hover {
+    background-color: #157347;
+  }
+  
+  .btn-cancelar {
+    background-color: #dc3545;
+  }
+  
+  .btn-cancelar:hover {
+    background-color: #ca301b;
+  }
+</style>
+
+<script src="{% static 'BookingRoomApp/js/inline-edit.js' %}"></script>
 <script>
 const ancho = document.getElementById('ancho-s');
 const largo = document.getElementById('largo-s');
@@ -178,6 +248,25 @@ function actualizarTotal() {
 
 ancho.addEventListener('input', actualizarTotal);
 largo.addEventListener('input', actualizarTotal);
+
+const estadosSalon = [
+    {% for estado in estados %}
+        { codigo: "{{ estado.codigo }}", nombre: "{{ estado.nombre }}" },
+    {% endfor %}
+];
+
+configurarInlineEdit({
+    nombreSingular: 'salón',
+    urlActualizar: '/administracion/salones/0/actualizar/',
+    campoObligatorio: 'nombre',
+    campoNombre: 'nombre',
+    campos: [
+        { nombre: 'nombre', clase: 'celda-nombre', tipo: 'texto' },
+        { nombre: 'costo', clase: 'celda-costo', tipo: 'numero' },
+        { nombre: 'ubicacion', clase: 'celda-ubicacion', tipo: 'texto' },
+        { nombre: 'estado_salon', clase: 'celda-estado', tipo: 'select-db', opcionesVar: 'estadosSalon', dataAttr: 'estadoCodigo' }
+    ]
+});
 </script>
 
 {% endblock inicio %}

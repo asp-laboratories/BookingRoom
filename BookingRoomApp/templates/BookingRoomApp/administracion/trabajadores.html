@@ -6,6 +6,9 @@
 <link rel="stylesheet"
     href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
 
+{% include "BookingRoomApp/includes/alert-confirmar.html" %}
+{% include "BookingRoomApp/includes/alert-cancelar.html" %}
+
 <div class="administrador-contenido administrador-registro-contenido">
     <h1 class="titulo-seccion">Registro de Trabajadores</h1>
 
@@ -133,7 +136,19 @@
             </div>
 
             <button class="administrador-paGuarar"
-                type="submit">Guardar</button>
+                type="button" onclick="mostrarConfirmacion()">Guardar</button>
+        </form>
+
+        <form id="form-trabajador" method="POST" action="{% url 'registrar_trabajador' %}" style="display: none;">
+            {% csrf_token %}
+            <input type="hidden" name="form_tipo" value="trabajador">
+            <input type="hidden" name="nombre" id="hidden-nombre">
+            <input type="hidden" name="apellido_paterno" id="hidden-apellido-paterno">
+            <input type="hidden" name="apellido_materno" id="hidden-apellido-materno">
+            <input type="hidden" name="telefono" id="hidden-telefono">
+            <input type="hidden" name="rfc" id="hidden-rfc">
+            <input type="hidden" name="no_empleado" id="hidden-no-empleado">
+            <input type="hidden" name="rol_id" id="hidden-rol">
         </form>
     </div>
 
@@ -186,21 +201,37 @@
 
             <tbody class="administrador-tbody">
                 {% for trabajador in trabajadores %}
-                <tr>
+                <tr data-id="{{ trabajador.no_empleado }}"
+                    data-nombre="{{ trabajador.nombre }}"
+                    data-apellido-paterno="{{ trabajador.apellidoPaterno }}"
+                    data-apellido-materno="{{ trabajador.apelidoMaterno|default:'' }}"
+                    data-telefono="{{ trabajador.telefono }}"
+                    data-rfc="{{ trabajador.rfc }}"
+                    data-rol-codigo="{{ trabajador.rol.codigo }}">
                     <td class="administrador-td">{{ trabajador.no_empleado }}</td>
-                    <td class="administrador-td">{{ trabajador.nombre }}</td>
-                    <td class="administrador-td">{{ trabajador.apellidoPaterno }}</td>
-                    <td class="administrador-td">{{ trabajador.apelidoMaterno }}</td>
+                    <td class="administrador-td celda-nombre">{{ trabajador.nombre }}</td>
+                    <td class="administrador-td celda-apellido-paterno">{{ trabajador.apellidoPaterno }}</td>
+                    <td class="administrador-td celda-apellido-materno">{{ trabajador.apelidoMaterno|default:'-' }}</td>
                     <td class="administrador-td">{{ trabajador.rfc }}</td>
-                    <td class="administrador-td">{{ trabajador.telefono }}</td>
+                    <td class="administrador-td celda-telefono">{{ trabajador.telefono }}</td>
                     <td class="administrador-td">{{ trabajador.correo_electronico }}</td>
-                    <td class="administrador-td">{{ trabajador.rol.nombre }}</td>
-                    <td class="administrador-td">
-                        <a class="boton-editar">
+                    <td class="administrador-td celda-rol">{{ trabajador.rol.nombre }}</td>
+                    <td class="administrador-td servicio-acciones">
+                        <button type="button" class="btn-editar" onclick="editarRegistro('{{ trabajador.no_empleado }}')" title="Editar">
                             <svg class="icono blanco">
                                 <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-edit"></use>
                             </svg>
-                        </a>
+                        </button>
+                        <button type="button" class="btn-guardar" style="display: none;" onclick="guardarRegistro('{{ trabajador.no_empleado }}')" title="Guardar">
+                            <svg class="icono blanco">
+                                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-save"></use>
+                            </svg>
+                        </button>
+                        <button type="button" class="btn-cancelar" style="display: none;" onclick="cancelarEdicionInline('{{ trabajador.no_empleado }}')" title="Cancelar">
+                            <svg class="icono blanco">
+                                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-cancel"></use>
+                            </svg>
+                        </button>
                     </td>
                 </tr>
                 {% empty %}
@@ -215,5 +246,63 @@
     </div>
 
 </div>
+
+<style>
+  .btn-editar, .btn-guardar, .btn-cancelar {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-editar {
+    background-color: #0d6efd;
+  }
+  
+  .btn-editar:hover {
+    background-color: #084298;
+  }
+  
+  .btn-guardar {
+    background-color: #198754;
+  }
+  
+  .btn-guardar:hover {
+    background-color: #157347;
+  }
+  
+  .btn-cancelar {
+    background-color: #dc3545;
+  }
+  
+  .btn-cancelar:hover {
+    background-color: #ca301b;
+  }
+</style>
+
+<script src="{% static 'BookingRoomApp/js/inline-edit.js' %}"></script>
+<script>
+const roles = [
+    {% for rol in roles %}
+        { codigo: "{{ rol.codigo }}", nombre: "{{ rol.nombre }}" },
+    {% endfor %}
+];
+
+configurarInlineEdit({
+    nombreSingular: 'trabajador',
+    urlActualizar: '/administracion/trabajadores/0/actualizar/',
+    campoObligatorio: 'nombre',
+    campoNombre: 'nombre',
+    campos: [
+        { nombre: 'nombre', clase: 'celda-nombre', tipo: 'texto' },
+        { nombre: 'apellidoPaterno', clase: 'celda-apellido-paterno', tipo: 'texto' },
+        { nombre: 'apellidoMaterno', clase: 'celda-apellido-materno', tipo: 'texto' },
+        { nombre: 'telefono', clase: 'celda-telefono', tipo: 'texto' },
+        { nombre: 'rol', clase: 'celda-rol', tipo: 'select-db', opcionesVar: 'roles', dataAttr: 'rolCodigo' }
+    ]
+});
+</script>
 
 {% endblock inicio %}

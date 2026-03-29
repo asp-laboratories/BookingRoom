@@ -82,6 +82,9 @@ SESSION_CACHE_ALIAS = 'default'
 SESSION_COOKIE_AGE = 60 * 60 * 24  # 24 horas
 SESSION_COOKIE_HTTPONLY = True
 
+# Mensajes - usar cookies para mayor confiabilidad
+MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
+
 # Cache
 CACHES = {
     'default': {
