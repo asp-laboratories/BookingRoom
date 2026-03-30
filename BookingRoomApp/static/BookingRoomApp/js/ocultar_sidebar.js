@@ -3,27 +3,52 @@ const contenedor = document.getElementById('app-container');
 let letras = document.querySelector('.letras')
 let contenedorCerrado = document.querySelector(".sidebar-cerrado");
 
+// Restaurar estado del sidebar desde localStorage
+const sidebarState = localStorage.getItem('sidebar-cerrado');
+if (sidebarState === 'true') {
+    contenedor.classList.add('sidebar-cerrado');
+    if (letras) letras.innerHTML = "BR";
+}
+
 btnToggle.addEventListener('click', () => {
     contenedor.classList.toggle('sidebar-cerrado');
 
+    const isClosed = contenedor.classList.contains('sidebar-cerrado');
+    localStorage.setItem('sidebar-cerrado', isClosed);
+
     if(!contenedor.classList.contains('sidebar-cerrado')){
-        letras.innerHTML = "BookingRoom"
+        if (letras) letras.innerHTML = "BookingRoom"
     } else {
-        letras.innerHTML = "BR"
+        if (letras) letras.innerHTML = "BR"
     }
 
 });
 
-const detailsList = document.querySelectorAll('details');
+const detailsList = document.querySelectorAll('.sidebar details');
+
+console.log('Sidebar script loaded, found', detailsList.length, 'details');
+
+// Restaurar estado de details desde localStorage
+detailsList.forEach(details => {
+  const summary = details.querySelector('summary .texto-menu');
+  const sectionName = summary ? summary.textContent.trim() : 'unknown';
+  const storedState = localStorage.getItem('sidebar-details-' + sectionName);
+  console.log('Restoring', sectionName, 'state:', storedState);
+  if (storedState === 'true') {
+    details.open = true;
+  }
+});
 
 detailsList.forEach(details => {
   const contenido = details.querySelector('.deslizar');
+  const summary = details.querySelector('summary .texto-menu');
+  const sectionName = summary ? summary.textContent.trim() : 'unknown';
   
   details.addEventListener('toggle', function() {
+    localStorage.setItem('sidebar-details-' + sectionName, details.open);
+    
     if (details.open) {
-      
       contenido.style.animation = 'none';
-      // Forzar reflow
       contenido.offsetHeight;
       contenido.style.animation = 'slideDown 0.7s ease-out';
     }
@@ -59,18 +84,15 @@ sidebarLinks.forEach(link => {
   });
 });
 
-// Mobile: Keep details always open
+// Mobile: Keep details always open (solo abrir en móvil, no cerrar en desktop)
 function setupMobileDetails() {
   const isMobile = window.innerWidth <= 768;
-  const detailsList = document.querySelectorAll('.sidebar details');
   
-  detailsList.forEach(details => {
-    if (isMobile) {
-      details.setAttribute('open', '');
-    } else {
-      details.removeAttribute('open');
-    }
-  });
+  if (isMobile) {
+    detailsList.forEach(details => {
+      details.open = true;
+    });
+  }
 }
 
 // Run on load and resize

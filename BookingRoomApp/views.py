@@ -130,8 +130,7 @@ class HistorialReservacionViw(generic.View):
             "rol": rol,
             "nombre": nombre,
             "estado_filtro": estado_filtro,
-            "reservacion_total": reservacion_total,
-            "messages": messages.get_messages(request),
+            "reservacion_total": reservacion_total
         })
 
 
@@ -289,7 +288,6 @@ class Servicios(generic.ListView):
                 "orden": orden,
                 "disposicion": disposicion,
                 "servicio_total": servicio_total,
-                "messages": messages.get_messages(request),
             },
         )
 
@@ -570,8 +568,7 @@ class Trabajadores(generic.ListView):
                 "nombre": nombre,
                 "no_empleado": no_empleado,
                 "rol_filtro": rol_filtro,
-                "trabajador_total": trabajador_total,
-                "messages": messages.get_messages(request),
+                "trabajador_total": trabajador_total
             },
         )
 
@@ -712,8 +709,7 @@ class Salones(generic.ListView):
                 "nombre": nombre,
                 "estado": estado,
                 "orden": orden,
-                "salon_total": salon_total,
-                "messages": messages.get_messages(request),
+                "salon_total": salon_total
             },
         )
 
@@ -790,8 +786,7 @@ class Mobiliarios(generic.ListView):
             'rol': rol,
             'nombre': nombre,
             'orden': orden,
-            'mobiliario_total': mobiliario_total,
-            'messages': messages.get_messages(request),
+            'mobiliario_total': mobiliario_total
         })
 
     def post(self, request):
@@ -872,8 +867,7 @@ class Equipamientos(generic.ListView):
                 "rol": rol,
                 'nombre': nombre,
                 'orden': orden,
-                'equipamiento_total': equipamiento_total,
-                'messages': messages.get_messages(request),
+                'equipamiento_total': equipamiento_total
             },
         )
     

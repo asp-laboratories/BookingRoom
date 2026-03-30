@@ -1,0 +1,119 @@
+{% load static %}
+
+<dialog id="{{ modal_id|default:'miModal' }}" class="modal-beo">
+  <div class="cabecera-modal">
+    <span class="titulo-modal"
+      >SOLICITUD DE: <span id="{{ id_prefix|default:'' }}titulo-evento">Orden de banquete de evento (BEO)</span></span
+    >
+    <button onclick="window.{{ modal_id|default:'miModal' }}.close()" class="cerrar-modal">X</button>
+  </div>
+
+  <div class="modal-grid">
+    <div class="modal-div modal-div-1">
+      <h3 class="titulo-info-cliente">Información del cliente</h3>
+
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Nombre completo:</label>
+          <span id="{{ id_prefix|default:'' }}cliente-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Correo electrónico:</label>
+          <span id="{{ id_prefix|default:'' }}cliente-correo">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Teléfono:</label>
+          <span id="{{ id_prefix|default:'' }}cliente-telefono">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>RFC:</label>
+          <span id="{{ id_prefix|default:'' }}cliente-rfc">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Nombre fiscal:</label>
+          <span id="{{ id_prefix|default:'' }}cliente-nombre-fiscal">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-2">
+      <h3 class="titulo-seccion-modal">Información del evento</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Nombre:</label>
+          <span id="{{ id_prefix|default:'' }}evento-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Descripción:</label>
+          <span id="{{ id_prefix|default:'' }}evento-descripcion">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Fecha:</label>
+          <span id="{{ id_prefix|default:'' }}evento-fecha">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Horario:</label>
+          <span id="{{ id_prefix|default:'' }}evento-horario">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Estado:</label>
+          <span id="{{ id_prefix|default:'' }}evento-estado">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Asistentes:</label>
+          <span id="{{ id_prefix|default:'' }}evento-asistentes">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-3">
+      <h3 class="titulo-seccion-modal">Salón y Montaje</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Salón:</label>
+          <span id="{{ id_prefix|default:'' }}salon-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Montaje:</label>
+          <span id="{{ id_prefix|default:'' }}salon-montaje">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-4">
+      <h3 class="titulo-seccion-modal">Servicios</h3>
+      <div class="datos">
+        <span id="{{ id_prefix|default:'' }}servicios-lista">No hay servicios</span>
+      </div>
+    </div>
+    <div class="modal-div modal-div-5">
+      <h3 class="titulo-seccion-modal">Equipamientos</h3>
+      <div class="datos">
+        <span id="{{ id_prefix|default:'' }}equipamientos-lista">No hay equipamientos</span>
+      </div>
+    </div>
+    <div class="modal-div modal-div-6">
+      <h3 class="titulo-seccion-modal">Totales</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <span>IVA:</span>
+          <span id="{{ id_prefix|default:'' }}total-iva">$0.00</span>
+        </div>
+        <div class="fila-dato">
+          <span>Subtotal:</span>
+          <span id="{{ id_prefix|default:'' }}total-subtotal">$0.00</span>
+        </div>
+        <div class="fila-dato">
+          <span>Total:</span>
+          <span id="{{ id_prefix|default:'' }}total-total">$0.00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if mostrar_botones|default:True %}
+  <div class="modal-botones">
+    <button class="btn-modal btn-aceptar">Aceptar</button>
+    <button class="btn-modal btn-denegar" onclick="window.{{ modal_id|default:'miModal' }}.close()">
+      Denegar
+    </button>
+  </div>
+  {% endif %}
+</dialog>

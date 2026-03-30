@@ -22,7 +22,6 @@
     <script src="{% static "BookingRoomApp/js/recepcion/full_calendar.js" %}" defer></script>
     <script src="{% static "BookingRoomApp/js/administracion/chart.js" %}" defer></script>
 
-    {% include "BookingRoomApp/includes/alert-exito.html" %}
   </head>
   <body>
     <button class="btn-menu-mobile" id="btn-menu-mobile">☰</button>
@@ -183,5 +182,6 @@
         {% endblock inicio %}
       </main>
     </div>
+    {% include "BookingRoomApp/includes/alert-exito.html" %}
   </body>
 </html>

@@ -37,6 +37,7 @@ window.onclick = function(event) {
     document.querySelectorAll(".ver-detalles").forEach((btn) => {
       btn.addEventListener("click", async function () {
         const pk = this.dataset.pk;
+        const prefix = "modal-";
 
         try {
           const response = await fetch(`/home/${pk}/json/`);
@@ -44,44 +45,44 @@ window.onclick = function(event) {
 
           const data = await response.json();
 
-          document.getElementById("modal-titulo-evento").textContent =
+          document.getElementById(prefix + "titulo-evento").textContent =
             data.nombre_evento || "Orden de banquete de evento (BEO)";
 
-          document.getElementById("cliente-nombre").textContent =
+          document.getElementById(prefix + "cliente-nombre").textContent =
             `${data.cliente.nombre} ${data.cliente.apellido_paterno} ${data.cliente.apellido_materno}`;
-          document.getElementById("cliente-correo").textContent =
+          document.getElementById(prefix + "cliente-correo").textContent =
             data.cliente.correo;
-          document.getElementById("cliente-telefono").textContent =
+          document.getElementById(prefix + "cliente-telefono").textContent =
             data.cliente.telefono;
-          document.getElementById("cliente-rfc").textContent = data.cliente.rfc;
-          document.getElementById("cliente-nombre-fiscal").textContent =
+          document.getElementById(prefix + "cliente-rfc").textContent = data.cliente.rfc;
+          document.getElementById(prefix + "cliente-nombre-fiscal").textContent =
             data.cliente.nombre_fiscal;
 
-          document.getElementById("evento-nombre").textContent =
+          document.getElementById(prefix + "evento-nombre").textContent =
             data.nombre_evento;
-          document.getElementById("evento-descripcion").textContent =
+          document.getElementById(prefix + "evento-descripcion").textContent =
             data.descripcion;
-          document.getElementById("evento-fecha").textContent = data.fecha;
-          document.getElementById("evento-horario").textContent =
+          document.getElementById(prefix + "evento-fecha").textContent = data.fecha;
+          document.getElementById(prefix + "evento-horario").textContent =
             `${data.hora_inicio} - ${data.hora_fin}`;
-          document.getElementById("evento-estado").textContent = data.estado;
-          document.getElementById("evento-asistentes").textContent =
+          document.getElementById(prefix + "evento-estado").textContent = data.estado;
+          document.getElementById(prefix + "evento-asistentes").textContent =
             data.asistentes;
 
-          document.getElementById("salon-nombre").textContent = data.salon;
-          document.getElementById("salon-montaje").textContent = data.montaje;
+          document.getElementById(prefix + "salon-nombre").textContent = data.salon;
+          document.getElementById(prefix + "salon-montaje").textContent = data.montaje;
 
-          const serviciosSpan = document.getElementById("servicios-lista");
+          const serviciosSpan = document.getElementById(prefix + "servicios-lista");
           if (data.servicios && data.servicios.length > 0) {
             serviciosSpan.textContent = data.servicios.join(", ");
           } else {
             serviciosSpan.textContent = "No hay servicios";
           }
 
-          document.getElementById("total-iva").textContent = `$${data.iva}`;
-          document.getElementById("total-subtotal").textContent =
+          document.getElementById(prefix + "total-iva").textContent = `$${data.iva}`;
+          document.getElementById(prefix + "total-subtotal").textContent =
             `$${data.subtotal}`;
-          document.getElementById("total-total").textContent = `$${data.total}`;
+          document.getElementById(prefix + "total-total").textContent = `$${data.total}`;
 
           window.miModal.showModal();
         } catch (error) {

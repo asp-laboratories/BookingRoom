@@ -89,7 +89,8 @@
 </div>
 
 <script>
-  function mostrarToastExito(mensaje, tipo = 'success') {
+  function mostrarToastExito(mensaje, tipo) {
+    tipo = tipo || 'success';
     var toast = document.getElementById('toast-exito');
     var mensajeEl = document.getElementById('toast-exito-mensaje');
     var iconoEl = toast.querySelector('.toast-exito-icono');
@@ -104,34 +105,26 @@
       toast.classList.add('warning');
       iconoEl.textContent = '!';
     } else {
-      iconoEl.textContent = '✓';
+      iconoEl.textContent = 'OK';
     }
     
-    toast.classList.remove('ocultar');
+    toast.style.display = 'flex';
     toast.classList.add('mostrar');
 
     setTimeout(function() {
-      cerrarToastExito();
+      toast.classList.remove('mostrar');
     }, 4000);
   }
 
-  function cerrarToastExito() {
-    var toast = document.getElementById('toast-exito');
-    toast.classList.remove('mostrar');
-    toast.classList.add('ocultar');
-    setTimeout(function() {
-      toast.classList.remove('ocultar');
-    }, 300);
-  }
-
   (function() {
-    var hasMessages = false;
+    console.log('Toast script loaded');
+    var messageCount = 0;
     {% for message in messages %}
-      hasMessages = true;
-      mostrarToastExito('{{ message|safe }}', '{% if "error" in message.tags %}error{% elif "warning" in message.tags %}warning{% else %}success{% endif %}');
+      messageCount++;
+      console.log('Message found:', '{{ message|escapejs }}');
+      mostrarToastExito('{{ message|escapejs }}', '{% if "error" in message.tags %}error{% elif "warning" in message.tags %}warning{% else %}success{% endif %}');
+    {% empty %}
+      console.log('DEBUG: No messages');
     {% endfor %}
-    if (!hasMessages) {
-      console.log('DEBUG: No messages found in context');
-    }
   })();
 </script>
