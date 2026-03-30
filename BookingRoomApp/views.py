@@ -150,6 +150,43 @@ class ReservacionView(generic.View):
         return render(request, self.template_name, context)
 
 
+@csrf_exempt
+def buscar_cliente(request):
+    if request.method == 'GET':
+        query = request.GET.get('q', '').strip()
+        
+        if not query:
+            return JsonResponse({'encontrado': False, 'mensaje': 'Ingrese un RFC o nombre'})
+        
+        clientes = models.DatosCliente.objects.filter(
+            Q(rfc__icontains=query) | 
+            Q(nombre__icontains=query) |
+            Q(nombre_fiscal__icontains=query)
+        )
+        
+        if clientes.exists():
+            cliente = clientes.first()
+            return JsonResponse({
+                'encontrado': True,
+                'cliente': {
+                    'id': cliente.id,
+                    'rfc': cliente.rfc,
+                    'nombre': cliente.nombre,
+                    'apellido_paterno': cliente.apellidoPaterno,
+                    'apellido_materno': cliente.apelidoMaterno or '',
+                    'nombre_fiscal': cliente.nombre_fiscal,
+                    'telefono': cliente.telefono,
+                    'correo': cliente.correo_electronico,
+                    'colonia': cliente.dir_colonia,
+                    'calle': cliente.dir_calle,
+                    'numero': cliente.dir_numero,
+                    'tipo_cliente': cliente.tipo_cliente.nombre if cliente.tipo_cliente else '',
+                }
+            })
+        
+        return JsonResponse({'encontrado': False, 'mensaje': 'Cliente no encontrado'})
+
+
 class DetallesReservacionView(generic.DetailView):
     template_name = "BookingRoomApp/home/"
     model = models.Reservacion

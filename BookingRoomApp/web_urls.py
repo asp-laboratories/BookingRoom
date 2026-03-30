@@ -7,6 +7,7 @@ urlpatterns = [
     path('home/', views.Home.as_view(), name="home"),
     path('reservacion/', views.ReservacionView.as_view(), name="reservacion"),
     path('home/<int:pk>/json/', views.reservacion_detalle_json, name='reservacion_detalle_json'),
+    path('reservacion/buscar-cliente/', views.buscar_cliente, name='buscar_cliente'),
     path('reservacion/<int:pk>/', views.DetallesReservacionView.as_view(), name="reservacion"),
     path('administracion/servicios/', views.Servicios.as_view(), name="servicios"),
     path('administracion/servicios/<int:pk>/actualizar/', views.actualizar_servicio, name="actualizar_servicio"),
