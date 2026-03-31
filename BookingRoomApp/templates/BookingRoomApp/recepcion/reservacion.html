@@ -5,6 +5,10 @@
   href="{% static 'BookingRoomApp/css/recepcion/reservacion.css' %}"
 />
 <link rel="stylesheet" href="{% static 'BookingRoomApp/css/recepcion/pagos.css' %}">
+
+{% include "BookingRoomApp/includes/alert-confirmar.html" %}
+{% include "BookingRoomApp/includes/alert-cancelar.html" %}
+
 <style>
 #modalPagos {
     width: 900px;
@@ -14,11 +18,13 @@
     overflow-y: auto;
 }
 </style>
-<script src="{% static "BookingRoomApp/js/recepcion/pagos.js" %}" defer></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="{% static "BookingRoomApp/js/recepcion/pagos.js" %}" defer></script>
+<script src="{% static "BookingRoomApp/js/recepcion/añadir-selects.js" %}"></script> 
 
 <h1 style="margin: 50px 0px 20px 20px;"><a style="color: black;" href="{% url 'home' %}">
 
-                    <svg class="icono negro icono-48 campana">
+                    <svg class="icono negro icono-48">
                     <use href="{% static 'BookingRoomApp/img/icons/sprite.svg'%}#icon-left"></use>
                   </svg>
 </a>Reservación</h1>
@@ -181,54 +187,63 @@
         </div>
       </section>
       <section id="servicios" class="reservacion-seccion">
-        <h3 class="reservacion-titulo-seccion">Servicios</h3>
-        <div class="reservacion-campo-contenedor reservacion-grid-campos">
-          <div class="reservacion-campo">
-            <label class="reservacion-label">Tipo de servicio</label>
-            <select class="reservacion-input">
-              <option value="">-- Elige un tipo --</option>
-              {% for tipo in tipos_servicio %}
-              <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
-              {% endfor %}
-            </select>
+        <h3 class="reservacion-titulo-seccion" style="margin-bottom: 30px;">Servicios</h3>
+        <div class="servicios-contenedor">
+          <div class="servicios-selects" id="servicios-selects">
+            <div class="servicio-pair" data-index="1">
+              <div class="reservacion-campo">
+                <label class="reservacion-label">Tipo de servicio</label>
+                <select class="reservacion-input servicio-tipo" name="servicio_tipo_1">
+                  <option value="">-- Elige un tipo --</option>
+                  {% for tipo in tipos_servicio %}
+                  <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="reservacion-campo">
+                <label class="reservacion-label">Seleccionar Servicio</label>
+                <select class="reservacion-input servicio-select" name="servicio_1" disabled>
+                  <option value="">-- Selecciona un tipo primero --</option>
+                </select>
+              </div>
+            </div>
           </div>
-          <div class="reservacion-campo">
-            <label class="reservacion-label">Seleccionar Servicio</label>
-            <select class="reservacion-input">
-              <option value="">-- Elige un servicio --</option>
-            </select>
-          </div>
-          <div class="reservacion-campo span-2">
-            <button class="btn-accion" style="width: 100%; margin-top: auto;">+ Añadir Servicio</button>
+          <div class="servicios-botones">
+            <button type="button" class="boton-accion boton-quitar" onclick="quitarSelect('servicios')">- Quitar</button>
+            <button type="button" class="boton-accion boton-añadir" onclick="añadirSelect()">+ Añadir Servicio</button>
           </div>
         </div>
       </section>
 
       <section id="equipamiento" class="reservacion-seccion">
-        <h3 class="reservacion-titulo-seccion">Equipamientos</h3>
-        <div class="reservacion-campo-contenedor reservacion-grid-campos">
-          <div class="reservacion-campo">
-            <label class="reservacion-label">Tipo de equipamiento</label>
-            <select class="reservacion-input">
-              <option value="">-- Elige un tipo --</option>
-            </select>
-          </div>
-          <div class="reservacion-campo">
-            <label class="reservacion-label">Seleccionar Equipo</label>
-            <select class="reservacion-input">
-              <option value="">-- Elige un equipo --</option>
-            </select>
-          </div>
-          <div class="reservacion-campo">
-            <label class="reservacion-label">Cantidad</label>
-            <div class="reservacion-control-cantidad">
-              <button class="btn-cantidad">-</button>
-              <input type="number" class="reservacion-input" value="0" style="text-align: center;" />
-              <button class="btn-cantidad">+</button>
+        <h3 class="reservacion-titulo-seccion"  style="margin-bottom: 30px;">Equipamientos</h3>
+        <div class="servicios-contenedor">
+          <div class="servicios-selects" id="equipamientos-selects">
+            <div class="servicio-pair" data-index="1">
+              <div class="reservacion-campo">
+                <label class="reservacion-label">Tipo de equipamiento</label>
+                <select class="reservacion-input equipamiento-tipo" name="equipamiento_tipo_1">
+                  <option value="">-- Elige un tipo --</option>
+                  {% for tipo in tipos_equipamiento %}
+                  <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="reservacion-campo">
+                <label class="reservacion-label">Seleccionar Equipo</label>
+                <select class="reservacion-input equipamiento-select" name="equipamiento_1" disabled>
+                  <option value="">-- Selecciona un tipo primero --</option>
+                </select>
+              </div>
+              <div class="reservacion-campo">
+                <label class="reservacion-label">Cantidad</label>
+                <input type="number" class="reservacion-input" name="equipamiento_cantidad_1" value="1" min="1" />
+              </div>
             </div>
           </div>
-          <div class="reservacion-campo" style="display: flex; align-items: flex-end;">
-            <button class="btn-accion" style="width: 100%;">+ Añadir Equipo</button>
+          <div class="servicios-botones">
+            <button type="button" class="boton-accion boton-quitar" onclick="quitarSelect('equipamientos')">- Quitar</button>
+            <button type="button" class="boton-accion boton-añadir" onclick="añadirEquipamiento()">+ Añadir Equipamiento</button>
           </div>
         </div>
       </section>
@@ -260,10 +275,10 @@
         </div>
 
         <div class="reservacion-botones">
-          <button class="reservacion-btn reservacion-btn-confirmar" onclick="document.getElementById('modalPagos').showModal()"> 
+          <button class="reservacion-btn reservacion-btn-confirmar" onclick="abrirModalConfirmar('Confirmar reservación', '¿Estás seguro de que deseas confirmar esta reservación?', function() { document.getElementById('modalPagos').showModal(); })"> 
             Confirmar
           </button>
-          <button class="reservacion-btn reservacion-btn-cancelar">
+          <button class="reservacion-btn reservacion-btn-cancelar" onclick="abrirModalCancelar('Cancelar reservación', '¿Estás seguro de que quieres cancelar?', function() { console.log('Cancelar'); })">
             Cancelar
           </button>
         </div>
@@ -367,6 +382,11 @@
           document.getElementById('cliente-calle').value = data.cliente.calle || '';
           document.getElementById('cliente-numero').value = data.cliente.numero || '';
           
+          // Agregar clase autollenado para fondo casi blanco
+          document.querySelectorAll('.cliente-input').forEach(input => {
+            input.classList.add('autollenado');
+          });
+          
           // Tipo de cliente
           if (data.cliente.tipo_cliente) {
             const tipoMoral = document.getElementById('tipo-moral');
@@ -384,12 +404,17 @@
           // Cliente no encontrado - habilitar inputs para registro manual
           habilitarInputsCliente();
           limpiarInputsCliente();
-          boton = document.getElementById('btn-registrar-cliente');
-
-
+          
+          // Quitar clase autollenado
+          document.querySelectorAll('.cliente-input').forEach(input => {
+            input.classList.remove('autollenado');
+          });
+          
           document.getElementById('cliente-rfc').value = query;
           document.getElementById('cliente-rfc').disabled = false;
-          boton.disabled = false
+          
+          const botonRegistrar = document.getElementById('btn-registrar-cliente');
+          botonRegistrar.disabled = false;
 
           mostrarToastExito(data.mensaje + '. Complete los datos del cliente', 'warning');
         }
@@ -405,6 +430,51 @@
       if (e.key === 'Enter') {
         e.preventDefault();
         btnBuscarCliente.click();
+      }
+    });
+  }
+
+  // Validar RFC al registrar cliente
+  const btnRegistrarCliente = document.getElementById('btn-registrar-cliente');
+  if (btnRegistrarCliente) {
+    btnRegistrarCliente.addEventListener('click', async function() {
+      const rfcInput = document.getElementById('cliente-rfc');
+      const rfcValue = rfcInput.value.trim();
+      
+      if (!rfcValue) {
+        mostrarToastExito('Ingrese el RFC del cliente', 'warning');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/reservacion/buscar-cliente/?q=${encodeURIComponent(rfcValue)}`);
+        const data = await response.json();
+
+        if (data.encontrado) {
+          // RFC ya existe - llenar datos automáticamente y mostrar error
+          document.getElementById('cliente-nombre').value = data.cliente.nombre || '';
+          document.getElementById('cliente-apellido-paterno').value = data.cliente.apellido_paterno || '';
+          document.getElementById('cliente-apellido-materno').value = data.cliente.apellido_materno || '';
+          document.getElementById('cliente-nombre-fiscal').value = data.cliente.nombre_fiscal || '';
+          document.getElementById('cliente-colonia').value = data.cliente.colonia || '';
+          document.getElementById('cliente-calle').value = data.cliente.calle || '';
+          document.getElementById('cliente-numero').value = data.cliente.numero || '';
+          
+          // Agregar clase autollenado
+          document.querySelectorAll('.cliente-input').forEach(input => {
+            input.classList.add('autollenado');
+          });
+          
+          deshabilitarInputsCliente();
+          mostrarToastExito('El RFC ya está registrado. Los datos han sido cargados automáticamente.', 'error');
+        } else {
+          // RFC no existe - proceder con registro
+          mostrarToastExito('RFC válido. Puede continuar con el registro.', 'success');
+          // Aquí agregarías la lógica para guardar el cliente
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        mostrarToastExito('Error al validar RFC', 'error');
       }
     });
   }
@@ -505,6 +575,22 @@
         <button class="pagos-btn pagos-btn-cancel" id="btn-cancelar-pago">Cancelar</button>
     </div>
 </div>
+</dialog>
+
+<dialog id="modal-comprobante" class="pagos-comprobante-modal">
+    <div class="modal-comprobante-content">
+        <div class="comprobante-header">
+            <h2>Comprobante de Pago</h2>
+            <button onclick="document.getElementById('modal-comprobante').close()" class="cerrar-btn">X</button>
+        </div>
+        <div class="comprobante-body" id="comprobante-content">
+            {% include "BookingRoomApp/includes/comprobante.html" %}
+        </div>
+        <div class="comprobante-footer">
+            <button onclick="generarPDF()">Guardar PDF</button>
+            <button onclick="document.getElementById('modal-comprobante').close()">Cerrar</button>
+        </div>
+    </div>
 </dialog>
 
 {% endblock inicio %}

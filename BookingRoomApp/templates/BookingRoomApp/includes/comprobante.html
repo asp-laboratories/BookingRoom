@@ -1,0 +1,60 @@
+    <div class="receipt-container">
+        
+        <header class="header-section">
+            <h1>Comprobante de Pago</h1>
+        </header>
+
+        <section class="reservation-section">
+            <div class="section-label">Referencia para la reservación:</div>
+            <div class="gray-box">
+                <div><span class="label">Atendido por:</span> <span id="comp-atendido">—</span></div>
+                <div><span class="label">Número de recibo:</span> <span id="comp-no-pago">—</span></div>
+                <div><span class="label">Fecha de emisión:</span> <span id="comp-fecha">—</span> <span id="comp-hora">—</span></div>
+            </div>
+        </section>
+
+        <section class="client-section">
+            <div class="section-label">Datos del cliente y evento:</div>
+            <div class="gray-box">
+                <div><span class="label">Recibe:</span> <span id="comp-cliente">—</span></div>
+                <div><span class="label">Evento:</span> <span id="comp-evento">""</span> (<span id="comp-fecha-evento">—</span>)</div>
+                <div class="event-details">
+                    <div><span class="label">Fecha del evento:</span> <span id="comp-fecha-evento-detalle">—</span></div>
+                    <div><span class="label">Hora de inicio:</span> <span id="comp-hora-inicio">—</span></div>
+                    <div><span class="label">Hora de cierre:</span> <span id="comp-hora-cierre">—</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-section">
+            <div class="section-label">Espacio rentado:</div>
+            <div class="gray-box">
+                <div><span class="label">Salón:</span> <span id="comp-salon">—</span></div>
+                <div><span class="label">Tipo de Montaje:</span> <span id="comp-montaje">—</span></div>
+            </div>
+        </section>
+
+        <section class="extras-section">
+            <div>
+                <div class="section-label">Servicios:</div>
+                <div class="extras-box" id="comp-servicios"></div>
+            </div>
+            <div>
+                <div class="section-label">Equipamientos:</div>
+                <div class="extras-box" id="comp-equipamientos"></div>
+            </div>
+        </section>
+
+        <footer class="financial-section">
+            <div class="balance-info">
+                Saldo: <span id="comp-saldo">$0.00</span>
+            </div>
+            <div class="totals-info">
+                <div><span>Monto Pagado:</span> <span id="comp-monto">$0.00</span></div>
+                <div><span>Subtotal:</span> <span id="comp-subtotal">$0.00</span></div>
+                <div><span>IVA:</span> <span id="comp-iva">$0.00</span></div>
+                <div class="total-bold"><span>Total:</span> <span id="comp-total">$0.00</span></div>
+            </div>
+        </footer>
+
+    </div>

@@ -203,9 +203,7 @@ summary::after {
   color: #000000;
 }
 
-.icono.negro:hover {
-  color: #ffffff;
-}
+
 /* Variantes de tamaño con rem */
 /* .icono.sm {
   width: 1rem;

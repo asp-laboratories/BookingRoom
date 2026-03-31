@@ -150,10 +150,98 @@ class PagoSerializer(serializers.ModelSerializer):
     concepto_pago = serializers.CharField(write_only=True, required=False)
     metodo_pago = serializers.CharField(write_only=True, required=False)
     
+    # Campos adicionales para el comprobante
+    subtotal = serializers.SerializerMethodField()
+    iva = serializers.SerializerMethodField()
+    total = serializers.SerializerMethodField()
+    fecha_evento = serializers.SerializerMethodField()
+    hora_inicio = serializers.SerializerMethodField()
+    hora_fin = serializers.SerializerMethodField()
+    salon = serializers.SerializerMethodField()
+    montaje = serializers.SerializerMethodField()
+    servicios = serializers.SerializerMethodField()
+    lista_equipamentos = serializers.SerializerMethodField()
+    atendido_por = serializers.SerializerMethodField()
+    
     class Meta:
         model = models.Pago
-        fields = ['nota', 'monto', 'saldo', 'no_pago', 'reservacion', 'concepto_pago', 'metodo_pago', 'fecha', 'hora']
-        read_only_fields = ['fecha', 'hora', 'no_pago', 'saldo']
+        fields = ['nota', 'monto', 'saldo', 'no_pago', 'reservacion', 'concepto_pago', 'metodo_pago', 'fecha', 'hora',
+                  'subtotal', 'iva', 'total', 'fecha_evento', 'hora_inicio', 'hora_fin', 
+                  'salon', 'montaje', 'servicios', 'lista_equipamentos', 'atendido_por']
+        read_only_fields = ['fecha', 'hora', 'no_pago', 'saldo', 'subtotal', 'iva', 'total', 
+                            'fecha_evento', 'hora_inicio', 'hora_fin', 'salon', 'montaje', 
+                            'servicios', 'lista_equipamentos', 'atendido_por']
+    
+    def get_subtotal(self, obj):
+        try:
+            return str(obj.reservacion.subtotal) if obj.reservacion else '0.00'
+        except:
+            return '0.00'
+    
+    def get_iva(self, obj):
+        try:
+            return str(obj.reservacion.IVA) if obj.reservacion else '0.00'
+        except:
+            return '0.00'
+    
+    def get_total(self, obj):
+        try:
+            return str(obj.reservacion.total) if obj.reservacion else '0.00'
+        except:
+            return '0.00'
+    
+    def get_fecha_evento(self, obj):
+        try:
+            return obj.reservacion.fechaEvento.strftime('%Y-%m-%d') if obj.reservacion and obj.reservacion.fechaEvento else '—'
+        except:
+            return '—'
+    
+    def get_hora_inicio(self, obj):
+        try:
+            return obj.reservacion.horaInicio.strftime('%H:%M') if obj.reservacion and obj.reservacion.horaInicio else '—'
+        except:
+            return '—'
+    
+    def get_hora_fin(self, obj):
+        try:
+            return obj.reservacion.horaFin.strftime('%H:%M') if obj.reservacion and obj.reservacion.horaFin else '—'
+        except:
+            return '—'
+    
+    def get_salon(self, obj):
+        try:
+            if obj.reservacion and obj.reservacion.montaje and obj.reservacion.montaje.salon:
+                return obj.reservacion.montaje.salon.nombre
+        except:
+            pass
+        return '—'
+    
+    def get_montaje(self, obj):
+        try:
+            if obj.reservacion and obj.reservacion.montaje and obj.reservacion.montaje.tipo_montaje:
+                return obj.reservacion.montaje.tipo_montaje.nombre
+        except:
+            pass
+        return '—'
+    
+    def get_servicios(self, obj):
+        try:
+            if obj.reservacion:
+                return list(obj.reservacion.reserva_servicio.values_list('nombre', flat=True))
+        except:
+            pass
+        return []
+    
+    def get_lista_equipamentos(self, obj):
+        try:
+            if obj.reservacion:
+                return list(obj.reservacion.reserva_equipa.select_related('equipamiento').values_list('equipamiento__nombre', flat=True))
+        except:
+            pass
+        return []
+    
+    def get_atendido_por(self, obj):
+        return 'Recepción'
     
     def create(self, validated_data):
         concepto_codigo = validated_data.pop('concepto_pago', None)
@@ -171,20 +259,28 @@ class PagoSerializer(serializers.ModelSerializer):
         except models.MetodoPago.DoesNotExist:
             raise serializers.ValidationError({'metodo_pago': f'Método de pago {metodo_codigo} no encontrado'})
         
-        ultimo = models.Pago.objects.order_by('-no_pago').first()
-        validated_data['no_pago'] = (ultimo.no_pago + 1) if ultimo and ultimo.no_pago else 1
-        
         reserva = validated_data['reservacion']
         monto = validated_data['monto']
-        pagos_previos = models.Pago.objects.filter(reservacion=reserva).count()
         
-        if pagos_previos >= 2:
-            raise serializers.ValidationError({'error': 'Esta reservación ya tiene los 2 pagos permitidos'})
+        # Obtener el último pago de esta reservación específica
+        ultimo_pago_reserva = models.Pago.objects.filter(reservacion=reserva).order_by('-no_pago').first()
         
-        if pagos_previos == 0:
-            validated_data['saldo'] = reserva.total - monto
+        # Calcular saldo actual (total - suma de pagos anteriores)
+        if ultimo_pago_reserva:
+            saldo_actual = ultimo_pago_reserva.saldo
         else:
-            validated_data['saldo'] = 0
+            saldo_actual = reserva.total
+        
+        # Validar que monto no exceda el saldo pendiente
+        if monto > saldo_actual:
+            raise serializers.ValidationError({'monto': f'El monto excede el saldo pendiente de ${saldo_actual}'})
+        
+        if ultimo_pago_reserva:
+            validated_data['no_pago'] = ultimo_pago_reserva.no_pago + 1
+            validated_data['saldo'] = ultimo_pago_reserva.saldo - monto
+        else:
+            validated_data['no_pago'] = 1
+            validated_data['saldo'] = reserva.total - monto
         
         return super().create(validated_data)
 

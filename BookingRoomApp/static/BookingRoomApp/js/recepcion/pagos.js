@@ -113,13 +113,14 @@ async function registrarPago() {
         metodo_pago: metodo
     };
 
-    console.log(reservaId);
-    console.log(monto);
-    console.log(nota);
-    console.log(concepto);
-    console.log(metodo);
-    
+    abrirModalConfirmar(
+        'Confirmar pago',
+        `¿Confirmar el registro de un pago de $${parseFloat(monto).toFixed(2)}?`,
+        () => ejecutarPago(data, csrfToken)
+    );
+}
 
+async function ejecutarPago(data, csrfToken) {
     try {
         const respuesta = await fetch('/api/pago/', {
             method: 'POST',
@@ -131,19 +132,98 @@ async function registrarPago() {
             credentials: 'same-origin'
         });
 
+        console.log('Response status:', respuesta.status);
+        console.log('Response statusText:', respuesta.statusText);
+        
         if (respuesta.ok) {
-            alert('Pago registrado exitosamente');
+            const contentType = respuesta.headers.get('content-type') || '';
+            console.log('Content-Type:', contentType);
+            
+            const datosPago = await respuesta.json();
+            console.log('Pago registrado:', datosPago);
+            
+            // Referencia reservación
+            const now = new Date();
+            const compAtendido = document.getElementById('comp-atendido');
+            const compNoPago = document.getElementById('comp-no-pago');
+            const compFecha = document.getElementById('comp-fecha');
+            const compHora = document.getElementById('comp-hora');
+            
+            if (compNoPago) compNoPago.textContent = datosPago.no_pago || '1';
+            if (compFecha) compFecha.textContent = now.toLocaleDateString();
+            if (compHora) compHora.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            if (compAtendido) compAtendido.textContent = datosPago.atendido_por || '—';
+            
+            // Cliente y evento
+            const compCliente = document.getElementById('comp-cliente');
+            const compEvento = document.getElementById('comp-evento');
+            const compFechaEvento = document.getElementById('comp-fecha-evento');
+            const compFechaEventoDetalle = document.getElementById('comp-fecha-evento-detalle');
+            const compHoraInicio = document.getElementById('comp-hora-inicio');
+            const compHoraCierre = document.getElementById('comp-hora-cierre');
+            
+            if (compCliente) compCliente.textContent = document.querySelector('[data-field="cliente"]')?.value || '—';
+            if (compEvento) compEvento.textContent = document.querySelector('[data-field="nombre_evento"]')?.value || '—';
+            if (compFechaEvento) compFechaEvento.textContent = datosPago.fecha_evento || '—';
+            if (compFechaEventoDetalle) compFechaEventoDetalle.textContent = datosPago.fecha_evento || '—';
+            if (compHoraInicio) compHoraInicio.textContent = datosPago.hora_inicio || '—';
+            if (compHoraCierre) compHoraCierre.textContent = datosPago.hora_fin || '—';
+            
+            // Espacio rentado
+            const compSalon = document.getElementById('comp-salon');
+            const compMontaje = document.getElementById('comp-montaje');
+            
+            if (compSalon) compSalon.textContent = datosPago.salon || '—';
+            if (compMontaje) compMontaje.textContent = datosPago.montaje || '—';
+            
+            // Servicios y Equipamientos
+            const compServicios = document.getElementById('comp-servicios');
+            const compEquipamientos = document.getElementById('comp-equipamientos');
+            
+            if (compServicios) compServicios.textContent = datosPago.servicios?.length ? datosPago.servicios.join(', ') : 'Sin servicios';
+            if (compEquipamientos) compEquipamientos.textContent = datosPago.lista_equipamentos?.length ? datosPago.lista_equipamentos.join(', ') : 'Sin equipamentos';
+            
+            // Datos financieros
+            const compMonto = document.getElementById('comp-monto');
+            const compSubtotal = document.getElementById('comp-subtotal');
+            const compIva = document.getElementById('comp-iva');
+            const compTotal = document.getElementById('comp-total');
+            const compSaldo = document.getElementById('comp-saldo');
+            
+            if (compMonto) compMonto.textContent = '$' + data.monto;
+            if (compSubtotal) compSubtotal.textContent = '$' + (datosPago.subtotal || '0.00');
+            if (compIva) compIva.textContent = '$' + (datosPago.iva || '0.00');
+            if (compTotal) compTotal.textContent = '$' + (datosPago.total || '0.00');
+            if (compSaldo) compSaldo.textContent = '$' + (parseFloat(datosPago.saldo || 0)).toFixed(2);
+            
+            // Mostrar modal de comprobante
+            const modalComprobante = document.getElementById('modal-comprobante');
+            if (modalComprobante) {
+                modalComprobante.showModal();
+            } else {
+                alert('Pago registrado exitosamente');
+            }
+            
+            // Cerrar modal de pagos
             const modal = document.getElementById('modalPagos');
             if (modal) modal.close();
-            location.reload();
         } else {
-            const error = await respuesta.json();
-            alert(error.error || error.mensaje || 'Error al registrar pago');
-            console.log(error.error);
-            
+            console.log('Response no OK, status:', respuesta.status);
+            // Leer respuesta solo una vez
+            const contentType = respuesta.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                const error = await respuesta.json();
+                console.log('Error response:', error);
+                alert(error.error || error.mensaje || Object.values(error).join(', ') || 'Error al registrar pago');
+            } else {
+                const text = await respuesta.text();
+                console.log('Error HTML:', text.substring(0, 500));
+                alert('Error del servidor (500). Revisa la consola del servidor.');
+            }
         }
-    } catch {
-        alert('Error de conexion');
+    } catch (e) {
+        console.error('Catch error:', e);
+        alert('Error de conexión: ' + e.message);
     }
 }
 
@@ -166,3 +246,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+function generarPDF() {
+    const elemento = document.getElementById('comprobante-content');
+    const fecha = new Date().toISOString().slice(0, 10);
+    const opt = {
+        margin: 10,
+        filename: `comprobante_pago_${fecha}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(elemento).save();
+}

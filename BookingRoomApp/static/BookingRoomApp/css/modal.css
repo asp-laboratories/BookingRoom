@@ -143,3 +143,125 @@
 .btn-modal:hover {
     opacity: 0.9;
 }
+
+       /* Contenedor Principal */
+        .receipt-container {
+            background-color: white;
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: auto auto auto auto auto auto; /* Altura automática según contenido */
+            gap: 20px;
+        }
+
+        /* Estilos Generales de Secciones */
+        .section-label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        .gray-box {
+            background-color: #e0e0e0;
+            padding: 15px;
+            border-radius: 4px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* 1. Encabezado */
+        .header-section {
+            grid-column: span 2;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header-section h1 {
+            margin: 0;
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* 2. Referencia de Reservación */
+        .reservation-section {
+            grid-column: span 2;
+        }
+
+        /* 3. Datos del Cliente */
+        .client-section {
+            grid-column: span 2;
+        }
+        .client-section .gray-box {
+            grid-template-columns: 1fr; /* Una columna para el nombre y evento */
+        }
+        .event-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+
+        /* 4. Espacio Rentado */
+        .space-section {
+            grid-column: span 2;
+        }
+
+        /* 5. Elementos Extra (Servicios y Equipos) */
+        .extras-section {
+            grid-column: span 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .extras-box {
+            background-color: #e0e0e0;
+            padding: 15px;
+            border-radius: 4px;
+            min-height: 80px;
+        }
+
+        /* 6. Resumen Financiero */
+        .financial-section {
+            grid-column: span 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            margin-top: 10px;
+            padding: 10px;
+        }
+
+        .balance-info {
+            display: flex;
+            align-items: flex-end;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .totals-info {
+            text-align: right;
+            line-height: 1.8;
+        }
+
+        .totals-info span {
+            display: inline-block;
+            width: 100px;
+        }
+
+        .total-bold {
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-top: 1px solid #333;
+            margin-top: 5px;
+            padding-top: 5px;
+        }
+
+        /* Etiquetas internas */
+        span.label {
+            color: #555;
+            font-size: 0.85rem;
+            display: block;
+        }

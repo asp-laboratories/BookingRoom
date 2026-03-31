@@ -145,6 +145,7 @@ class ReservacionView(generic.View):
         context = {
             "tipos_servicio": models.TipoServicio.objects.filter(disposicion=True),
             "tipos_equipa": models.TipoEquipa.objects.filter(disposicion=True),
+            "tipos_equipamiento": models.TipoEquipa.objects.filter(disposicion=True),
             "rol": rol,
         }
         return render(request, self.template_name, context)
@@ -158,8 +159,30 @@ def buscar_cliente(request):
         if not query:
             return JsonResponse({'encontrado': False, 'mensaje': 'Ingrese un RFC o nombre'})
         
+        # Primero buscar por RFC exacto
+        cliente_rfc = models.DatosCliente.objects.filter(rfc__iexact=query).first()
+        
+        if cliente_rfc:
+            return JsonResponse({
+                'encontrado': True,
+                'cliente': {
+                    'id': cliente_rfc.id,
+                    'rfc': cliente_rfc.rfc,
+                    'nombre': cliente_rfc.nombre,
+                    'apellido_paterno': cliente_rfc.apellidoPaterno,
+                    'apellido_materno': cliente_rfc.apelidoMaterno or '',
+                    'nombre_fiscal': cliente_rfc.nombre_fiscal,
+                    'telefono': cliente_rfc.telefono,
+                    'correo': cliente_rfc.correo_electronico,
+                    'colonia': cliente_rfc.dir_colonia,
+                    'calle': cliente_rfc.dir_calle,
+                    'numero': cliente_rfc.dir_numero,
+                    'tipo_cliente': cliente_rfc.tipo_cliente.nombre if cliente_rfc.tipo_cliente else '',
+                }
+            })
+        
+        # Si no es RFC exacto, buscar por nombre
         clientes = models.DatosCliente.objects.filter(
-            Q(rfc__icontains=query) | 
             Q(nombre__icontains=query) |
             Q(nombre_fiscal__icontains=query)
         )
@@ -185,6 +208,38 @@ def buscar_cliente(request):
             })
         
         return JsonResponse({'encontrado': False, 'mensaje': 'Cliente no encontrado'})
+
+
+@csrf_exempt
+def obtener_servicios_por_tipo(request):
+    if request.method == 'GET':
+        tipo_id = request.GET.get('tipo_id')
+        
+        if not tipo_id:
+            return JsonResponse({'servicios': []})
+        
+        servicios = models.Servicio.objects.filter(
+            tipo_servicio_id=tipo_id,
+            disposicion=True
+        ).values('id', 'nombre', 'costo')
+        
+        return JsonResponse({'servicios': list(servicios)})
+
+
+@csrf_exempt
+def obtener_equipamiento_por_tipo(request):
+    if request.method == 'GET':
+        tipo_id = request.GET.get('tipo_id')
+        
+        if not tipo_id:
+            return JsonResponse({'equipamientos': []})
+        
+        equipamientos = models.Equipamiento.objects.filter(
+            tipo_equipa_id=tipo_id,
+            stock__gt=0
+        ).values('id', 'nombre', 'costo', 'stock')
+        
+        return JsonResponse({'equipamientos': list(equipamientos)})
 
 
 class DetallesReservacionView(generic.DetailView):

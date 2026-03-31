@@ -3,8 +3,11 @@
 
 {% block inicio %}
 
+{% include "BookingRoomApp/includes/alert-confirmar.html" %}
+
 <link rel="stylesheet" href="{% static 'BookingRoomApp/css/recepcion/pagos.css' %}">
-<script src="{% static "BookingRoomApp/js/recepcion/pagos.js" %}?v=2" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="{% static "BookingRoomApp/js/recepcion/pagos.js" %}"></script>
 
 <div class="pagos-container">
     <div class="pagos-header">
@@ -97,6 +100,21 @@
     </div>
 </div>
 
+<dialog id="modal-comprobante" class="pagos-comprobante-modal">
+    <div class="modal-comprobante-content">
+        <div class="comprobante-header">
+            <h2>Comprobante de Pago</h2>
+            <button onclick="document.getElementById('modal-comprobante').close()" class="cerrar-btn">X</button>
+        </div>
+        <div class="comprobante-body" id="comprobante-content">
+            {% include "BookingRoomApp/includes/comprobante.html" %}
+        </div>
+        <div class="comprobante-footer">
+            <button onclick="generarPDF()">Guardar PDF</button>
+            <button onclick="document.getElementById('modal-comprobante').close()">Cerrar</button>
+        </div>
+    </div>
+</dialog>
 
 
 {% endblock inicio %}
