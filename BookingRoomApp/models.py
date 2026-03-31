@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 # Create your models here.
@@ -98,14 +99,14 @@ class DatosCliente(models.Model):
     nombre_fiscal = models.CharField(max_length=150)
     nombre = models.CharField(max_length=150)
     apellidoPaterno = models.CharField(max_length=150)
-    apelidoMaterno = models.CharField(max_length=150)
+    apelidoMaterno = models.CharField(max_length=150, null=True, blank=True)
     telefono = models.CharField(max_length=15)
     correo_electronico = models.EmailField(unique=True)
     dir_colonia = models.CharField(max_length=150)
     dir_calle = models.CharField(max_length=150)
     dir_numero = models.CharField( max_length=50)
     tipo_cliente = models.ForeignKey(TipoCliente, on_delete=models.PROTECT)
-    cuenta = models.ForeignKey(Cuenta, on_delete=models.PROTECT)
+    cuenta = models.ForeignKey(Cuenta, null=True, blank=True, on_delete=models.PROTECT)
 
     class Meta:
         db_table = 'datos_cliente'
@@ -298,7 +299,7 @@ class Montaje(models.Model):
         verbose_name_plural = "Montajes"
 
     def __str__(self):
-        return f"S:{self.salon.pk} TM:{self.tipo_montaje.pk}"
+        return f"ID:{self.pk} S:{self.salon.nombre} TM:{self.tipo_montaje.nombre}"
 
 
 class Servicio(models.Model):
@@ -318,16 +319,16 @@ class Servicio(models.Model):
 
 
 class Reservacion(models.Model):
-    nombreEvento = models.CharField(max_length=100, blank=True, default="")
+    nombre = models.CharField(max_length=100, blank=True, default="")
     descripEvento = models.CharField(max_length=550)
     estimaAsistentes = models.IntegerField()
     fechaReservacion = models.DateField(auto_now_add=True)
     fechaEvento = models.DateField()
     horaInicio = models.TimeField()
     horaFin = models.TimeField()
-    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
-    IVA = models.DecimalField(max_digits=10, decimal_places=2)
-    total = models.DecimalField(max_digits=10, decimal_places=2)
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    IVA = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    total = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     cliente = models.ForeignKey(DatosCliente, on_delete=models.PROTECT)
     montaje = models.ForeignKey(Montaje, on_delete=models.PROTECT)
     estado_reserva = models.ForeignKey(EstadoReserva, on_delete=models.PROTECT)
@@ -363,7 +364,7 @@ class Mobiliario(models.Model):
 
 class MontajeMobiliario(models.Model):
     cantidad = models.IntegerField()
-    completado = models.BooleanField(default=False)
+    completado = models.BooleanField(default=False, blank=True, null=True)
     montaje = models.ForeignKey(Montaje, on_delete=models.PROTECT)
     mobiliario = models.ForeignKey(Mobiliario, on_delete=models.PROTECT)
 
@@ -373,7 +374,7 @@ class MontajeMobiliario(models.Model):
         verbose_name_plural = "Mobilarios de montajes"
 
     def __str__(self):
-        return f"Mob:{self.montaje.pk} Mon:{self.mobiliario.pk}"
+        return f"Mob:{self.mobiliario.nombre} Mon:{self.montaje.id}"
 
 
 class Equipamiento(models.Model):
@@ -410,7 +411,7 @@ class InventarioEquipa(models.Model):
         ]
 
     def __str__(self):
-        return f"E:{self.equipamiento.pk} E:{self.estado_equipa.pk}"
+        return f"Eq:{self.equipamiento.pk} Es:{self.estado_equipa.pk}"
 
 
 class InventarioMob(models.Model):
@@ -449,7 +450,7 @@ class ReservaEquipa(models.Model):
 
 
 class RegistrEstadReserva(models.Model):
-    fecha = models.DateField(auto_now=True)
+    fecha = models.DateField(auto_now=True, null=True, blank=True)
     reservacion = models.ForeignKey(Reservacion, on_delete=models.PROTECT)
     estado_reserva = models.ForeignKey(EstadoReserva, on_delete=models.PROTECT)
 
@@ -463,7 +464,7 @@ class RegistrEstadReserva(models.Model):
 
 
 class RegistrEstadSalon(models.Model):
-    fecha = models.DateField(auto_now=True)
+    fecha = models.DateField(null=True, blank=True, default=timezone.now)
     salon = models.ForeignKey(Salon, on_delete=models.PROTECT)
     estado_salon = models.ForeignKey(EstadoSalon, on_delete=models.PROTECT)
 

@@ -27,22 +27,24 @@ class Validador:
         
     def _validar_estado(self):
         salon = models.Salon.objects.get(id=self.salon_id)
-        if salon.estado_salon != 'Disponible':
+        if salon.estado_salon != 'DISPO':
             raise ValidationError("El salon no se encuentra disponible")
         
 class Precios:
     # Constructor
-    def __init__(self, servicio = None, mobiliarios = None, salon = None, equipamientos = None):
-        self.servicio = servicio
+    def __init__(self, mobiliarios, equipamientos = None, servicios = None,  salon = None):
+        self.servicios = servicios
         self.mobiliarios = mobiliarios
         self.salon = salon
         self.equipamientos = equipamientos
     
     def sumar_todo(self):
         total = 0
-        total += self._sumar_servicios()
-        total += self._sumar_montaje()
-        total += self._sumar_equipamientos()
+        total += self.sumar_montaje()
+        if not len(self.servicios) == 0:
+            total += self._sumar_servicios()
+        if not len(self.equipamientos) == 0:
+            total += self._sumar_equipamientos()
         return total
     
     def sumar_montaje(self):
@@ -53,18 +55,23 @@ class Precios:
     
     def _sumar_servicios(self):
         total = 0
-        if type(self.servicio) == list:
-            for servicio in self.servicio:
-                pass
-                # total += servicio.
+        for servicio in self.servicios:
+            ser = models.Servicio.objects.get(id=servicio['id'])
+            total += ser.costo
+        return total
+
+    def _sumar_equipamientos(self):
+        total = 0
+        for equipo in self.equipamientos:
+            equipamiento = models.Equipamiento.objects.get(id=equipo['id'])
+            total += equipamiento.costo * equipo['cantidad']
+        return total
 
     def _sumar_mobiliarios(self):
         total = 0
-        mobiliarios = []
         for mobiliaio in self.mobiliarios:
-            mobiliarios.append(models.Mobiliario.objects.get(id=mobiliaio['id']))
-        for index, mobiliario in enumerate(mobiliarios):
-            total += mobiliario.costo * self.mobiliarios[index]['cantidad']
+            mobiliario = models.Mobiliario.objects.get(id=mobiliaio['id'])
+            total += mobiliario.costo * mobiliaio['cantidad']
         return total
 
     def _sumar_salon(self):

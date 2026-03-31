@@ -138,7 +138,7 @@ class MetodoPagoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class SerivicioSerializer(serializers.ModelSerializer):
+class ServicioSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Servicio
         fields = '__all__'
@@ -241,7 +241,28 @@ class TipoMobilSerializer(serializers.ModelSerializer):
 
 
 # Aca van todos los personalizados chamos cuidado con estos q estan canijos
+
+class MontajeLecturaSerializer(serializers.ModelSerializer):
+    salon = SalonSerializer(read_only=True)
+    tipo_montaje = TipoMontajeSerializer(read_only=True)
+    montaje_mobiliario = MontajeMobiliarioSerializer(
+        source='montajemobiliario_set', 
+        many=True, 
+        read_only=True
+    )
+
+    class Meta:
+        model = models.Montaje
+        fields = ['id', 'costo', 'salon', 'tipo_montaje', 'montaje_mobiliario']
+
 class MobiliariosMontajeSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    cantidad = serializers.IntegerField()
+
+class ServiciosReservacionSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+
+class EquipamientoReservacionSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     cantidad = serializers.IntegerField()
 
@@ -250,4 +271,37 @@ class MontajeCreacionSerializer(serializers.Serializer):
     tipo_montaje = serializers.IntegerField()
     mobiliarios = MobiliariosMontajeSerializer(many=True)
 
-    
+class ReservacionCreacionSerializer(serializers.Serializer):
+    nombre = serializers.CharField()
+    descripEvento = serializers.CharField()
+    estimaAsistentes = serializers.IntegerField()
+    fechaEvento = serializers.DateField()
+    horaInicio = serializers.TimeField()
+    horaFin = serializers.TimeField()
+    subtotal = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2)
+    IVA = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2)
+    total = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2)
+    cliente = serializers.IntegerField()
+    trabajador = serializers.IntegerField()
+    reserva_servicio = ServiciosReservacionSerializer(many=True, required=False, allow_empty=True)
+    reserva_equipa = EquipamientoReservacionSerializer(many=True, required=False, allow_empty=True)
+    montaje = MontajeCreacionSerializer()
+    tipo_evento = serializers.IntegerField()
+
+class ReservacionLecturaSerializer(serializers.ModelSerializer):
+    cliente = DatosClienteSerializer(read_only=True)
+    montaje = MontajeLecturaSerializer(read_only=True)
+    estado_reserva = EstadoReservaSerializer(read_only=True)
+    tipo_evento = TipoEventoSerializer(read_only=True)
+    trabajador = TrabajadorSerializer(read_only=True)
+    reserva_servicio = ServiciosReservacionSerializer(many=True, read_only=True)
+    reserva_equipa = ReservaEquipaSerializer(source='reservaequipa_set' ,many=True, read_only=True)
+
+    class Meta:
+        model = models.Reservacion
+        fields = ['id', 'nombre', 'descripEvento', 
+                  'estimaAsistentes', 'fechaReservacion', 
+                  'fechaEvento', 'horaInicio', 'horaFin', 
+                  'subtotal', 'IVA', 'total', 'cliente', 
+                  'montaje', 'estado_reserva', 'tipo_evento', 
+                  'trabajador', 'reserva_servicio', 'reserva_equipa']
