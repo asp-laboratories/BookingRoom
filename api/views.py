@@ -131,17 +131,21 @@ class ReservacionViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             return serializers.ReservacionLecturaSerializer
         
+        if self.action in ['update', 'partial_update']:
+            return serializers.ReservacionUpdateSerializer
+        
         return serializers.ReservacionSerializer
     
     def perform_update(self, serializer):
         cambio_reservacion = serializer.validated_data
         original = serializer.instance
+        
+        reservacionesService.modificacion_aditamentos(original=original, nuevos_datos=cambio_reservacion)
 
         if 'estado_reserva' in cambio_reservacion:
             if cambio_reservacion['estado_reserva'] != original.estado_reserva:
-                new_reservacion = reservacionesService.cambio_estado_reservacion(original, cambio_reservacion['estado_reserva'])
+                reservacionesService.cambio_estado_reservacion(original, cambio_reservacion['estado_reserva'])
             cambio_reservacion.pop('estado_reserva')
-        serializer.save()
 
     def create(self, request, *args, **kwargs):
         validador = self.get_serializer(data=request.data)

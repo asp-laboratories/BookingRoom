@@ -305,3 +305,21 @@ class ReservacionLecturaSerializer(serializers.ModelSerializer):
                   'subtotal', 'IVA', 'total', 'cliente', 
                   'montaje', 'estado_reserva', 'tipo_evento', 
                   'trabajador', 'reserva_servicio', 'reserva_equipa']
+
+class ReservacionUpdateSerializer(serializers.Serializer):
+    nombre = serializers.CharField(required=False)
+    descripEvento = serializers.CharField(required=False)
+    estimaAsistentes = serializers.IntegerField(required=False)
+    fechaEvento = serializers.DateField(required=False)
+    horaInicio = serializers.TimeField(required=False)
+    horaFin = serializers.TimeField(required=False)
+    subtotal = serializers.DecimalField(required=False, allow_null=True, max_digits=10, decimal_places=2)
+    IVA = serializers.DecimalField(required=False, allow_null=True, max_digits=10, decimal_places=2)
+    total = serializers.DecimalField(required=False, allow_null=True, max_digits=10, decimal_places=2)
+    cliente = serializers.IntegerField(required=False)
+    trabajador = serializers.IntegerField(required=False)
+    tipo_evento = serializers.IntegerField(required=False)
+    tipo_montaje = serializers.IntegerField(required=False)
+    mobiliarios = MobiliariosMontajeSerializer(required=False, many=True)
+    reserva_servicio = ServiciosReservacionSerializer(required=False, many=True, allow_empty=True)
+    reserva_equipa = EquipamientoReservacionSerializer(many=True, required=False, allow_empty=True)
