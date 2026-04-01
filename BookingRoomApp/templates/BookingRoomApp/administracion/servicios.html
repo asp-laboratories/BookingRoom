@@ -191,74 +191,11 @@
   </div>
 </div>
 
-<style>
-  .servicio-edicion input,
-  .servicio-edicion select {
-    width: 100%;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-    box-sizing: border-box;
-  }
-  
-  .servicio-edicion select {
-    min-width: 80px;
-  }
-  
-  .btn-editar, .btn-guardar, .btn-cancelar {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 5px;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-  }
-  
-  .btn-editar {
-    background-color: #0d6efd;
-  }
-  
-  .btn-editar:hover {
-    background-color: #084298;
-  }
-  
-  .btn-guardar {
-    background-color: var(--color-boton-guardar);
-  }
-  
-  .btn-guardar:hover {
-    background-color: #157347;
-  }
-  
-  .btn-cancelar {
-    background-color: var(--color-boton-cancelar);
-  }
-  
-  .btn-cancelar:hover {
-    background-color: #CA301B;
-  }
-  
-  .estado-badge {
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-  }
-  
-  .estado-badge.activo {
-    background-color: #d1e7dd;
-    color: #0f5132;
-  }
-  
-  .estado-badge.inactivo {
-    background-color: #f8d7da;
-    color: #842029;
-  }
-</style>
+<link rel="stylesheet" href="{% static 'BookingRoomApp/css/administracion/servicios.css' %}">
 
 <script src="{% static 'BookingRoomApp/js/inline-edit.js' %}"></script>
 <script>
-  const tiposServicio = [
+ const tiposServicio = [
     {% for tipo in tipo_servicio %}
       { id: {{ tipo.id }}, nombre: "{{ tipo.nombre }}" },
     {% endfor %}
@@ -278,5 +215,6 @@
     ]
   });
 </script>
+
 
 {% endblock inicio %}

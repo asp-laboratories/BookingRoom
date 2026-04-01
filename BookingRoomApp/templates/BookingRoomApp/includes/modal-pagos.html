@@ -1,0 +1,110 @@
+
+<dialog id="modalPagos" class="modal-beo">
+
+<div class="pagos-container">
+    <div class="pagos-header">
+        <h2 class="pagos-h2">Registro de pagos</h2>
+    </div>
+
+    <div class="pagos-layout">
+        <div class="pagos-busqueda">
+            <div class="pagos-section-title">Buscar reservación</div>
+            <div class="pagos-field-group">
+                <label class="pagos-label">Número de reservación</label>
+                <input data-field="reservacion" type="number" class="pagos-input-text" placeholder="Ingrese número">
+            </div>
+
+
+            <button id="btn-buscar-reservacion" class="pagos-btn pagos-btn-buscar boton-accion">Buscar</button>
+            <div class="pagos-field-group">
+                <label class="pagos-label">Estado</label>
+                <input data-field="estado" type="text" class="pagos-input-text" readonly>
+            </div>
+
+            <input data-field="reservacion_id" type="hidden">
+        </div>
+
+        <div class="pagos-datos-reservacion">
+            <div class="pagos-section-title">Datos de la reservación</div>
+            <div class="pagos-row">
+                <div class="pagos-field-group">
+                    <label class="pagos-label">Cliente</label>
+                    <input data-field="cliente" type="text" class="pagos-input-text" readonly>
+                </div>
+                <div class="pagos-field-group">
+                    <label class="pagos-label">Nombre del evento</label>
+                    <input data-field="nombre_evento" type="text" class="pagos-input-text" readonly>
+                </div>
+            </div>
+
+            <div class="pagos-row">
+                <div class="pagos-field-group">
+                    <label class="pagos-label">Subtotal</label>
+                    <input data-field="subtotal" type="text" class="pagos-input-text" readonly>
+                </div>
+                <div class="pagos-field-group">
+                    <label class="pagos-label">Total</label>
+                    <input data-field="total" type="text" class="pagos-input-text" readonly>
+                </div>
+                            <div class="pagos-field-group">
+                <label class="pagos-label">Descripción</label>
+                <input data-field="descripcion" type="text" class="pagos-input-text" readonly>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pagos-section-title">Datos del pago</div>
+    <div class="pagos-row">
+        <div class="pagos-field-group">
+            <label class="pagos-label">Monto a pagar</label>
+            <input data-field="monto" type="number" step="0.01" class="pagos-input-text" placeholder="$0.00">
+        </div>
+        <div class="pagos-field-group">
+            <label class="pagos-label">Saldo restante</label>
+            <input data-field="saldo" type="text" class="pagos-input-text" readonly>
+        </div>
+    </div>
+
+    <div class="pagos-field-group">
+        <label class="pagos-label">Nota</label>
+        <input data-field="nota" type="text" class="pagos-input-text" placeholder="Observaciones">
+    </div>
+
+    <div class="pagos-section-title">Concepto de pago</div>
+    <div class="pagos-options-group">
+        <label class="pagos-option"><input type="radio" name="concepto" checked class="pagos-input-radio pagos-concepto" value="ABONO"> Abono</label>
+        <label class="pagos-option"><input type="radio" name="concepto" class="pagos-input-radio pagos-concepto" value="LIQUI"> Liquidación</label>
+        <label class="pagos-option"><input type="radio" name="concepto" class="pagos-input-radio pagos-concepto" value="UNICO"> Pago único</label>
+    </div>
+
+    <div class="pagos-section-title">Método de pago</div>
+    <div class="pagos-options-group">
+        <label class="pagos-option"><input type="radio" name="metodo" checked class="pagos-input-radio pagos-metodo" value="EFECT"> Efectivo</label>
+        <label class="pagos-option"><input type="radio" name="metodo" class="pagos-input-radio pagos-metodo" value="TARJE"> Tarjeta</label>
+        <label class="pagos-option"><input type="radio" name="metodo" class="pagos-input-radio pagos-metodo" value="NFC"> NFC</label>
+        <label class="pagos-option"><input type="radio" name="metodo" class="pagos-input-radio pagos-metodo" value="TRANS"> Transferencia</label>
+    </div>
+
+    <div class="pagos-actions">
+        <button id="btn-confirmar-pago" class="pagos-btn pagos-btn-confirm">Confirmar</button>
+        <button class="pagos-btn pagos-btn-cancel" id="btn-cancelar-pago">Cancelar</button>
+    </div>
+</div>
+</dialog>
+
+<dialog id="modal-comprobante" class="pagos-comprobante-modal">
+    <div class="modal-comprobante-content">
+        <div class="comprobante-header">
+            <h2>Comprobante de Pago</h2>
+            <button onclick="document.getElementById('modal-comprobante').close()" class="cerrar-btn">X</button>
+        </div>
+        <div class="comprobante-body" id="comprobante-content">
+            {% include "BookingRoomApp/includes/comprobante.html" %}
+        </div>
+        <div class="comprobante-footer">
+            <button onclick="generarPDF()">Guardar PDF</button>
+            <button onclick="document.getElementById('modal-comprobante').close()">Cerrar</button>
+        </div>
+    </div>
+</dialog>
