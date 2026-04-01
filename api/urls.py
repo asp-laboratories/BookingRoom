@@ -25,6 +25,7 @@ router.register(r'estado-salon', views.RegistrEstadSalonViewSet)
 router.register(r'montaje', views.MontajeViewSet)
 router.register(r'montaje-mobiliario', views.MontajeMobiliarioViewSet)
 router.register(r'reservacion', views.ReservacionViewSet)
+router.register(r'reserva_servicio', views.ReservaServicioViewSet)
 
 urlpatterns = router.urls + [
     path('login/', views.api_login, name='api_login'),

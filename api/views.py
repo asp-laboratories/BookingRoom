@@ -88,6 +88,11 @@ class RegistrEstadSalonViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.RegistrEstadSalonSerializer
 
 
+class ReservaServicioViewSet(viewsets.ModelViewSet):
+    queryset = models.ReservaServicio.objects.all()
+    serializer_class = serializers.ReservaServicioSerializer
+
+
 # la logica de este view set se repite en varias zonas
 class MontajeViewSet(viewsets.ModelViewSet):
     queryset = models.Montaje.objects.all()
@@ -96,6 +101,9 @@ class MontajeViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             # para creacion personalizada, entrada de datos en tabla motanej mobiliario
             return serializers.MontajeCreacionSerializer
+        
+        if self.action in ['list', 'retrieve']:
+            return serializers.MontajeLecturaSerializer
         
         # serializer normalito par demas accionesaparte de crear
         return serializers.MontajeSerializer
@@ -119,23 +127,40 @@ class MontajeMobiliarioViewSet(viewsets.ModelViewSet):
 
 
 class ReservacionViewSet(viewsets.ModelViewSet):
-    queryset = models.Reservacion.objects.select_related('cliente', 'montaje', 'estado_reserva', 'tipo_evento').prefetch_related('servicios', 'trabajador').all()
-    serializer_class = serializers.ReservacionSerializer
+    queryset = models.Reservacion.objects.select_related('cliente', 'montaje', 'estado_reserva', 'tipo_evento').prefetch_related( 'trabajador')
 
     def get_serializer_class(self):
         if self.action == "create":
             return serializers.ReservacionCreacionSerializer
-        else:
-            return serializers.ReservacionSerializer
         
+        if self.action in ['list', 'retrieve']:
+            return serializers.ReservacionLecturaSerializer
+        
+        if self.action in ['update', 'partial_update']:
+            return serializers.ReservacionUpdateSerializer
+        
+        return serializers.ReservacionSerializer
+    
+    def perform_update(self, serializer):
+        cambio_reservacion = serializer.validated_data
+        original = serializer.instance
+        
+        if 'estado_reserva' in cambio_reservacion:
+            nuevo_estado = cambio_reservacion.pop('estado_reserva')
+            if nuevo_estado != original.estado_reserva:
+                reservacionesService.cambio_estado_reservacion(original, nuevo_estado)
+
+        reservacionesService.modificacion_aditamentos(original=original, nuevos_datos=cambio_reservacion)
+
     def create(self, request, *args, **kwargs):
         validador = self.get_serializer(data=request.data)
         validador.is_valid(raise_exception=True)
 
         try:
             new_reservacion = reservacionesService.crear_reseracion(validador.validated_data)
-            respeusta = serializers.ReservacionSerializer(new_reservacion)
-            return Response(respeusta, status=status.HTTP_201_CREATED)
+            respeusta = serializers.ReservacionLecturaSerializer(new_reservacion)
+            return Response(respeusta.data, status=status.HTTP_201_CREATED)
+        
         except Exception as e:
             return Response({"error":str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -169,7 +194,7 @@ class ReservaEquipaViewSet(viewsets.ModelViewSet):
 
 class ServicioViewSet(viewsets.ModelViewSet):
     queryset = models.Servicio.objects.select_related('tipo_servicio').all()
-    serializer_class = serializers.SerivicioSerializer
+    serializer_class = serializers.ServicioSerializer
 
 
 class PagoViewSet(viewsets.ModelViewSet):
