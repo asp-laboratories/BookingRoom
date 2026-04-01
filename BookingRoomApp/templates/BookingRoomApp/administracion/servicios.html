@@ -7,6 +7,7 @@
 
 {% include "BookingRoomApp/includes/alert-confirmar.html" %}
 {% include "BookingRoomApp/includes/alert-cancelar.html" %}
+{% include "BookingRoomApp/includes/crear-tipo.html" %}
 
 <div class="administrador-contenido administrador-registro-contenido">
   <h1 class="titulo-seccion">Registro de Servicios</h1>
@@ -50,7 +51,7 @@
               <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
               {% endfor %}
             </select>
-            <button type="button" class="administrador-botonCrearTipo">Crear Tipo</button>
+            <button type="button" class="administrador-botonCrearTipo" onclick="abrirModalCrearTipo('servicio')">Crear Tipo</button>
           </div>
         </label>
 

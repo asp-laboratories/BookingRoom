@@ -361,6 +361,8 @@
   background-color: #e0e0e0;
 }
 
+/* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15); */
+
 .btn-accion {
   color: white;
   background-color: var(--color-boton-normal, #4a90e2);

@@ -1,0 +1,556 @@
+{% extends "BookingRoomApp/base/base.html" %}
+{% load static %}
+
+{% block inicio %}
+
+<link rel="stylesheet" href="{% static 'BookingRoomApp/css/recepcion/reservacion.css' %}">
+
+<div class="paquetes-container">
+  <h1 class="paquetes-titulo">Crear Paquetes</h1>
+
+  <div class="paquetes-grid">
+    
+    <section id="paquete-salon" class="paquetes-seccion">
+      <h2 class="paquetes-titulo-seccion">Salón y Montaje</h2>
+      <div class="paquetes-campos-row">
+        <div class="paquetes-campo">
+          <label class="paquetes-label">Seleccionar Salón</label>
+          <select class="paquetes-input" id="paquete-salon-select">
+            <option value="">-- Selecciona un salón --</option>
+            {% for salon in salones %}
+            <option value="{{ salon.id }}">{{ salon.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="paquetes-campo">
+          <label class="paquetes-label">Seleccionar Montaje</label>
+          <select class="paquetes-input" id="paquete-montaje-select">
+            <option value="">-- Selecciona un montaje --</option>
+            {% for montaje in tipos_montaje %}
+            <option value="{{ montaje.id }}">{{ montaje.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section id="paquete-servicios" class="paquetes-seccion">
+      <h3 class="paquetes-titulo-seccion">Servicios Incluidos</h3>
+      <div class="paquetes-servicios-container">
+        <div class="paquetes-servicios-list" id="paquete-servicios-list">
+          <div class="paquetes-servicio-pair" data-index="1">
+            <div class="paquetes-campo">
+              <label class="paquetes-label">Tipo de servicio</label>
+              <select class="paquetes-input paquete-servicio-tipo" name="servicio_tipo_1">
+                <option value="">-- Elige un tipo --</option>
+                {% for tipo in tipos_servicio %}
+                <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="paquetes-campo">
+              <label class="paquetes-label">Seleccionar Servicio</label>
+              <select class="paquetes-input paquete-servicio-select" name="servicio_1" disabled>
+                <option value="">-- Selecciona un tipo primero --</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="paquetes-servicios-botones">
+          <button type="button" class="paquetes-btn-quitar" onclick="quitarPaqueteSelect('servicios')">- Quitar</button>
+          <button type="button" class="paquetes-btn-anadir" onclick="anadirPaqueteServicio()">+ Añadir Servicio</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="paquete-equipamiento" class="paquetes-seccion">
+      <h3 class="paquetes-titulo-seccion">Equipamiento Incluido</h3>
+      <div class="paquetes-servicios-container">
+        <div class="paquetes-servicios-list" id="paquete-equipamiento-list">
+          <div class="paquetes-servicio-pair" data-index="1">
+            <div class="paquetes-campo">
+              <label class="paquetes-label">Tipo de equipamiento</label>
+              <select class="paquetes-input paquete-equipamiento-tipo" name="equipamiento_tipo_1">
+                <option value="">-- Elige un tipo --</option>
+                {% for tipo in tipos_equipamiento %}
+                <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="paquetes-campo">
+              <label class="paquetes-label">Seleccionar Equipo</label>
+              <select class="paquetes-input paquete-equipamiento-select" name="equipamiento_1" disabled>
+                <option value="">-- Selecciona un tipo primero --</option>
+              </select>
+            </div>
+            <div class="paquetes-campo">
+              <label class="paquetes-label">Cantidad</label>
+              <input type="number" class="paquetes-input" name="equipamiento_cantidad_1" value="1" min="1" />
+            </div>
+          </div>
+        </div>
+        <div class="paquetes-servicios-botones">
+          <button type="button" class="paquetes-btn-quitar" onclick="quitarPaqueteSelect('equipamientos')">- Quitar</button>
+          <button type="button" class="paquetes-btn-anadir" onclick="anadirPaqueteEquipamiento()">+ Añadir Equipamiento</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="paquete-precios" class="paquetes-seccion">
+      <h3 class="paquetes-titulo-seccion">Precio del Paquete</h3>
+      <div class="paquetes-precios-grid">
+        <div class="paquetes-campo">
+          <label class="paquetes-label">Subtotal</label>
+          <input type="number" class="paquetes-input" id="paquete-subtotal" placeholder="0.00" step="0.01" />
+        </div>
+        <div class="paquetes-campo">
+          <label class="paquetes-label">IVA (%)</label>
+          <input type="number" class="paquetes-input" id="paquete-iva" placeholder="16" value="16" />
+        </div>
+        <div class="paquetes-campo">
+          <label class="paquetes-label">Total</label>
+          <input type="number" class="paquetes-input" id="paquete-total" placeholder="0.00" step="0.01" readonly />
+        </div>
+      </div>
+    </section>
+
+    <section id="paquete-detalles" class="paquetes-seccion">
+      <h3 class="paquetes-titulo-seccion">Información del Paquete</h3>
+      <div class="paquetes-detalles-grid">
+        <div class="paquetes-campo span-2">
+          <label class="paquetes-label">Nombre del Paquete</label>
+          <input type="text" class="paquetes-input" id="paquete-nombre" placeholder="Ej: Paquete Básico, Paquete Premium" />
+        </div>
+        <div class="paquetes-campo span-2">
+          <label class="paquetes-label">Descripción</label>
+          <textarea rows="3" class="paquetes-textarea" id="paquete-descripcion" placeholder="Detalles adicionales del paquete..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <div class="paquetes-botones">
+      <button class="paquetes-btn-confirmar" onclick="guardarPaquete()"> 
+        Guardar Paquete
+      </button>
+      <button class="paquetes-btn-cancelar" onclick="location.reload()">
+        Cancelar
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let paqueteServicioIndex = 1;
+let paqueteEquipamientoIndex = 1;
+
+function anadirPaqueteServicio() {
+  paqueteServicioIndex++;
+  const container = document.getElementById('paquete-servicios-list');
+  const primerSelectTipo = document.querySelector('#paquete-servicios-list .paquete-servicio-tipo');
+  const opcionesTipo = primerSelectTipo ? primerSelectTipo.innerHTML : '';
+  
+  const html = `
+    <div class="paquetes-servicio-pair" data-index="${paqueteServicioIndex}">
+      <div class="paquetes-campo">
+        <label class="paquetes-label">Tipo de servicio</label>
+        <select class="paquetes-input paquete-servicio-tipo" name="servicio_tipo_${paqueteServicioIndex}">
+          ${opcionesTipo}
+        </select>
+      </div>
+      <div class="paquetes-campo">
+        <label class="paquetes-label">Seleccionar Servicio</label>
+        <select class="paquetes-input paquete-servicio-select" name="servicio_${paqueteServicioIndex}" disabled>
+          <option value="">-- Selecciona un tipo primero --</option>
+        </select>
+      </div>
+    </div>
+  `;
+  container.insertAdjacentHTML('beforeend', html);
+  agregarEventosPaqueteServicios();
+}
+
+function anadirPaqueteEquipamiento() {
+  paqueteEquipamientoIndex++;
+  const container = document.getElementById('paquete-equipamiento-list');
+  const primerSelectTipo = document.querySelector('#paquete-equipamiento-list .paquete-equipamiento-tipo');
+  const opcionesTipo = primerSelectTipo ? primerSelectTipo.innerHTML : '';
+  
+  const html = `
+    <div class="paquetes-servicio-pair" data-index="${paqueteEquipamientoIndex}">
+      <div class="paquetes-campo">
+        <label class="paquetes-label">Tipo de equipamiento</label>
+        <select class="paquetes-input paquete-equipamiento-tipo" name="equipamiento_tipo_${paqueteEquipamientoIndex}">
+          ${opcionesTipo}
+        </select>
+      </div>
+      <div class="paquetes-campo">
+        <label class="paquetes-label">Seleccionar Equipo</label>
+        <select class="paquetes-input paquete-equipamiento-select" name="equipamiento_${paqueteEquipamientoIndex}" disabled>
+          <option value="">-- Selecciona un tipo primero --</option>
+        </select>
+      </div>
+      <div class="paquetes-campo">
+        <label class="paquetes-label">Cantidad</label>
+        <input type="number" class="paquetes-input" name="equipamiento_cantidad_${paqueteEquipamientoIndex}" value="1" min="1" />
+      </div>
+    </div>
+  `;
+  container.insertAdjacentHTML('beforeend', html);
+  agregarEventosPaqueteEquipamiento();
+}
+
+function quitarPaqueteSelect(tipo) {
+  const container = document.getElementById('paquete-' + tipo + '-list');
+  if (container && container.children.length > 1) {
+    container.removeChild(container.lastChild);
+  }
+}
+
+async function cargarPaqueteServiciosPorTipo(tipoSelect, servicioSelect) {
+  const tipoId = tipoSelect.value;
+  
+  if (!tipoId) {
+    servicioSelect.innerHTML = '<option value="">-- Selecciona un tipo primero --</option>';
+    servicioSelect.disabled = true;
+    return;
+  }
+  
+  try {
+    const response = await fetch(`/reservacion/servicios-por-tipo/?tipo_id=${tipoId}`);
+    const data = await response.json();
+    
+    const serviciosYaSeleccionados = Array.from(document.querySelectorAll('.paquete-servicio-select'))
+      .filter(s => s !== servicioSelect)
+      .map(s => s.value)
+      .filter(v => v !== '');
+    
+    servicioSelect.innerHTML = '<option value="">-- Elige un servicio --</option>';
+    
+    if (data.servicios && data.servicios.length > 0) {
+      data.servicios.forEach(servicio => {
+        const option = document.createElement('option');
+        option.value = servicio.id;
+        option.textContent = `${servicio.nombre} - $${servicio.costo}`;
+        option.dataset.costo = servicio.costo;
+        
+        if (serviciosYaSeleccionados.includes(String(servicio.id))) {
+          option.disabled = true;
+          option.textContent += ' (ya seleccionado)';
+        }
+        
+        servicioSelect.appendChild(option);
+      });
+      servicioSelect.disabled = false;
+    } else {
+      servicioSelect.innerHTML = '<option value="">-- No hay servicios disponibles --</option>';
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error al cargar servicios');
+  }
+}
+
+async function cargarPaqueteEquipamientoPorTipo(tipoSelect, equipamentoSelect) {
+  const tipoId = tipoSelect.value;
+  
+  if (!tipoId) {
+    equipamentoSelect.innerHTML = '<option value="">-- Selecciona un tipo primero --</option>';
+    equipamentoSelect.disabled = true;
+    return;
+  }
+  
+  try {
+    const response = await fetch(`/reservacion/equipamiento-por-tipo/?tipo_id=${tipoId}`);
+    const data = await response.json();
+    
+    const equiposYaSeleccionados = Array.from(document.querySelectorAll('.paquete-equipamiento-select'))
+      .filter(s => s !== equipamentoSelect)
+      .map(s => s.value)
+      .filter(v => v !== '');
+    
+    equipamentoSelect.innerHTML = '<option value="">-- Elige un equipamento --</option>';
+    
+    if (data.equipamientos && data.equipamientos.length > 0) {
+      data.equipamientos.forEach(equip => {
+        const option = document.createElement('option');
+        option.value = equip.id;
+        option.textContent = `${equip.nombre} - $${equip.costo} (Stock: ${equip.stock})`;
+        option.dataset.costo = equip.costo;
+        option.dataset.stock = equip.stock;
+        
+        if (equiposYaSeleccionados.includes(String(equip.id))) {
+          option.disabled = true;
+          option.textContent += ' (ya seleccionado)';
+        }
+        
+        equipamentoSelect.appendChild(option);
+      });
+      equipamentoSelect.disabled = false;
+    } else {
+      equipamentoSelect.innerHTML = '<option value="">-- No hay equipamentos disponibles --</option>';
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error al carregar equipamentos');
+  }
+}
+
+function actualizarPaqueteOpcionesSelect(claseSelect) {
+  const selects = document.querySelectorAll('.' + claseSelect);
+  if (selects.length === 0) return;
+  
+  const valoresSeleccionados = Array.from(selects)
+    .map(seleccion => seleccion.value)
+    .filter(valor => valor !== "");
+
+  selects.forEach(function(select) {
+    Array.from(select.options).forEach(function(option) {
+      if (valoresSeleccionados.includes(option.value) && option.value !== select.value) {
+        option.disabled = true;
+      } else if (!option.disabled) {
+        option.disabled = false;
+      }
+    });
+  });
+}
+
+function agregarEventosPaqueteServicios() {
+  document.querySelectorAll('.paquete-servicio-tipo').forEach(function(select) {
+    select.addEventListener('change', function() {
+      const pair = this.closest('.paquetes-servicio-pair');
+      const servicioSelect = pair.querySelector('.paquete-servicio-select');
+      cargarPaqueteServiciosPorTipo(this, servicioSelect);
+    });
+  });
+  
+  document.querySelectorAll('.paquete-servicio-select').forEach(function(select) {
+    select.addEventListener('change', function() {
+      actualizarPaqueteOpcionesSelect('paquete-servicio-select');
+    });
+  });
+}
+
+function agregarEventosPaqueteEquipamiento() {
+  document.querySelectorAll('.paquete-equipamiento-tipo').forEach(function(select) {
+    select.addEventListener('change', function() {
+      const pair = this.closest('.paquetes-servicio-pair');
+      const equipamentoSelect = pair.querySelector('.paquete-equipamiento-select');
+      cargarPaqueteEquipamientoPorTipo(this, equipamentoSelect);
+    });
+  });
+  
+  document.querySelectorAll('.paquete-equipamiento-select').forEach(function(select) {
+    select.addEventListener('change', function() {
+      actualizarPaqueteOpcionesSelect('paquete-equipamiento-select');
+    });
+  });
+}
+
+function calcularPaqueteTotal() {
+  const subtotal = parseFloat(document.getElementById('paquete-subtotal').value) || 0;
+  const iva = parseFloat(document.getElementById('paquete-iva').value) || 0;
+  const total = subtotal + (subtotal * iva / 100);
+  document.getElementById('paquete-total').value = total.toFixed(2);
+}
+
+function guardarPaquete() {
+  const nombre = document.getElementById('paquete-nombre').value;
+  if (!nombre.trim()) {
+    alert('Por favor ingresa un nombre para el paquete');
+    return;
+  }
+  alert('Funcionalidad de guardado en desarrollo');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  agregarEventosPaqueteServicios();
+  agregarEventosPaqueteEquipamiento();
+  
+  document.getElementById('paquete-subtotal').addEventListener('input', calcularPaqueteTotal);
+  document.getElementById('paquete-iva').addEventListener('input', calcularPaqueteTotal);
+});
+</script>
+
+<style>
+.paquetes-container {
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.paquetes-titulo {
+  margin: 50px 0px 20px 20px;
+  color: #333;
+}
+
+.paquetes-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.paquetes-seccion {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.paquetes-titulo-seccion {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.paquetes-campos-row {
+  display: flex;
+  gap: 15px;
+}
+
+.paquetes-campo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.paquetes-label {
+  font-weight: 500;
+  color: #555;
+}
+
+.paquetes-input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.paquetes-input:focus {
+  outline: none;
+  border-color: var(--color-primario);
+}
+
+.paquetes-servicios-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.paquetes-servicios-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.paquetes-servicio-pair {
+  display: flex;
+  gap: 15px;
+  align-items: flex-end;
+}
+
+.paquetes-servicio-pair .paquetes-campo {
+  flex: 1;
+}
+
+.paquetes-servicios-botones {
+  display: flex;
+  gap: 10px;
+}
+
+.paquetes-btn-quitar,
+.paquetes-btn-anadir {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.paquetes-btn-quitar {
+  background-color: #dc3545;
+  color: white;
+}
+
+.paquetes-btn-quitar:hover {
+  background-color: #bb2d3b;
+}
+
+.paquetes-btn-anadir {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.paquetes-btn-anadir:hover {
+  background-color: #084298;
+}
+
+.paquetes-precios-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.paquetes-detalles-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.span-2 {
+  grid-column: span 2;
+}
+
+.paquetes-textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+#paquete-total {
+  background-color: #e0e0e0;
+  font-weight: bold;
+}
+
+.paquetes-botones {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.paquetes-btn-confirmar,
+.paquetes-btn-cancelar {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.paquetes-btn-confirmar {
+  background-color: #198754;
+  color: white;
+}
+
+.paquetes-btn-confirmar:hover {
+  background-color: #157347;
+}
+
+.paquetes-btn-cancelar {
+  background-color: #dc3545;
+  color: white;
+}
+
+.paquetes-btn-cancelar:hover {
+  background-color: #bb2d3b;
+}
+</style>
+
+{% endblock inicio %}

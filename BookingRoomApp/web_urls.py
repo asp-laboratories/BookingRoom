@@ -27,7 +27,10 @@ urlpatterns = [
     path('administracion/salones/<int:pk>/actualizar/', views.actualizar_salon, name="actualizar_salon"),
     path('administracion/mobiliario/', views.Mobiliarios.as_view(), name="mobiliario"),
     path('administracion/mobiliario/<int:pk>/actualizar/', views.actualizar_mobiliario, name="actualizar_mobiliario"),
+    path('administracion/mobiliario/<int:pk>/actualizar-caracteristicas/', views.mobiliario_caracteristicas, name="mobiliario_caracteristicas"),
     path('administracion/equipamiento/', views.Equipamientos.as_view(), name="equipamiento"),
     path('administracion/equipamiento/<int:pk>/actualizar/', views.actualizar_equipamiento, name="actualizar_equipamiento"),
     path('administracion/trabajadores/<str:pk>/actualizar/', views.actualizar_trabajador, name="actualizar_trabajador"),
+    path('administracion/crear-tipo/', views.crear_tipo, name="crear_tipo"),
+    path('administracion/paquetes/', views.paquetes, name="paquetes"),
 ]

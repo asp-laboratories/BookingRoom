@@ -8,6 +8,7 @@
 
 {% include "BookingRoomApp/includes/alert-confirmar.html" %}
 {% include "BookingRoomApp/includes/alert-cancelar.html" %}
+{% include "BookingRoomApp/includes/crear-tipo.html" %}
 
 <div class="administrador-contenido administrador-registro-contenido">
     <h1 class="titulo-seccion">Registro de Mobiliarios</h1>
@@ -50,8 +51,7 @@
                                 {% endfor %}
                             </select>
                             <button type="button"
-                                class="administrador-botonCrearTipo">Crear
-                                Tipo</button>
+                                class="administrador-botonCrearTipo" onclick="abrirModalCrearTipo('mobiliario')">Crear Tipo</button>
                         </div>
                     </label>
 
@@ -146,6 +146,7 @@
                     <th class="administrador-th">Descripcion</th>
                     <th class="administrador-th">Costo</th>
                     <th class="administrador-th">Stock</th>
+                    <th class="administrador-th">Ver</th>
                     <th class="administrador-th">Editar</th>
                 </tr>
             </thead>
@@ -157,7 +158,8 @@
                     data-descripcion="{{ mobil.descripcion }}"
                     data-costo="{{ mobil.costo }}"
                     data-stock="{{ mobil.stock }}"
-                    data-tipo-id="{{ mobil.tipo_movil.id }}">
+                    data-tipo-id="{{ mobil.tipo_movil.id }}"
+                    data-caracteristicas="{% for c in mobil.descripcion_mob.all %}{{ c.descripcion }}{% if not forloop.last %},{% endif %}{% endfor %}">
                     <td class="administrador-td">{{ mobil.id }}</td>
                     <td class="administrador-td celda-nombre">{{ mobil.nombre }}</td>
                     <td class="administrador-td celda-tipo">{{ mobil.tipo_movil.nombre }}</td>
@@ -165,6 +167,11 @@
                     <td class="administrador-td celda-costo">${{ mobil.costo }}</td>
                     <td class="administrador-td celda-stock">{{ mobil.stock }}</td>
                     <td class="administrador-td servicio-acciones">
+                        <button type="button" class="btn-ver" onclick="verCaracteristicas({{ mobil.id }})" title="Ver características">
+                            <svg class="icono blanco">
+                                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-eye"></use>
+                            </svg>
+                        </button>
                         <button type="button" class="btn-editar" onclick="editarRegistro({{ mobil.id }})" title="Editar">
                             <svg class="icono blanco">
                                 <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-edit"></use>
@@ -184,7 +191,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="administrador-td">No hay mobiliarios registrados</td>
+                    <td colspan="8" class="administrador-td">No hay mobiliarios registrados</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -194,6 +201,104 @@
     </div>
 
 </div>
+
+<dialog id="modal-caracteristicas" class="modal-ver-caracteristicas">
+    <div class="modal-ver-content">
+        <div class="modal-ver-header">
+            <h3 id="titulo-caracteristicas">Características del Mobiliario</h3>
+            <button onclick="document.getElementById('modal-caracteristicas').close()" class="cerrar-btn">X</button>
+        </div>
+        <div class="modal-ver-body">
+            <p><strong>Nombre:</strong> <span id="carac-nombre"></span></p>
+            <p><strong>Tipo:</strong> <span id="carac-tipo"></span></p>
+            <input type="hidden" id="carac-mobiliario-id">
+            <div class="caracteristicas-lista">
+                <strong>Características:</strong>
+                <ul id="carac-lista"></ul>
+                <button type="button" class="btn-agregar-carac" onclick="agregarCaracteristica()">+ Agregar característica</button>
+            </div>
+        </div>
+        <div class="modal-ver-footer">
+            <button class="btn-guardar-carac" onclick="guardarCaracteristicas()">Guardar cambios</button>
+            <button onclick="document.getElementById('modal-caracteristicas').close()">Cerrar</button>
+        </div>
+    </div>
+</dialog>
+
+<script>
+function verCaracteristicas(id) {
+    const fila = document.querySelector(`tr[data-id="${id}"]`);
+    if (!fila) return;
+    
+    document.getElementById('carac-nombre').textContent = fila.dataset.nombre || '';
+    document.getElementById('carac-tipo').textContent = fila.closest('tr').querySelector('.celda-tipo').textContent || '';
+    document.getElementById('carac-mobiliario-id').value = id;
+    
+    const caracs = fila.dataset.caracteristicas || '';
+    const lista = document.getElementById('carac-lista');
+    lista.innerHTML = '';
+    
+    if (caracs) {
+        caracs.split(',').forEach(c => {
+            const li = document.createElement('li');
+            li.innerHTML = '<input type="text" class="input-carac" value="' + c.trim() + '"> <button type="button" class="btn-eliminar-carac" onclick="this.parentElement.remove()">X</button>';
+            lista.appendChild(li);
+        });
+    } else {
+        const li = document.createElement('li');
+        li.innerHTML = '<input type="text" class="input-carac" placeholder="Nueva característica"> <button type="button" class="btn-eliminar-carac" onclick="this.parentElement.remove()">X</button>';
+        lista.appendChild(li);
+    }
+    
+    document.getElementById('modal-caracteristicas').showModal();
+}
+
+function agregarCaracteristica() {
+    const lista = document.getElementById('carac-lista');
+    const li = document.createElement('li');
+    li.innerHTML = '<input type="text" class="input-carac" placeholder="Nueva característica"> <button type="button" class="btn-eliminar-carac" onclick="this.parentElement.remove()">X</button>';
+    lista.appendChild(li);
+}
+
+function guardarCaracteristicas() {
+    const mobiliarioId = document.getElementById('carac-mobiliario-id').value;
+    const inputs = document.querySelectorAll('#carac-lista .input-carac');
+    const caracteristicas = [];
+    inputs.forEach(input => {
+        if (input.value.trim()) {
+            caracteristicas.push(input.value.trim());
+        }
+    });
+    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+    
+    fetch(`/administracion/mobiliario/${mobiliarioId}/actualizar-caracteristicas/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ caracteristicas: caracteristicas })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const fila = document.querySelector(`tr[data-id="${mobiliarioId}"]`);
+            if (fila) {
+                fila.dataset.caracteristicas = caracteristicas.join(',');
+            }
+            alert('Características guardadas correctamente');
+            document.getElementById('modal-caracteristicas').close();
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error al guardar: ' + error);
+    });
+}
+</script>
 
 <style>
   .btn-editar, .btn-guardar, .btn-cancelar {
@@ -227,6 +332,156 @@
   
   .btn-cancelar:hover {
     background-color: #ca301b;
+  }
+
+  .btn-ver {
+    background-color: #6c757d;
+  }
+  
+  .btn-ver:hover {
+    background-color: #565e64;
+  }
+
+  /* Modal Ver Características */
+  .modal-ver-caracteristicas {
+    width: 450px;
+    max-width: 90%;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    margin: auto;
+  }
+
+  .modal-ver-caracteristicas::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .modal-ver-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-ver-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: var(--color-primario);
+    color: white;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .modal-ver-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+
+  .modal-ver-header .cerrar-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+
+  .modal-ver-body {
+    padding: 20px;
+  }
+
+  .modal-ver-body p {
+    margin: 10px 0;
+    color: #333;
+  }
+
+  .caracteristicas-lista {
+    margin-top: 15px;
+  }
+
+  .caracteristicas-lista ul {
+    margin-top: 8px;
+    padding-left: 20px;
+  }
+
+  .caracteristicas-lista li {
+    margin: 5px 0;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .input-carac {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  .input-carac:focus {
+    outline: none;
+    border-color: var(--color-primario);
+  }
+
+  .btn-eliminar-carac {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  .btn-eliminar-carac:hover {
+    background: #bb2d3b;
+  }
+
+  .btn-agregar-carac {
+    margin-top: 10px;
+    padding: 8px 16px;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .btn-agregar-carac:hover {
+    background: #084298;
+  }
+
+  .btn-guardar-carac {
+    background: #198754;
+    color: white;
+  }
+
+  .btn-guardar-carac:hover {
+    background: #157347;
+  }
+
+  .modal-ver-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+  }
+
+  .modal-ver-footer button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #e0e0e0;
+    color: #333;
+    font-weight: bold;
+  }
+
+  .modal-ver-footer button:hover {
+    background-color: #ccc;
   }
 </style>
 
