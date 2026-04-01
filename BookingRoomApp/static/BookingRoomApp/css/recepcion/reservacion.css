@@ -505,3 +505,12 @@
 .reservacion-buscar-cliente .reservacion-input {
   flex: 1;
 }
+
+/* Modal Payments */
+#modalPagos {
+  width: 900px;
+  max-width: 95vw;
+  height: auto;
+  max-height: 90vh;
+  overflow-y: auto;
+}
