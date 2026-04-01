@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
       data: {
         labels: ['Boda', 'Reunion', 'Ceremonia', 'Aniversario', 'Conferencia', 'Debate'],
         datasets: [{
-          label: 'Cantidad de reservaciones',
+          label: 'Cantidad',
           data: [12, 19, 3, 5, 2, 3],
           backgroundColor: 'rgba(209, 138, 91, 0.7)',
           borderWidth: 1
@@ -24,9 +24,9 @@ document.addEventListener('DOMContentLoaded', function() {
       data: {
         labels: ['Boda', 'Reunion', 'Conferencia'],
         datasets: [{
-          label: 'Reservaciones',
+          label: 'Cantidad',
           data: [45, 30, 20],
-          backgroundColor: 'rgba(54, 162, 235, 0.7)',
+          backgroundColor: 'rgba(209, 138, 91, 0.7)',
           borderWidth: 1
         }]
       },
@@ -42,9 +42,10 @@ document.addEventListener('DOMContentLoaded', function() {
       data: {
         labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
         datasets: [{
-          label: 'Reservaciones',
+          label: 'Cantidad',
           data: [15, 22, 18, 25, 30, 28],
-          backgroundColor: 'rgba(75, 192, 192, 0.7)',
+          backgroundColor: 'rgba(209, 138, 91, 0.7)',
+
           borderWidth: 1
         }]
       },
@@ -61,7 +62,8 @@ document.addEventListener('DOMContentLoaded', function() {
         datasets: [{
           label: 'Reservaciones',
           data: [5, 8, 12, 15, 25, 30, 10],
-          backgroundColor: 'rgba(255, 206, 86, 0.7)',
+          backgroundColor: 'rgba(209, 138, 91, 0.7)',
+          
           borderWidth: 1
         }]
       },
@@ -79,7 +81,8 @@ document.addEventListener('DOMContentLoaded', function() {
         datasets: [{
           label: 'Ingresos ($)',
           data: [15000, 8000, 12000, 5000, 3500],
-          backgroundColor: 'rgba(153, 102, 255, 0.7)',
+          backgroundColor: 'rgba(209, 138, 91, 0.7)',
+
           borderWidth: 1
         }]
       },
@@ -96,7 +99,8 @@ document.addEventListener('DOMContentLoaded', function() {
         datasets: [{
           label: 'Ingresos ($)',
           data: [45000, 52000, 48000, 61000, 55000, 60000],
-          backgroundColor: 'rgba(75, 192, 192, 0.7)',
+          backgroundColor: 'rgba(209, 138, 91, 0.7)',
+
           borderWidth: 1
         }]
       },
@@ -114,7 +118,8 @@ document.addEventListener('DOMContentLoaded', function() {
         datasets: [{
           label: 'Reservaciones',
           data: [45, 20, 8, 60],
-          backgroundColor: 'rgba(255, 99, 132, 0.7)',
+          backgroundColor: 'rgba(209, 138, 91, 0.7)',
+
           borderWidth: 1
         }]
       },
@@ -131,7 +136,44 @@ document.addEventListener('DOMContentLoaded', function() {
         datasets: [{
           label: 'Veces utilizado',
           data: [35, 28, 22, 15],
-          backgroundColor: 'rgba(54, 162, 235, 0.7)',
+          backgroundColor: 'rgba(209, 138, 91, 0.7)',
+          borderWidth: 1
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+    });
+  }
+
+  const ctx5 = document.getElementById('prueba');
+  if (ctx5) {
+    new Chart(ctx5, {
+      type: 'bar',
+      data: {
+        labels: ['Salón A', 'Salón B', 'Salón C', 'Salón D'],
+        datasets: [{
+          label: 'Veces utilizado',
+          data: [35, 28, 22, 15],
+          backgroundColor: 'rgba(209, 138, 91, 0.7)',
+
+          borderWidth: 1
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+    });
+  }
+
+
+  const ctx5b = document.getElementById('prueba2');
+  if (ctx5b) {
+    new Chart(ctx5b, {
+      type: 'bar',
+      data: {
+        labels: ['Salón A', 'Salón B', 'Salón C', 'Salón D'],
+        datasets: [{
+          label: 'Veces utilizado',
+          data: [35, 28, 22, 15],
+          backgroundColor: 'rgba(209, 138, 91, 0.7)',
+
           borderWidth: 1
         }]
       },
