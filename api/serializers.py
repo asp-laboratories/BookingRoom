@@ -238,6 +238,11 @@ class TipoMobilSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.TipoMobil
         fields = '__all__'
+    
+class ReservaServicioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ReservaServicio
+        fields = '__all__'
 
 
 # Aca van todos los personalizados chamos cuidado con estos q estan canijos
@@ -278,9 +283,9 @@ class ReservacionCreacionSerializer(serializers.Serializer):
     fechaEvento = serializers.DateField()
     horaInicio = serializers.TimeField()
     horaFin = serializers.TimeField()
-    subtotal = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2)
-    IVA = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2)
-    total = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2)
+    subtotal = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2, required=False)
+    IVA = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2, required=False)
+    total = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2, required=False)
     cliente = serializers.IntegerField()
     trabajador = serializers.IntegerField()
     reserva_servicio = ServiciosReservacionSerializer(many=True, required=False, allow_empty=True)
@@ -294,7 +299,7 @@ class ReservacionLecturaSerializer(serializers.ModelSerializer):
     estado_reserva = EstadoReservaSerializer(read_only=True)
     tipo_evento = TipoEventoSerializer(read_only=True)
     trabajador = TrabajadorSerializer(read_only=True)
-    reserva_servicio = ServiciosReservacionSerializer(many=True, read_only=True)
+    reserva_servicio = ReservaServicioSerializer(source='reservaservicio_set' ,many=True, read_only=True)
     reserva_equipa = ReservaEquipaSerializer(source='reservaequipa_set' ,many=True, read_only=True)
 
     class Meta:
@@ -321,5 +326,9 @@ class ReservacionUpdateSerializer(serializers.Serializer):
     tipo_evento = serializers.IntegerField(required=False)
     tipo_montaje = serializers.IntegerField(required=False)
     mobiliarios = MobiliariosMontajeSerializer(required=False, many=True)
+    estado_reserva = serializers.CharField(required=False)
     reserva_servicio = ServiciosReservacionSerializer(required=False, many=True, allow_empty=True)
     reserva_equipa = EquipamientoReservacionSerializer(many=True, required=False, allow_empty=True)
+    
+    def to_representation(self, instance):
+        return ReservacionLecturaSerializer(instance).data

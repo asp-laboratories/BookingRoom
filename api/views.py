@@ -88,6 +88,11 @@ class RegistrEstadSalonViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.RegistrEstadSalonSerializer
 
 
+class ReservaServicioViewSet(viewsets.ModelViewSet):
+    queryset = models.ReservaServicio.objects.all()
+    serializer_class = serializers.ReservaServicioSerializer
+
+
 # la logica de este view set se repite en varias zonas
 class MontajeViewSet(viewsets.ModelViewSet):
     queryset = models.Montaje.objects.all()
@@ -122,7 +127,7 @@ class MontajeMobiliarioViewSet(viewsets.ModelViewSet):
 
 
 class ReservacionViewSet(viewsets.ModelViewSet):
-    queryset = models.Reservacion.objects.select_related('cliente', 'montaje', 'estado_reserva', 'tipo_evento').prefetch_related('reserva_servicio', 'trabajador')
+    queryset = models.Reservacion.objects.select_related('cliente', 'montaje', 'estado_reserva', 'tipo_evento').prefetch_related( 'trabajador')
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -140,12 +145,12 @@ class ReservacionViewSet(viewsets.ModelViewSet):
         cambio_reservacion = serializer.validated_data
         original = serializer.instance
         
-        reservacionesService.modificacion_aditamentos(original=original, nuevos_datos=cambio_reservacion)
-
         if 'estado_reserva' in cambio_reservacion:
-            if cambio_reservacion['estado_reserva'] != original.estado_reserva:
-                reservacionesService.cambio_estado_reservacion(original, cambio_reservacion['estado_reserva'])
-            cambio_reservacion.pop('estado_reserva')
+            nuevo_estado = cambio_reservacion.pop('estado_reserva')
+            if nuevo_estado != original.estado_reserva:
+                reservacionesService.cambio_estado_reservacion(original, nuevo_estado)
+
+        reservacionesService.modificacion_aditamentos(original=original, nuevos_datos=cambio_reservacion)
 
     def create(self, request, *args, **kwargs):
         validador = self.get_serializer(data=request.data)

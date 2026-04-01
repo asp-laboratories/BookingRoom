@@ -334,7 +334,6 @@ class Reservacion(models.Model):
     estado_reserva = models.ForeignKey(EstadoReserva, on_delete=models.PROTECT)
     tipo_evento = models.ForeignKey(TipoEvento, on_delete=models.PROTECT)
     trabajador = models.ForeignKey(Trabajador, on_delete=models.PROTECT, default=1)
-    reserva_servicio = models.ManyToManyField(Servicio)
 
     class Meta:
         db_table = 'reservacion'
@@ -364,6 +363,7 @@ class Mobiliario(models.Model):
 
 class MontajeMobiliario(models.Model):
     cantidad = models.IntegerField()
+    extra = models.BooleanField(default=False, blank=True, null=True)
     completado = models.BooleanField(default=False, blank=True, null=True)
     montaje = models.ForeignKey(Montaje, on_delete=models.PROTECT)
     mobiliario = models.ForeignKey(Mobiliario, on_delete=models.PROTECT)
@@ -435,8 +435,24 @@ class InventarioMob(models.Model):
         return f"M:{self.mobiliario.pk} E:{self.estado_mobil.pk}"
 
 
+class ReservaServicio(models.Model):
+    extra = models.BooleanField(default=False, blank=True, null=True)
+    reservacion = models.ForeignKey(Reservacion, on_delete=models.PROTECT)
+    servicio = models.ForeignKey(Servicio, on_delete=models.PROTECT)
+
+    class Meta:
+        db_table = 'reserva_servicio'
+        verbose_name = 'Servicios de reservacion'
+        verbose_name_plural = 'Servicios de reservaciones'
+    
+    def __str__(self):
+        return f"R:{self.reservacion.pk} S:{self.servicio.pk}"
+
+
 class ReservaEquipa(models.Model):
     cantidad = models.IntegerField()
+    extra = models.BooleanField(default=False, blank=True, null=True)
+    completado = models.BooleanField(default=False, blank=True, null=True)
     reservacion = models.ForeignKey(Reservacion, on_delete=models.PROTECT)
     equipamiento = models.ForeignKey(Equipamiento, on_delete=models.PROTECT)
 

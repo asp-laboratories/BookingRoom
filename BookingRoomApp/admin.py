@@ -24,7 +24,6 @@ class ReservacionAdmin(admin.ModelAdmin):
     list_display = ('id', 'fechaEvento', 'cliente', 'estado_reserva', 'total')
     search_fields = ('id', 'cliente__nombre', 'cliente__rfc') 
     list_filter = ('estado_reserva', 'fechaEvento', 'tipo_evento')
-    filter_horizontal = ('reserva_servicio',) 
 
 @admin.register(models.Montaje)
 class MontajeAdmin(admin.ModelAdmin):
@@ -59,7 +58,7 @@ catalogos_y_secundarias = [
     models.TipoEquipa, models.EstadoEquipa, models.ConceptoPago, models.MetodoPago,
     models.Mobiliario, models.Equipamiento, models.MontajeMobiliario, 
     models.InventarioEquipa, models.InventarioMob, models.ReservaEquipa,
-    models.Encuesta
+    models.Encuesta, models.ReservaServicio
 ]
 
 for modelo in catalogos_y_secundarias:
