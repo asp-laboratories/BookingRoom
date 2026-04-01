@@ -319,7 +319,8 @@ class Servicio(models.Model):
 
 
 class Reservacion(models.Model):
-    nombre = models.CharField(max_length=100, blank=True, default="")
+    # nombre = models.CharField(max_length=100, blank=True, default="")
+    nombreEvento = models.CharField(max_length=100, blank=True, default="")
     descripEvento = models.CharField(max_length=550)
     estimaAsistentes = models.IntegerField()
     fechaReservacion = models.DateField(auto_now_add=True)
@@ -333,7 +334,7 @@ class Reservacion(models.Model):
     montaje = models.ForeignKey(Montaje, on_delete=models.PROTECT)
     estado_reserva = models.ForeignKey(EstadoReserva, on_delete=models.PROTECT)
     tipo_evento = models.ForeignKey(TipoEvento, on_delete=models.PROTECT)
-    trabajador = models.ForeignKey(Trabajador, on_delete=models.PROTECT, default=1)
+    trabajador = models.ForeignKey(Trabajador, on_delete=models.PROTECT, null=True, blank=True)
 
     class Meta:
         db_table = 'reservacion'

@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from django.db import transaction
 from django.urls import reverse
+from django.contrib import messages
 from BookingRoomApp import models
 from BookingRoomApp.views import get_cuenta_and_rol
 
@@ -145,7 +146,7 @@ def reservacion_detalle_json(request, pk):
             "correo": reserva.cliente.correo_electronico, "telefono": reserva.cliente.telefono,
             "rfc": reserva.cliente.rfc, "nombre_fiscal": reserva.cliente.nombre_fiscal,
         },
-        "servicios": list(reserva.reserva_servicio.values_list("nombre", flat=True)),
+        "servicios": list(reserva.reservaservicio_set.values_list("servicio__nombre", flat=True)),
     })
 
 
