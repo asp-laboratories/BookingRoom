@@ -21,4 +21,7 @@ urlpatterns = [
     path('administracion/salones/', views.Salones.as_view(), name="salones"),
     path('administracion/mobiliario/', views.mobiliario, name="mobiliario"),
     path('administracion/equipamiento/', views.Equipamientos.as_view(), name="equipamiento"),
+    path('almacen/inventario-equipamiento/actualizar/',views.actualizar_estado_equipamiento, name="actualizar_estado_equipamiento"),
+    path("almacen/inventario-mobiliario/", views.inventario_mobiliario, name="inventario_mobiliario"),
+    path("almacen/actualizar-estado-mobiliario/", views.actualizar_estado_mobiliario, name="actualizar_estado_mobiliario"),
 ]

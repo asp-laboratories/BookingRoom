@@ -1,4 +1,5 @@
-function abrirModal() {
+function abrirModal(id) {
+    document.getElementById("inventario_id").value = id;
     document.getElementById("modalEstado").style.display = "block";
 }
 
