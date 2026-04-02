@@ -1,5 +1,5 @@
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import generic
 from django.contrib import messages
 from django.urls import reverse
@@ -61,6 +61,20 @@ class Mobiliarios(generic.ListView):
                     caracteristica, _ = models.CaracterMobil.objects.get_or_create(descripcion=caracteristica_desc)
                     mobiliario.descripcion_mob.add(caracteristica)
             
+            try:
+                estado_inicial = models.EstadoMobil.objects.filter(codigo="DISP").first()
+                if not estado_inicial:
+                    estado_inicial = models.EstadoMobil.objects.first()
+                
+                if estado_inicial:
+                    models.InventarioMob.objects.create(
+                        mobiliario=mobiliario,
+                        estado_mobil=estado_inicial,
+                        cantidad=request.POST.get("stockTotal")
+                    )
+            except Exception:
+                pass
+            
             messages.success(request, f'Mobiliario registrado exitosamente')
         
         return HttpResponseRedirect(reverse("mobiliario"))
@@ -87,11 +101,11 @@ def actualizar_mobiliario(request, pk):
     return HttpResponseRedirect(reverse('mobiliario'))
 
 
-def inventario_mobiliario(request):
-    cuenta, rol = get_cuenta_and_rol(request)
-    if not cuenta:
-        return HttpResponseRedirect(reverse("login"))
-    return render(request, "BookingRoomApp/almacen/inventario_mobiliario.html", {"rol": rol})
+# def inventario_mobiliario(request):
+#     cuenta, rol = get_cuenta_and_rol(request)
+#     if not cuenta:
+#         return HttpResponseRedirect(reverse("login"))
+#     return render(request, "BookingRoomApp/almacen/inventario_mobiliario.html", {"rol": rol})
 
 
 def mobiliario_caracteristicas(request, pk):
@@ -132,3 +146,76 @@ def mobiliario_caracteristicas(request, pk):
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+
+def inventario_mobiliario(request):
+    cuenta, rol = get_cuenta_and_rol(request)
+
+    if not cuenta:
+        return redirect("login")
+
+    inventario = models.InventarioMob.objects.select_related(
+        "mobiliario",
+        "mobiliario__tipo_movil",
+        "estado_mobil"
+    ).filter(cantidad__gt=0)
+
+    buscar = request.GET.get("buscar")
+    estado = request.GET.get("estado")
+    tipo = request.GET.get("tipo")
+
+    if buscar:
+        inventario = inventario.filter(mobiliario__nombre__icontains=buscar)
+
+    if estado:
+        inventario = inventario.filter(estado_mobil__codigo=estado)
+
+    if tipo:
+        inventario = inventario.filter(mobiliario__tipo_movil__id=tipo)
+
+    estados = models.EstadoMobil.objects.all()
+    tipos = models.TipoMobil.objects.all()
+
+    return render(
+        request,
+        "BookingRoomApp/almacen/inventario_mobiliario.html",
+        {
+            "inventario": inventario,
+            "rol": rol,
+            "estados": estados,
+            "tipos": tipos
+        }
+    )
+    
+def actualizar_estado_mobiliario(request):
+    if request.method == "POST":
+        inventario_id = request.POST.get("inventario_id")
+        cantidad = int(request.POST.get("cantidad", 0))
+        estado_codigo = request.POST.get("estado")
+
+        if not inventario_id or cantidad <= 0:
+            return redirect("inventario_mobiliario")
+
+        inventario = get_object_or_404(models.InventarioMob, id=inventario_id)
+        nuevo_estado = get_object_or_404(models.EstadoMobil, codigo=estado_codigo)
+
+        cantidad = min(cantidad, inventario.cantidad)
+
+        inventario.cantidad -= cantidad
+
+        if inventario.cantidad == 0:
+            inventario.delete()
+        else:
+            inventario.save()
+
+        otro_inventario, creado = models.InventarioMob.objects.get_or_create(
+            mobiliario=inventario.mobiliario,
+            estado_mobil=nuevo_estado,
+            defaults={"cantidad": 0}
+        )
+
+        otro_inventario.cantidad += cantidad
+        otro_inventario.save()
+
+    return redirect("inventario_mobiliario")

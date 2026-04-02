@@ -1,5 +1,5 @@
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import generic
 from django.contrib import messages
 from django.urls import reverse
@@ -46,13 +46,26 @@ class Equipamientos(generic.ListView):
             return HttpResponseRedirect(reverse("login"))
 
         if request.POST.get("form_equipamiento") == "equipamiento":
-            models.Equipamiento.objects.create(
+            tipo_equipa = models.TipoEquipa.objects.get(pk=request.POST.get("tipo_equipa"))
+            nuevo_equipamiento = models.Equipamiento.objects.create(
                 nombre=request.POST.get("nameEquipamiento"),
                 descripcion=request.POST.get("descripcion"),
                 costo=request.POST.get("costoEquipamiento"),
                 stock=request.POST.get("stockEquipamiento"),
-                tipo_equipa=models.TipoEquipa.objects.get(pk=request.POST.get("tipo_equipa")),
+                tipo_equipa=tipo_equipa,
             )
+            
+            estado_inicial = models.EstadoEquipa.objects.filter(codigo="DISP").first()
+            if not estado_inicial:
+                estado_inicial = models.EstadoEquipa.objects.first()
+            
+            if estado_inicial:
+                models.InventarioEquipa.objects.create(
+                    equipamiento=nuevo_equipamiento,
+                    estado_equipa=estado_inicial,
+                    cantidad=request.POST.get("stockEquipamiento")
+                )
+            
             messages.success(request, f'Equipamiento registrado exitosamente')
 
         return HttpResponseRedirect(reverse("equipamiento"))
@@ -83,4 +96,175 @@ def inventario_equipamiento(request):
     cuenta, rol = get_cuenta_and_rol(request)
     if not cuenta:
         return HttpResponseRedirect(reverse("login"))
-    return render(request, "BookingRoomApp/almacen/inventario_equipamiento.html", {"rol": rol})
+
+    inventario = models.InventarioEquipa.objects.select_related(
+        "equipamiento",
+        "equipamiento__tipo_equipa",
+        "estado_equipa"
+    ).filter(cantidad__gt=0)
+
+    buscar = request.GET.get("buscar")
+    estado = request.GET.get("estado")
+    tipo = request.GET.get("tipo")
+
+    if buscar:
+        inventario = inventario.filter(equipamiento__nombre__icontains=buscar)
+    if estado:
+        inventario = inventario.filter(estado_equipa__codigo=estado)
+    if tipo:
+        inventario = inventario.filter(equipamiento__tipo_equipa__id=tipo)
+
+    estados = models.EstadoEquipa.objects.all()
+    tipos = models.TipoEquipa.objects.all()
+
+    return render(
+        request,
+        "BookingRoomApp/almacen/inventario_equipamiento.html",
+        {
+            "inventario": inventario,
+            "rol": rol,
+            "estados": estados,
+            "tipos": tipos
+        }
+    )
+
+
+def actualizar_estado_equipamiento(request):
+    if request.method == "POST":
+        from django.shortcuts import get_object_or_404
+        inventario_id = request.POST.get("inventario_id")
+        cantidad = int(request.POST.get("cantidad", 0))
+        estado_codigo = request.POST.get("estado")
+
+        if not inventario_id or cantidad <= 0:
+            return redirect("inventario_equipamiento")
+
+        inventario = get_object_or_404(models.InventarioEquipa, id=inventario_id)
+        nuevo_estado = get_object_or_404(models.EstadoEquipa, codigo=estado_codigo)
+
+        cantidad = min(cantidad, inventario.cantidad)
+        if cantidad == 0:
+            return redirect("inventario_equipamiento")
+
+        inventario.cantidad -= cantidad
+        if inventario.cantidad == 0:
+            inventario.delete()
+        else:
+            inventario.save()
+
+        otro_inventario, creado = models.InventarioEquipa.objects.get_or_create(
+            equipamiento=inventario.equipamiento,
+            estado_equipa=nuevo_estado,
+            defaults={"cantidad": 0}
+        )
+        
+        otro_inventario.cantidad += cantidad
+        otro_inventario.save()
+
+    return redirect("inventario_equipamiento")
+
+
+def equipamiento(request):
+    cuenta, rol = get_cuenta_and_rol(request)
+    if not cuenta:
+        return redirect("login")
+
+    if request.method == "POST":
+        form_equipamiento = request.POST.get('form_equipamiento')
+
+        if form_equipamiento == "equipamiento":
+            nombre = request.POST.get('nameEquipamiento')
+            descripcion = request.POST.get('descripcion')
+            costo = float(request.POST.get('costoEquipamiento', 0))
+            stock = int(request.POST.get('stockEquipamiento', 0))
+            tipo_equipa_id = request.POST.get('tipo_equipa')
+
+            tipo_equipa = get_object_or_404(models.TipoEquipa, pk=tipo_equipa_id)
+
+            nuevo_equipamiento = models.Equipamiento.objects.create(
+                nombre=nombre,
+                descripcion=descripcion,
+                costo=costo,
+                stock=stock,
+                tipo_equipa=tipo_equipa
+            )
+
+            estado_inicial = get_object_or_404(models.EstadoEquipa, codigo="DISP")
+            models.InventarioEquipa.objects.create(
+                equipamiento=nuevo_equipamiento,
+                estado_equipa=estado_inicial,
+                cantidad=stock
+            )
+
+    return redirect("equipamiento")
+
+def inventario_equipamiento(request):
+    cuenta, rol = get_cuenta_and_rol(request)
+    
+    if not cuenta:
+        return redirect("login")
+
+    inventario = models.InventarioEquipa.objects.select_related(
+        "equipamiento",
+        "equipamiento__tipo_equipa",
+        "estado_equipa"
+    ).filter(cantidad__gt=0)
+
+    buscar = request.GET.get("buscar")
+    estado = request.GET.get("estado")
+    tipo = request.GET.get("tipo")
+
+    if buscar:
+        inventario = inventario.filter(equipamiento__nombre__icontains=buscar)
+    if estado:
+        inventario = inventario.filter(estado_equipa__codigo=estado)
+    if tipo:
+        inventario = inventario.filter(equipamiento__tipo_equipa__id=tipo)
+
+    estados = models.EstadoEquipa.objects.all()
+    tipos = models.TipoEquipa.objects.all()
+
+    return render(
+        request,
+        "BookingRoomApp/almacen/inventario_equipamiento.html",
+        {
+            "inventario": inventario,
+            "rol": rol,
+            "estados": estados,
+            "tipos": tipos
+        }
+    )
+
+
+def actualizar_estado_equipamiento(request):
+    if request.method == "POST":
+        inventario_id = request.POST.get("inventario_id")
+        cantidad = int(request.POST.get("cantidad", 0))
+        estado_codigo = request.POST.get("estado")
+
+        if not inventario_id or cantidad <= 0:
+            return redirect("inventario_equipamiento")
+
+        inventario = get_object_or_404(models.InventarioEquipa, id=inventario_id)
+        nuevo_estado = get_object_or_404(models.EstadoEquipa, codigo=estado_codigo)
+
+        cantidad = min(cantidad, inventario.cantidad)
+        if cantidad == 0:
+            return redirect("inventario_equipamiento")
+
+        inventario.cantidad -= cantidad
+        if inventario.cantidad == 0:
+            inventario.delete()
+        else:
+            inventario.save()
+
+        otro_inventario, creado = models.InventarioEquipa.objects.get_or_create(
+            equipamiento=inventario.equipamiento,
+            estado_equipa=nuevo_estado,
+            defaults={"cantidad": 0}
+        )
+        
+        otro_inventario.cantidad += cantidad
+        otro_inventario.save()
+
+    return redirect("inventario_equipamiento")

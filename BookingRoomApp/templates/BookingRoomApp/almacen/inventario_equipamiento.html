@@ -7,23 +7,36 @@
 
 <div class="equipamiento-container">
     <h2 class="equipamiento-titulo">Equipamientos</h2>
+
     <div class="equipamiento-contenedor">
-        <div class="equipamiento-fila">
-            <input type="text" placeholder="Buscar equipamiento" class="equipamiento-input">
-
-            <select class="equipamiento-select">
-                <option>Estado</option>
-                <option>Disponible</option>
-                <option>No disponible</option>
-            </select>
-
-            <select class="equipamiento-select">
-                <option>Seleccione tipo</option>
-                <option>oficina</option>
-                <option>Carnaval</option>
-            </select>
-
-        </div>
+        <form method="GET">
+            <div class="equipamiento-fila">
+                <input 
+                    type="text" 
+                    name="buscar"
+                    value="{{ request.GET.buscar }}"
+                    placeholder="Buscar equipamiento" 
+                    class="equipamiento-input"
+                >
+                <select name="estado" class="equipamiento-select">
+                    <option value="">Estado</option>
+                    {% for estado in estados %}
+                        <option value="{{ estado.codigo }}" {% if request.GET.estado == estado.codigo %}selected{% endif %}>
+                            {{ estado.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <select name="tipo" class="equipamiento-select">
+                    <option value="">Seleccione tipo</option>
+                    {% for tipo in tipos %}
+                        <option value="{{ tipo.id }}" {% if request.GET.tipo == tipo.id|stringformat:"s" %}selected{% endif %}>
+                            {{ tipo.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="equipamiento-btn-verde">Filtrar</button>
+            </div>
+        </form>
 
         <table class="equipamiento-tabla">
             <thead>
@@ -40,19 +53,29 @@
             </thead>
 
             <tbody>
+                {% for item in inventario %}
                 <tr>
-                    <td class="equipamiento-td">1</td>
-                    <td class="equipamiento-td">Laptop</td>
-                    <td class="equipamiento-td">Ejecutivo</td>
-                    <td class="equipamiento-td">Sin descripcion</td>
-                    <td class="equipamiento-td">2</td>
-                    <td class="equipamiento-td">0</td>
-                    <td class="equipamiento-td">Disponible</td>
-
+                    <td class="equipamiento-td">{{ forloop.counter }}</td>
+                    <td class="equipamiento-td">{{ item.equipamiento.nombre }}</td>
+                    <td class="equipamiento-td">{{ item.equipamiento.tipo_equipa.nombre }}</td>
+                    <td class="equipamiento-td">{{ item.equipamiento.descripcion }}</td>
+                    <td class="equipamiento-td">{{ item.equipamiento.costo }}</td>
+                    <td class="equipamiento-td">{{ item.cantidad }}</td>
+                    <td class="equipamiento-td">{{ item.estado_equipa.nombre }}</td>
                     <td class="equipamiento-td">
-                        <button class="equipamiento-btn-verde" onclick="abrirModal()">↑↓</button>
+                        <button type="button" class="equipamiento-btn-verde" onclick="abrirModal({{ item.id }})">
+                            ↑↓
+                        </button>
                     </td>
                 </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align:center; padding: 20px; color: #888;">
+                        No hay equipamiento disponible
+                    </td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
 
@@ -63,28 +86,28 @@
 <div id="modalEstado" class="equipamiento-modal">
     <div class="equipamiento-modal-content">
         <span class="equipamiento-close" onclick="cerrarModal()">×</span>
+        <h3 style="text-align:center;">Cambiar estado del equipamiento</h3>
 
-        <h3 style="text-align:center;">INFORME DE LA RESERVACION</h3>
-        <div class="equipamiento-form-grid">
+        <form method="POST" action="{% url 'actualizar_estado_equipamiento' %}">
+            {% csrf_token %}
+            <input type="hidden" name="inventario_id" id="inventario_id">
 
-            <label>Cantidad actual</label>
-            <input type="number" value="50" class="equipamiento-input">
+            <div class="equipamiento-form-grid">
+                <label>Cantidad</label>
+                <input type="number" name="cantidad" class="equipamiento-input" required min="1">
 
-            <label>Cantidad a cambiar</label>
-            <input type="number" class="equipamiento-input">
+                <label>Cambiar estado</label>
+                <select name="estado" class="equipamiento-select">
+                    {% for estado in estados %}
+                        <option value="{{ estado.codigo }}">{{ estado.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-            <label>Cambiar estado</label>
-
-            <select class="equipamiento-select">
-                <option>Disponible</option>
-                <option>No disponible</option>
-            </select>
-        </div>
-
-        <div class="equipamiento-guardar">
-            <button class="equipamiento-btn-guardar">Guardar</button>
-        </div>
-
+            <div class="equipamiento-guardar">
+                <button type="submit" class="equipamiento-btn-guardar">Guardar</button>
+            </div>
+        </form>
     </div>
 
 </div>

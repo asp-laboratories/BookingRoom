@@ -18,7 +18,7 @@ urlpatterns = [
     path('recepcion/historial/<int:pk>/json/', views.historial_detalle, name="historial_detalle_json"),
     path('recepcion/historial/<int:pk>/actualizar/', views.actualizar_reservacion, name="actualizar_reservacion"),
     path('almacen/inventario-equipamiento/', views.inventario_equipamiento, name="inventario_equipamiento"),
-    path('almacen/inventario-mobiliario/', views.inventario_mobiliario, name="inventario_mobiliario"),
+    # path('almacen/inventario-mobiliario/', views.inventario_mobiliario, name="inventario_mobiliario"),
     path('recepcion/pagos/', views.pagos, name="pagos"),
     path('administracion/estadisticas/', views.estadisticas, name="estadisticas"),
     path('administracion/trabajadores/', views.Trabajadores.as_view(), name="trabajadores"),
@@ -33,4 +33,7 @@ urlpatterns = [
     path('administracion/trabajadores/<str:pk>/actualizar/', views.actualizar_trabajador, name="actualizar_trabajador"),
     path('administracion/crear-tipo/', views.crear_tipo, name="crear_tipo"),
     path('administracion/paquetes/', views.paquetes, name="paquetes"),
+    path('almacen/inventario-equipamiento/actualizar/',views.actualizar_estado_equipamiento, name="actualizar_estado_equipamiento"),
+    path("almacen/inventario-mobiliario/", views.inventario_mobiliario, name="inventario_mobiliario"),
+    path("almacen/actualizar-estado-mobiliario/", views.actualizar_estado_mobiliario, name="actualizar_estado_mobiliario"),
 ]

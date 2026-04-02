@@ -7,24 +7,46 @@
 
 <div class="mobiliario-container">
     <h2 class="mobiliario-titulo">Mobiliario</h2>
+
     <div class="mobiliario-contenedor">
 
-        <div class="mobiliario-fila">
-            <input type="text" placeholder="Buscar mobiliario" class="mobiliario-input">
+        <form method="GET">
+            <div class="mobiliario-fila">
 
-            <select class="mobiliario-select">
-                <option>Estado</option>
-                <option>Disponible</option>
-                <option>No disponible</option>
-            </select>
+                <input 
+                    type="text"
+                    name="buscar"
+                    value="{{ request.GET.buscar }}"
+                    placeholder="Buscar mobiliario"
+                    class="mobiliario-input"
+                >
 
-            <select class="mobiliario-select">
-                <option>Seleccione tipo</option>
-                <option>Sillas</option>
-                <option>Mesas</option>
-            </select>
+                <select name="estado" class="mobiliario-select">
+                    <option value="">Estado</option>
+                    {% for estado in estados %}
+                        <option value="{{ estado.codigo }}"
+                        {% if request.GET.estado == estado.codigo %}selected{% endif %}>
+                            {{ estado.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
 
-        </div>
+                <select name="tipo" class="mobiliario-select">
+                    <option value="">Seleccione tipo</option>
+                    {% for tipo in tipos %}
+                        <option value="{{ tipo.id }}"
+                        {% if request.GET.tipo == tipo.id|stringformat:"s" %}selected{% endif %}>
+                            {{ tipo.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit" class="mobiliario-btn-verde">
+                    Filtrar
+                </button>
+
+            </div>
+        </form>
 
         <table class="mobiliario-tabla">
             <thead>
@@ -41,50 +63,82 @@
             </thead>
 
             <tbody>
+                {% for item in inventario %}
                 <tr>
-                    <td class="mobiliario-td">1</td>
-                    <td class="mobiliario-td">Silla 1</td>
-                    <td class="mobiliario-td">Sillas</td>
-                    <td class="mobiliario-td">Sin descripcion</td>
-                    <td class="mobiliario-td">0</td>
-                    <td class="mobiliario-td">5</td>
-                    <td class="mobiliario-td">Disponible</td>
+                    <td class="mobiliario-td">{{ forloop.counter }}</td>
+                    <td class="mobiliario-td">{{ item.mobiliario.nombre }}</td>
+                    <td class="mobiliario-td">{{ item.mobiliario.tipo_movil.nombre }}</td>
+                    <td class="mobiliario-td">{{ item.mobiliario.descripcion }}</td>
+                    <td class="mobiliario-td">{{ item.mobiliario.costo }}</td>
+                    <td class="mobiliario-td">{{ item.cantidad }}</td>
+                    <td class="mobiliario-td">{{ item.estado_mobil.nombre }}</td>
 
                     <td class="mobiliario-td">
-                        <button class="mobiliario-btn-verde" onclick="abrirModal()">↑↓</button>
+                        <button 
+                            type="button"
+                            class="mobiliario-btn-verde"
+                            onclick="abrirModal({{ item.id }})">
+                            ↑↓
+                        </button>
                     </td>
                 </tr>
-                
+
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align:center; padding: 20px; color: #888;">
+                         No hay mobiliario disponible
+                    </td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
 
     </div>
-
+    
 </div>
 
 <div id="modalEstado" class="mobiliario-modal">
     <div class="mobiliario-modal-content">
         <span class="mobiliario-close" onclick="cerrarModal()">×</span>
-        <h3 style="text-align:center;">INFORME DE LA RESERVACION</h3>
-        <div class="mobiliario-form-grid">
 
-            <label>Cantidad actual</label>
-            <input type="number" value="50" class="mobiliario-input">
+        <h3 style="text-align:center;">
+            Cambiar estado del mobiliario
+        </h3>
 
-            <label>Cantidad a cambiar</label>
-            <input type="number" class="mobiliario-input">
+        <form method="POST" action="{% url 'actualizar_estado_mobiliario' %}">
+            {% csrf_token %}
 
-            <label>Cambiar estado</label>
+            <input type="hidden" name="inventario_id" id="inventario_id">
 
-            <select class="mobiliario-select">
-                <option>Disponible</option>
-                <option>No disponible</option>
-            </select>
+            <div class="mobiliario-form-grid">
 
-        </div>
-        <div class="mobiliario-guardar">
-            <button class="mobiliario-btn-guardar">Guardar</button>
-        </div>
+                <label>Cantidad</label>
+                <input 
+                    type="number"
+                    name="cantidad"
+                    class="mobiliario-input"
+                    required
+                    min="1"
+                >
+
+                <label>Cambiar estado</label>
+                <select name="estado" class="mobiliario-select">
+                    {% for estado in estados %}
+                        <option value="{{ estado.codigo }}">
+                            {{ estado.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+            </div>
+
+            <div class="mobiliario-guardar">
+                <button type="submit" class="mobiliario-btn-guardar">
+                    Guardar
+                </button>
+            </div>
+
+        </form>
     </div>
 
 </div>
