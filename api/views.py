@@ -396,3 +396,27 @@ def api_signup(request):
             return JsonResponse({'error': str(e)}, status=400)
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+class ReservacionesPorFechaView(APIView):
+    """API para obtener reservaciones por fecha específica"""
+    def get(self, request):
+        from django.utils.dateparse import parse_date
+        
+        fecha_str = request.query_params.get('fecha')
+        
+        if not fecha_str:
+            return Response({'error': 'Fecha no proporcionada'}, status=400)
+        
+        fecha = parse_date(fecha_str)
+        if not fecha:
+            return Response({'error': 'Formato de fecha inválido'}, status=400)
+        
+        reservaciones = models.Reservacion.objects.filter(
+            fechaEvento=fecha
+        ).select_related(
+            'cliente', 'montaje__salon', 'estado_reserva'
+        )
+        
+        serializer = serializers.ReservacionResumenSerializer(reservaciones, many=True)
+        return Response({'reservaciones': serializer.data})

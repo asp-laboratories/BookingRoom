@@ -30,6 +30,8 @@
 
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  max-height: 60vh;
 }
 
 .titulo-solicitud{

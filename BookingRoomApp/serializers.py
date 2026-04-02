@@ -88,3 +88,27 @@ class LoginResponseSerializer(serializers.Serializer):
     email = serializers.EmailField()
     tipo = serializers.CharField()
     rol = serializers.CharField(allow_null=True)
+
+
+class ReservacionSerializer(serializers.ModelSerializer):
+    cliente_nombre = serializers.CharField(source='cliente.nombre', read_only=True)
+    cliente_rfc = serializers.CharField(source='cliente.rfc', read_only=True)
+    salon_nombre = serializers.CharField(source='montaje.salon.nombre', read_only=True)
+    estado_nombre = serializers.CharField(source='estado_reserva.nombre', read_only=True)
+    
+    class Meta:
+        model = models.Reservacion
+        fields = ['id', 'nombreEvento', 'descripEvento', 'fechaEvento', 'horaInicio', 'horaFin',
+                  'subtotal', 'IVA', 'total', 'cliente_nombre', 'cliente_rfc', 
+                  'salon_nombre', 'estado_nombre']
+
+
+class ReservacionResumenSerializer(serializers.ModelSerializer):
+    """Serializer minimalista para el calendario y vista resumida"""
+    cliente_nombre = serializers.CharField(source='cliente.nombre', read_only=True)
+    salon = serializers.CharField(source='montaje.salon.nombre', read_only=True)
+    
+    class Meta:
+        model = models.Reservacion
+        fields = ['id', 'nombreEvento', 'fechaEvento', 'horaInicio', 'horaFin', 
+                  'cliente_nombre', 'salon', 'estado_reserva']

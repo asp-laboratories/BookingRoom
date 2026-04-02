@@ -491,3 +491,14 @@ class ReservacionUpdateSerializer(serializers.Serializer):
     
     def to_representation(self, instance):
         return ReservacionLecturaSerializer(instance).data
+
+
+class ReservacionResumenSerializer(serializers.ModelSerializer):
+    """Serializer minimalista para el calendario y vista resumida"""
+    cliente_nombre = serializers.CharField(source='cliente.nombre', read_only=True)
+    salon = serializers.CharField(source='montaje.salon.nombre', read_only=True)
+    
+    class Meta:
+        model = models.Reservacion
+        fields = ['id', 'nombreEvento', 'fechaEvento', 'horaInicio', 'horaFin', 
+                  'cliente_nombre', 'salon', 'estado_reserva']

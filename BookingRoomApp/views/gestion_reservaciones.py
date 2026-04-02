@@ -171,6 +171,8 @@ def historial_detalle(request, pk):
     })
 
 
+
+
 @csrf_exempt
 def actualizar_reservacion(request, pk):
     if request.method == 'POST':
