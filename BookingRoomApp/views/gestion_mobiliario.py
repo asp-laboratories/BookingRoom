@@ -30,9 +30,11 @@ class Mobiliarios(generic.ListView):
             mobiliarios = mobiliarios.order_by('costo')
         elif orden == 'costo_desc':
             mobiliarios = mobiliarios.order_by('-costo')
+        else:
+            mobiliarios = mobiliarios.order_by('-id')
 
         return render(request, self.template_name, {
-            'mobiliarios': mobiliarios.order_by('-id').all(),
+            'mobiliarios': mobiliarios.all(),
             'tipos_mobil': tipos_mobil,
             'rol': rol,
             'nombre': nombre, 'orden': orden,

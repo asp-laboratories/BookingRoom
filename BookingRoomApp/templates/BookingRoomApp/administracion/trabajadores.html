@@ -126,7 +126,7 @@
                         required /></label>
 
                 <label class="administrador-label"> Rol <br>
-                    <select name="rol_id" class="administrador-select" required>
+                    <select name="rol_id" class="administrador-select emparejar-select" required>
                         <option value disabled selected hidden>Escoge rol</option>
                         {% for rol in roles %}
                         <option value="{{ rol.codigo }}">{{ rol.nombre }}</option>
@@ -171,7 +171,7 @@
                 value="{{ no_empleado|default:'' }}" />
 
             <select name="rol" id="filtro-rol"
-                class="administrador-select">
+                class="administrador-select ">
                 <option value="">Todos los roles</option>
                 {% for rol in roles %}
                 <option value="{{ rol.codigo }}" {% if rol.codigo == rol_filtro %}selected{% endif %}>{{ rol.nombre }}</option>

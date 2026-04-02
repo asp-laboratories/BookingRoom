@@ -1,3 +1,18 @@
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(156, 92, 49, 0.7);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 0 0 0px rgba(156, 92, 49, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(156, 92, 49, 0);
+  }
+}
+
 .titulo-seccion{
   margin: 50px 50px 50px;
 }
@@ -80,10 +95,16 @@
   font-weight: bold;
   cursor: pointer;
   text-decoration: none;
+  transition: all 0.3s ease;
+  animation: pulse 1.5s infinite;
+  box-shadow: inset 0px -3px rgb(0, 0, 0, 0.9)
+
+;
+  
 }
 
 .btn-reservacion:hover{
-    transform: translateY(-2px);
+    transform: translateY(-5px);
 }
 
 /* Rotación cuando el menú está abierto */
@@ -252,6 +273,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     margin: 10px 0 10px 0px;
+    padding: 0px 5px;
 }
 
 .tab-btn {
@@ -260,6 +282,15 @@
     cursor: pointer;
     padding: 10px;
     font-size: 16px;
+}
+
+.tab-btn::before{
+    width: 0;
+    right: 0;
+}
+
+.tab-btn:hover::before{
+    width: 100%;
 }
 
 .tab-content {
@@ -272,4 +303,92 @@
 
 .tab-btn.active {
     font-weight: bold;
+}
+
+/* .tab-confirm{
+    background-color: black;
+    color: #000;
+} */
+
+
+
+/* .tab-confirm:focus {
+  background-color: var(--color-primario);
+  color: #fff;
+  position: relative;
+} */
+
+/* .tab-soli:focus {
+  background-color: var(--color-primario);
+  color: #fff;
+  position: relative;
+} */
+
+.tab-confirm {
+  position: relative;
+  background: transparent;
+  color: #000;
+  overflow: hidden; /* Ensures the sliding element stays inside the button */
+  cursor: pointer;
+  transition: color 0.4s ease;
+  z-index: 1;
+}
+
+.tab-confirm::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 100%; /* Start off-screen to the left */
+  width: 100%;
+  height: 100%;
+  background: var(--color-primario);
+  transition: all 0.4s ease;
+  z-index: -1; /* Place behind the button text */
+  border-radius: 5px;
+}
+
+.tab-confirm:focus::before {
+  left: 0; /* Slide into view */
+}
+
+.tab-confirm:focus {
+  color: white; /* Change text color for contrast */
+}
+
+.tab-soli {
+  position: relative;
+  background: transparent;
+  color: #000;
+  overflow: hidden; /* Ensures the sliding element stays inside the button */
+  cursor: pointer;
+  transition: color 0.4s ease;
+  z-index: 1;
+}
+
+.tab-soli::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%; /* Start off-screen to the left */
+  width: 100%;
+  height: 100%;
+  background: var(--color-primario);
+  transition: all 0.4s ease;
+  z-index: -1; /* Place behind the button text */
+  border-radius: 5px;
+
+}
+
+.tab-soli:focus::before {
+  left: 0; /* Slide into view */
+}
+
+.tab-soli:focus {
+  color: white; /* Change text color for contrast */
+}
+
+.btn-pulse {
+  background-color: #3498db;
+  color: white;
+  animation: pulse 1.5s infinite;
 }

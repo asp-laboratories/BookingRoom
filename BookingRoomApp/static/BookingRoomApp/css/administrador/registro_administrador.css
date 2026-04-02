@@ -12,7 +12,6 @@
 }
 
 .administrador-input{
-  border-right: 2px solid var(--color-primario);
   border-bottom: 2px solid var(--color-primario);
   margin-top: 10px;
 
@@ -43,10 +42,14 @@
   padding-right: 35px;
 }
 
+.emparejar-select{
+  margin-top: 10px;
+
+}
+
 .administrador-select:focus {
   border: none;
   outline: 1px solid var(--color-primario);
-  outline-offset: 1px;
 }
 
 .administrador-select option {
@@ -71,7 +74,14 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: start;
-  gap: 5px;
+  gap: 15px;
+}
+
+.administrador-seccionFlex .administrador-input,
+.administrador-seccionFlex .administrador-select {
+  height: 40px;
+  padding: 8px 12px;
+  font-size: 14px;
 }
 
 .administrador-select:invalid {

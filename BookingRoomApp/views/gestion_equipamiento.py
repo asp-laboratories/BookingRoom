@@ -30,9 +30,11 @@ class Equipamientos(generic.ListView):
             equipamientos = equipamientos.order_by('costo')
         elif orden == 'costo_desc':
             equipamientos = equipamientos.order_by('-costo')
+        else:
+            equipamientos = equipamientos.order_by('-id')
 
         return render(request, self.template_name, {
-            "equipamientos": equipamientos.order_by('-id').all(),
+            "equipamientos": equipamientos.all(),
             "tipos_equipa": tipos_equipa,
             "rol": rol,
             "nombre": nombre, "orden": orden,

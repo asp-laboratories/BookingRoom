@@ -83,7 +83,7 @@ span {
   overflow: hidden;
   background-image:
     linear-gradient(rgba(209, 138, 91, 0.3), rgba(209, 138, 91, 0.6)),
-    url("../img/salones-xv.jpg");
+    url("../../img/salones-xv.webp");
   background-size: cover;
   background-position: center;
   display: flex;

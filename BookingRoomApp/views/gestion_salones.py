@@ -33,9 +33,11 @@ class Salones(generic.ListView):
             salones = salones.order_by('-costo')
         elif orden == 'nombre':
             salones = salones.order_by('nombre')
+        else:
+            salones = salones.order_by('-id')
 
         return render(request, self.template_name, {
-            "salones": salones.order_by('-id').all(),
+            "salones": salones.all(),
             "estados": estados,
             "rol": rol,
             "nombre": nombre, "estado": estado, "orden": orden,
