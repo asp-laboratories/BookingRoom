@@ -36,4 +36,6 @@ urlpatterns = [
     path('almacen/inventario-equipamiento/actualizar/',views.actualizar_estado_equipamiento, name="actualizar_estado_equipamiento"),
     path("almacen/inventario-mobiliario/", views.inventario_mobiliario, name="inventario_mobiliario"),
     path("almacen/actualizar-estado-mobiliario/", views.actualizar_estado_mobiliario, name="actualizar_estado_mobiliario"),
+    path('reservacion/montajes-salon/', views.montaje_por_salon, name='montaje_salon'),
+    path('reservacion/mobiliarios-tipo/', views.mobiliarios_por_tipo, name='mobiliarios_por_tipo'),
 ]

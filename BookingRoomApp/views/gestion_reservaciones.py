@@ -54,7 +54,13 @@ class ReservacionView(generic.View):
         if not cuenta:
             return HttpResponseRedirect(reverse("login"))
 
+        trabajador = models.Trabajador.objects.get(cuenta=cuenta.pk)
+
         return render(request, self.template_name, {
+            "tipos_evento": models.TipoEvento.objects.all(),
+            "trabajador_id": trabajador.pk,
+            "tipos_mobiliarios": models.TipoMobil.objects.filter(disposicion=True),
+            "salones": models.Salon.objects.filter(estado_salon='DISPO'),
             "tipos_servicio": models.TipoServicio.objects.filter(disposicion=True),
             "tipos_equipa": models.TipoEquipa.objects.filter(disposicion=True),
             "tipos_equipamiento": models.TipoEquipa.objects.filter(disposicion=True),
@@ -111,10 +117,72 @@ def obtener_equipamiento_por_tipo(request):
         tipo_id = request.GET.get('tipo_id')
         if not tipo_id:
             return JsonResponse({'equipamientos': []})
-        equipamientos = models.Equipamiento.objects.filter(
-            tipo_equipa_id=tipo_id, stock__gt=0
-        ).values('id', 'nombre', 'costo', 'stock')
-        return JsonResponse({'equipamientos': list(equipamientos)})
+        
+        inventarios = models.InventarioEquipa.objects.filter(
+            estado_equipa='DISPO',
+            equipamiento__tipo_equipa_id=tipo_id
+        ).select_related('equipamiento')
+
+        lista_equipos = []
+        for item in inventarios:
+            if item.cantidad > 0:
+                lista_equipos.append({
+                    'id': item.equipamiento.id,
+                    'nombre': item.equipamiento.nombre,
+                    'costo': item.equipamiento.costo,
+                    'stock': item.cantidad
+                })
+
+        return JsonResponse({'equipamientos': lista_equipos})
+
+
+@csrf_exempt
+def mobiliarios_por_tipo(request):
+    if request.method == 'GET':
+        tipo_id = request.GET.get('tipo_id')
+
+        if not tipo_id:
+            return JsonResponse({'mobiliarios': []})
+        try:
+
+            inventarios = models.InventarioMob.objects.filter(
+                estado_mobil='DISPO',
+                mobiliario__tipo_movil_id=tipo_id
+            ).select_related('mobiliario')
+
+            lista_mobiliarios = []
+            for item in inventarios:
+                if item.cantidad > 0:
+                    lista_mobiliarios.append({
+                        'id': item.mobiliario.id,
+                        'nombre': item.mobiliario.nombre,
+                        'costo': item.mobiliario.costo,
+                        'stock': item.cantidad
+                    })
+
+            return JsonResponse({'mobiliarios': lista_mobiliarios})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+
+@csrf_exempt
+def montaje_por_salon(request):
+    salonId = request.GET.get('salon_id')
+    
+    if not salonId:
+        return JsonResponse({'montajes': []})
+    
+    salon = models.Salon.objects.get(id=salonId)
+
+    try:
+        # logica de filtrado
+        montajes = models.TipoMontaje.objects.filter(disposicion=True, capacidadIdeal__lte=salon.maxCapacidad)
+
+        lista = list(montajes.values('id', 'nombre'))
+        return JsonResponse({'montajes': lista})
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 
 class DetallesReservacionView(generic.DetailView):

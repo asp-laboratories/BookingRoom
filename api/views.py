@@ -127,7 +127,7 @@ class MontajeMobiliarioViewSet(viewsets.ModelViewSet):
 
 
 class ReservacionViewSet(viewsets.ModelViewSet):
-    queryset = models.Reservacion.objects.select_related('cliente', 'montaje', 'estado_reserva', 'tipo_evento').prefetch_related( 'trabajador')
+    queryset = models.Reservacion.objects.select_related('cliente', 'montaje', 'estado_reserva', 'tipo_evento', 'trabajador')
 
     def get_serializer_class(self):
         if self.action == "create":
