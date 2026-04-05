@@ -134,10 +134,6 @@ class DatosCliente(models.Model):
     def __str__(self):
         return self.correo_electronico
         
-
-
-
-
     # def get_absolute_url(self):
     #     return reverse("TipoServicio_detail", kwargs={"pk": self.pk})
 
@@ -183,6 +179,7 @@ class TipoMobil(models.Model):
 class TipoMontaje(models.Model):
     nombre = models.CharField(max_length=100)
     disposicion = models.BooleanField(default=True)
+    capacidadIdeal = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'tipo_montaje'

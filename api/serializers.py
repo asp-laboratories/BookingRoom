@@ -472,20 +472,21 @@ class MontajeCreacionSerializer(serializers.Serializer):
     mobiliarios = MobiliariosMontajeSerializer(many=True)
 
 class ReservacionCreacionSerializer(serializers.Serializer):
-    nombre = serializers.CharField()
-    descripEvento = serializers.CharField()
-    estimaAsistentes = serializers.IntegerField()
-    fechaEvento = serializers.DateField()
-    horaInicio = serializers.TimeField()
-    horaFin = serializers.TimeField()
-    subtotal = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2, required=False)
-    IVA = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2, required=False)
-    total = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2, required=False)
-    cliente = serializers.IntegerField()
-    trabajador = serializers.IntegerField()
-    reserva_servicio = ServiciosReservacionSerializer(many=True, required=False, allow_empty=True)
-    reserva_equipa = EquipamientoReservacionSerializer(many=True, required=False, allow_empty=True)
-    montaje = MontajeCreacionSerializer()
+    nombre = serializers.CharField() #
+    descripEvento = serializers.CharField() #
+    estimaAsistentes = serializers.IntegerField() #
+    fechaEvento = serializers.DateField() #
+    horaInicio = serializers.TimeField() #
+    horaFin = serializers.TimeField() #
+    subtotal = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2, required=False) # no se obtienen xd
+    IVA = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2, required=False) # no se obtienen xd
+    total = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2, required=False) # no se obtienen xd
+    cliente = serializers.CharField() #
+    trabajador = serializers.CharField() #
+    estado_reserva = EstadoReservaSerializer(required=False) # automatico como pendiente
+    reserva_servicio = ServiciosReservacionSerializer(many=True, required=False, allow_empty=True) #
+    reserva_equipa = EquipamientoReservacionSerializer(many=True, required=False, allow_empty=True) #
+    montaje = MontajeCreacionSerializer() #
     tipo_evento = serializers.IntegerField()
 
 class ReservacionLecturaSerializer(serializers.ModelSerializer):

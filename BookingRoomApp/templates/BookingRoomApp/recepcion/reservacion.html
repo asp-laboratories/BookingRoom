@@ -12,7 +12,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="{% static "BookingRoomApp/js/recepcion/pagos.js" %}" defer></script>
-<script src="{% static "BookingRoomApp/js/recepcion/añadir-selects.js" %}"></script> 
+<script src="{% static "BookingRoomApp/js/recepcion/añadir-selects.js" %}"></script>
+<script src="{% static "BookingRoomApp/js/reservacion/crear_reservacion.js" %}"></script>
 
 
 <h1 style="margin: 50px 0px 20px 20px;"><a style="color: black;" href="{% url 'home' %}">
@@ -81,9 +82,9 @@
               <label><input type="radio" name="tipo-cliente" id="tipo-fisica" /> Persona física</label>
             </div>
           </div>
-
           <div class="reservacion-campo">
             <label class="reservacion-label">RFC</label>
+            <!-- de aca se obtiene el id del cliente -->
             <input type="text" class="reservacion-input cliente-input" id="cliente-rfc" placeholder="ABCD123456XYZ" disabled />
           </div>
 
@@ -130,34 +131,52 @@
         <h3 class="reservacion-titulo-seccion">Acerca de la reservación</h3>
 
         <div class="reservacion-campo-contenedor reservacion-grid-campos">
-          <div class="reservacion-campo span-2">
-            <label class="reservacion-label">Nombre del evento</label>
-            <input type="text" class="reservacion-input" placeholder="Ej" />
-          </div>
+          <div class="reservacion-campo">
+            <div class="reservacion-campo span-2">
+              <label class="reservacion-label">Nombre del evento</label>
+              <!-- de aca se obtiene el nombre -->
+              <input type="text" class="reservacion-input" id="nombreEvento" placeholder="Ej" />
+            </div>
 
+            <div class="reservacion-campo span-2">
+              <label class="reservacion-label">Nombre del evento</label>
+              <!-- de aca se obtiene el tipo_evento -->
+                <select class="reservacion-input" id="tipo_evento">
+                  <option value="">-- Elige un tipo --</option>
+                  {% for tipo in tipos_evento %}
+                  <option value="{{tipo.id}}">{{tipo.nombre}}</option>
+                  {% endfor %}
+                </select>
+            </div>
+          </div>
           <div class="reservacion-campo">
             <label class="reservacion-label">Fecha del evento</label>
-            <input type="date" class="reservacion-input" />
+            <!-- de aca se obtiene fechaEvento -->
+            <input type="date" class="reservacion-input" id="fecha_evento"/>
           </div>
 
           <div class="reservacion-campo">
             <label class="reservacion-label">Estimado de asistentes</label>
-            <input type="number" class="reservacion-input" placeholder="0" />
+            <!-- de aca se obtiene estimaAsistentes -->
+            <input type="number" class="reservacion-input" id="estimado_asistentes" placeholder="0" />
           </div>
 
           <div class="reservacion-campo">
             <label class="reservacion-label">Hora de inicio</label>
-            <input type="time" class="reservacion-input" />
+            <!-- de aca se obtiene horaInicio -->
+            <input type="time" class="reservacion-input" id="hora_inicio"/>
           </div>
 
           <div class="reservacion-campo">
             <label class="reservacion-label">Hora de cierre</label>
-            <input type="time" class="reservacion-input" />
+            <!-- de aca se obtiene la horaFin -->
+            <input type="time" class="reservacion-input" id="hora_fin" />
           </div>
 
           <div class="reservacion-campo span-2">
             <label class="reservacion-label">Descripción del evento</label>
-            <textarea rows="3" class="reservacion-textarea" placeholder="Detalles adicionales..."></textarea>
+            <!-- de aca se obtiene la descripEvento -->
+            <textarea rows="3" class="reservacion-textarea" id="descripcion_evento" placeholder="Detalles adicionales..."></textarea>
           </div>
         </div>
       </section>
@@ -167,18 +186,55 @@
         <div class="reservacion-campo-contenedor reservacion-flex-row">
           <div class="reservacion-columna">
             <label class="reservacion-label">Seleccionar Salón</label>
-            <select class="reservacion-input">
+            <select class="reservacion-input" id="select-salon">
               <option value="">-- Selecciona un salón --</option>
+              {% for salon in salones %}
+              <!-- de aca se obtiene montaje.salon -->
+              <option value="{{salon.id}}">{{salon.nombre}}</option>
+              {% endfor %}
             </select>
           </div>
           <div class="reservacion-columna">
             <label class="reservacion-label">Seleccionar Montaje</label>
-            <select class="reservacion-input">
+            <select class="reservacion-input" id="select-montaje" disabled>
               <option value="">-- Selecciona un montaje --</option>
+              <!-- tecnicamente de aca se obtiene montaje.tipo_montaje -->
             </select>
           </div>
         </div>
+        <!-- esta parte de aca es para los inserts de mobiliarios -->
+        <div class="servicios-contenedor">
+          <div id="mobiliarios-selects">
+            <div class="mobil-pair" data-index="1">
+              <div class="reservacion-campo">
+                <label class="reservacion-label">Tipo de mobiliario</label>
+                <select class="reservacion-input mobiliario-tipo" name="mobiliario_tipo_1" disabled>
+                  <option value="">-- Elige un tipo --</option>
+                  {% for tipo in tipos_mobiliarios %}
+                  <option value="{{tipo.id}}">{{tipo.nombre}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="reservacion-campo">
+                <label class="reservacion-label">Seleccionar Mobiliario</label>
+                <select class="reservacion-input mobiliario-select" name="mobiliario_1" disabled>
+                  <option value="">-- Selecciona un tipo primero --</option>
+                  <!-- tecnicamente de aca se obtiene mobiliario -->
+                </select>
+              </div>
+              <div class="reservacion-campo">
+                <label class="reservacion-label">Cantidad</label>
+                <input type="number" class="reservacion-input" name="mobiliario_cantidad_1" value="1" min="1" />
+              </div>
+            </div>
+          </div>
+          <div class="servicios-botones">
+            <button type="button" class="boton-accion boton-quitar" onclick="quitarSelect('mobiliarios')">- Quitar</button>
+            <button type="button" class="boton-accion boton-añadir" onclick="anadirMobiliario()">+ Añadir mobiliario</button>
+          </div>
+        </div>
       </section>
+
       <section id="servicios" class="reservacion-seccion">
         <h3 class="reservacion-titulo-seccion" style="margin-bottom: 30px;">Servicios</h3>
         <div class="servicios-contenedor">
@@ -197,6 +253,7 @@
                 <label class="reservacion-label">Seleccionar Servicio</label>
                 <select class="reservacion-input servicio-select" name="servicio_1" disabled>
                   <option value="">-- Selecciona un tipo primero --</option>
+                  <!-- tecnicamente de aca se obtiene reserva_servicio -->
                 </select>
               </div>
             </div>
@@ -212,7 +269,7 @@
         <h3 class="reservacion-titulo-seccion"  style="margin-bottom: 30px;">Equipamientos</h3>
         <div class="servicios-contenedor">
           <div class="servicios-selects" id="equipamientos-selects">
-            <div class="servicio-pair" data-index="1">
+            <div class="equipo-pair" data-index="1">
               <div class="reservacion-campo">
                 <label class="reservacion-label">Tipo de equipamiento</label>
                 <select class="reservacion-input equipamiento-tipo" name="equipamiento_tipo_1">
@@ -226,6 +283,7 @@
                 <label class="reservacion-label">Seleccionar Equipo</label>
                 <select class="reservacion-input equipamiento-select" name="equipamiento_1" disabled>
                   <option value="">-- Selecciona un tipo primero --</option>
+                  <!-- tecnicamente de aca se obtiene reserva_equipa -->
                 </select>
               </div>
               <div class="reservacion-campo">
@@ -278,6 +336,10 @@
       </div>
     </div>
   </div>
+
+  <!-- de aca se obtiene el id de trabajador -->
+  <input type="hidden" id="trabajador_id" value="{{ trabajador_id }}"/>
+
 </div>
 
 <script src="{% static "BookingRoomApp/js/recepcion/reservacion-inputs.js" %}"></script> 

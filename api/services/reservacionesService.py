@@ -22,11 +22,18 @@ def crear_reseracion(datos):
         IVA = subtotal * Decimal(0.16)
         total = subtotal + IVA
 
-        reservacion = models.Reservacion.objects.create(nombre=datos['nombre'], descripEvento=datos['descripEvento'], 
+        if not datos.get('estado_reserva'):
+            estado = 'PENDI'
+        else:
+            estado = datos['estado_reserva']
+
+        cliente = models.DatosCliente.objects.get(rfc=datos['cliente'])
+
+        reservacion = models.Reservacion.objects.create(nombreEvento=datos['nombre'], descripEvento=datos['descripEvento'], 
                                                         estimaAsistentes=datos['estimaAsistentes'], fechaEvento=datos['fechaEvento'], 
                                                         horaInicio=datos['horaInicio'], horaFin=datos['horaFin'], 
                                                         subtotal=subtotal, IVA=IVA, total=total, 
-                                                        cliente_id=datos['cliente'], montaje_id=montaje.pk, estado_reserva_id='PENDI', 
+                                                        cliente_id=cliente.id, montaje_id=montaje.pk, estado_reserva_id=estado, 
                                                         tipo_evento_id=datos['tipo_evento'], trabajador_id=datos['trabajador'])
 
         for servicio in servicios:
@@ -175,7 +182,7 @@ def modificacion_aditamentos(original, nuevos_datos):
             # en caso de que se actualice la fecha del evento imporante actualizar el registro de ocupacion del salon
             if campo == 'fechaEvento':
                 montaje = models.Montaje.objects.get(id=reservacion.montaje.id)
-                registro_salon = models.RegistrEstadSalon.objects.get(salon_id=montaje.salon.id, fecha=valor, estado_salon='RESER')
+                registro_salon = models.RegistrEstadSalon.objects.get(salon_id=montaje.salon.id, fecha=reservacion.fechaEvento, estado_salon='RESER')
                 registro_salon.fecha = valor
                 registro_salon.save(update_fields=['fecha'])
             setattr(original, campo, valor)
@@ -315,7 +322,7 @@ def modificacion_aditamentos(original, nuevos_datos):
             else:
                 for new_equipo in new_equipamientos:
 
-                    old_equipo, creado = models.ReservaEquipa.objects.get_or_create(reservacion_id=reservacion.id, equipamiento_id=new_equipo['id'], defaults={'cantidad': new_mobil['cantidad']})
+                    old_equipo, creado = models.ReservaEquipa.objects.get_or_create(reservacion_id=reservacion.id, equipamiento_id=new_equipo['id'], defaults={'cantidad': new_equipo['cantidad']})
 
                     # si si es old se manda a liberar espacio, si no lo es se salta al siguiente paso
                     if not creado:

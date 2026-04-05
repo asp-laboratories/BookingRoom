@@ -1,4 +1,4 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import generic
 from django.contrib import messages
@@ -150,7 +150,6 @@ def mobiliario_caracteristicas(request, pk):
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 
-
 def inventario_mobiliario(request):
     cuenta, rol = get_cuenta_and_rol(request)
 
@@ -189,7 +188,8 @@ def inventario_mobiliario(request):
             "tipos": tipos
         }
     )
-    
+
+
 def actualizar_estado_mobiliario(request):
     if request.method == "POST":
         inventario_id = request.POST.get("inventario_id")
