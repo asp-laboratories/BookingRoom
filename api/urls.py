@@ -35,4 +35,9 @@ urlpatterns = router.urls + [
     path('listar-reservacion/', views.ListarReservacionesView.as_view(), name='listar_reservaciones'),
     path('calendario-eventos/', views.LlenarCalendarioReservaciones.as_view(), name='calendario_eventos'),
     path('reservaciones-por-fecha/', views.ReservacionesPorFechaView.as_view(), name='reservaciones_por_fecha'),
+    path('disponibilidad-salones/', views.DisponibilidadSalonesView.as_view(), name='disponibilidad_salones'),
+    path('reservacion/<int:pk>/', views.DetalleReservacionView.as_view(), name='detalle_reservacion'),
+    path('reservaciones-coordinador/', views.ListaReservacionesCoordinadorView.as_view(), name='reservaciones_coordinador'),
+    path('perfil/', views.PerfilView.as_view(), name='perfil'),
+    path('tipo-equipa/', views.ListTipoEquipa.as_view(), name='tipo_equipa'),
 ]
