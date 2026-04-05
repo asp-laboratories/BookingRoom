@@ -64,6 +64,9 @@ class Cuenta(models.Model):
     correo_electronico = models.EmailField(unique=True)
     firebase_uid = models.CharField(max_length=255, unique=True, null=True, blank=True)
     estado_cuenta = models.ForeignKey(EstadoCuenta, on_delete=models.PROTECT)
+    # === IMAGEN DE PERFIL (comentado para revisión) ===
+    # Descomentar después de ejecutar migraciones
+    # imagen_url = models.URLField(null=True, blank=True, help_text="URL de la imagen de perfil en Firebase Storage")
 
     class Meta:
         db_table = 'cuenta'
@@ -107,6 +110,21 @@ class DatosCliente(models.Model):
     dir_numero = models.CharField( max_length=50)
     tipo_cliente = models.ForeignKey(TipoCliente, on_delete=models.PROTECT)
     cuenta = models.ForeignKey(Cuenta, null=True, blank=True, on_delete=models.PROTECT)
+    # TODO: Actualizar - Campo para saber si el cliente tiene cuenta en la app
+    # registrado_desde_app = models.BooleanField(null=True, blank=True, default=None)
+
+    # === cliente-validar: Lógica para aceptar/rechazar solicitudes ===
+    # Cuando el cliente envía solicitud desde la app:
+    #   - guardar DatosCliente con registrado_desde_app = None (pendiente)
+    #
+    # En el admin/web cuando el recepcionista ACEPTA la reservación:
+    #   - actualizar DatosCliente: registrado_desde_app = True (confirmado)
+    #   - ejemplo: DatosCliente.objects.filter(id=reservacion.cliente_id).update(registrado_desde_app=True)
+    #
+    # En el admin/web cuando el recepcionista RECHAZA la reservación:
+    #   - eliminar DatosCliente del cliente
+    #   - ejemplo: DatosCliente.objects.filter(id=reservacion.cliente_id).delete()
+    # === cliente-validar: Fin ===
 
     class Meta:
         db_table = 'datos_cliente'
@@ -336,6 +354,27 @@ class Reservacion(models.Model):
     tipo_evento = models.ForeignKey(TipoEvento, on_delete=models.PROTECT)
     trabajador = models.ForeignKey(Trabajador, on_delete=models.PROTECT, null=True, blank=True)
 
+    # === cliente-validar: Aceptar/Rechazar reservación ===
+    # Al ACEPTAR una reservación desde web/admin:
+    #   - actualizar estado_reserva al estado correspondiente
+    #   - actualizar DatosCliente: datos_cliente.registrado_desde_app = True
+    #   - ejemplo: 
+    #       reserva = Reservacion.objects.get(id=reserva_id)
+    #       reserva.estado_reserva = EstadoReserva.objects.get(codigo='CONF')
+    #       reserva.save()
+    #       DatosCliente.objects.filter(id=reserva.cliente_id).update(registrado_desde_app=True)
+    #
+    # Al RECHAZAR una reservación desde web/admin:
+    #   - actualizar estado_reserva al estado de rechazado
+    #   - ELIMINAR DatosCliente del cliente (datos no aceptados)
+    #   - ejemplo:
+    #       reserva = Reservacion.objects.get(id=reserva_id)
+    #       cliente_id = reserva.cliente_id
+    #       reserva.estado_reserva = EstadoReserva.objects.get(codigo='CANC')
+    #       reserva.save()
+    #       DatosCliente.objects.filter(id=cliente_id).delete()
+    # === cliente-validar: Fin ===
+
     class Meta:
         db_table = 'reservacion'
         verbose_name = 'Reservacion'
@@ -484,6 +523,8 @@ class RegistrEstadSalon(models.Model):
     fecha = models.DateField(null=True, blank=True, default=timezone.now)
     salon = models.ForeignKey(Salon, on_delete=models.PROTECT)
     estado_salon = models.ForeignKey(EstadoSalon, on_delete=models.PROTECT)
+    # Campo para especificar la fecha fin del estado (para estados limitados en el tiempo)
+    # fecha_fin = models.DateField(null=True, blank=True, help_text="Fecha fin del estado (opcional)")
 
     class Meta:
         db_table = 'registr_esta_salon'
