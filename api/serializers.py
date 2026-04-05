@@ -59,9 +59,29 @@ class TipoClienteSerializer(serializers.ModelSerializer):
 
 
 class CuentaSerializer(serializers.ModelSerializer):
+    # === IMAGEN DE PERFIL (comentado para revisión) ===
+    # Descomentar después de agregar campo en modelo
+    # imagen_url = serializers.URLField(source='imagen_url', read_only=True)
+    
     class Meta:
         model = models.Cuenta
         fields = '__all__'
+        # === Para incluir imagen_url en la respuesta ===
+        # fields = ['id', 'nombre_usuario', 'correo_electronico', 'imagen_url', 'estado_cuenta']
+
+
+class PerfilSerializer(serializers.Serializer):
+    """Serializer para datos del perfil del trabajador"""
+    cuenta_id = serializers.IntegerField(source='cuenta.id')
+    nombre_usuario = serializers.CharField(source='cuenta.nombre_usuario')
+    correo_electronico = serializers.CharField(source='cuenta.correo_electronico')
+    no_empleado = serializers.CharField()
+    nombre = serializers.CharField()
+    apellidoPaterno = serializers.CharField()
+    apellidoMaterno = serializers.CharField(allow_null=True)
+    telefono = serializers.CharField()
+    rfc = serializers.CharField()
+    rol_nombre = serializers.CharField(source='rol.nombre')
 
 
 class CuentaMinimalSerializer(serializers.ModelSerializer):
@@ -298,9 +318,12 @@ class MetodoPagoSerializer(serializers.ModelSerializer):
 
 
 class ServicioSerializer(serializers.ModelSerializer):
+    tipo_servicio = serializers.StringRelatedField()
+    costo = serializers.IntegerField()
+    
     class Meta:
         model = models.Servicio
-        fields = '__all__'
+        fields = ['id', 'nombre', 'descripcion', 'costo', 'tipo_servicio']
 
 
 class EstadoReservaSerializer(serializers.ModelSerializer):
@@ -310,9 +333,13 @@ class EstadoReservaSerializer(serializers.ModelSerializer):
 
 
 class EquipamientoSerializer(serializers.ModelSerializer):
+    tipo_equipa = serializers.StringRelatedField()
+    costo = serializers.IntegerField()
+    stock = serializers.IntegerField()
+    
     class Meta:
         model = models.Equipamiento
-        fields = '__all__'
+        fields = ['id', 'nombre', 'descripcion', 'costo', 'stock', 'tipo_equipa']
 
 
 class InventarioEquipaSerializer(serializers.ModelSerializer):
@@ -336,7 +363,16 @@ class EstadoSalonSerializer(serializers.ModelSerializer):
 class RegistrEstadSalonSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.RegistrEstadSalon
-        fields = '__all__'
+        fields = ['id', 'fecha', 'salon', 'estado_salon']
+
+
+class SalonEstadoSerializer(serializers.ModelSerializer):
+    estado_nombre = serializers.CharField(source='estado_salon.nombre', read_only=True)
+    estado_codigo = serializers.CharField(source='estado_salon.codigo', read_only=True)
+    
+    class Meta:
+        model = models.Salon
+        fields = ['id', 'nombre', 'estado_salon', 'estado_nombre', 'estado_codigo']
 
 
 class SalonSerializer(serializers.ModelSerializer):
@@ -463,15 +499,53 @@ class ReservacionLecturaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Reservacion
-        fields = ['id', 'nombre', 'descripEvento', 
+        fields = ['id', 'nombreEvento', 'descripEvento', 
                   'estimaAsistentes', 'fechaReservacion', 
                   'fechaEvento', 'horaInicio', 'horaFin', 
                   'subtotal', 'IVA', 'total', 'cliente', 
                   'montaje', 'estado_reserva', 'tipo_evento', 
                   'trabajador', 'reserva_servicio', 'reserva_equipa']
 
+
+class ReservacionCoordinadorSerializer(serializers.ModelSerializer):
+    """Serializer completo para detalles de reservación del coordinador"""
+    cliente_nombre = serializers.CharField(source='cliente.cuenta.nombre_usuario', read_only=True)
+    cliente_tipo = serializers.CharField(source='cliente.tipo_cliente.nombre', read_only=True)
+    cliente_telefono = serializers.CharField(source='cliente.telefono', read_only=True)
+    cliente_email = serializers.CharField(source='cliente.cuenta.correo_electronico', read_only=True)
+    
+    salon_nombre = serializers.CharField(source='montaje.salon.nombre', read_only=True)
+    montaje_tipo = serializers.CharField(source='montaje.tipo_montaje.nombre', read_only=True)
+    
+    estado_nombre = serializers.CharField(source='estado_reserva.nombre', read_only=True)
+    tipo_evento_nombre = serializers.CharField(source='tipo_evento.nombre', read_only=True)
+    
+    servicios = serializers.SerializerMethodField()
+    equipamentos = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Reservacion
+        fields = [
+            'id', 'nombreEvento', 'descripEvento', 'fechaReservacion', 'fechaEvento',
+            'horaInicio', 'horaFin', 'estimaAsistentes', 'subtotal', 'IVA', 'total',
+            'cliente_nombre', 'cliente_tipo', 'cliente_telefono', 'cliente_email',
+            'salon_nombre', 'montaje_tipo', 'estado_nombre', 'tipo_evento_nombre',
+            'servicios', 'equipamentos'
+        ]
+    
+    def get_servicios(self, obj):
+        return list(obj.reservaservicio_set.select_related('servicio').values(
+            'servicio__nombre', 'servicio__costo'
+        ))
+    
+    def get_equipamentos(self, obj):
+        return list(obj.reservaequipa_set.select_related('equipamiento').values(
+            'equipamiento__nombre', 'cantidad', 'equipamiento__costo'
+        ))
+
+
 class ReservacionUpdateSerializer(serializers.Serializer):
-    nombre = serializers.CharField(required=False)
+    nombreEvento = serializers.CharField(required=False)
     descripEvento = serializers.CharField(required=False)
     estimaAsistentes = serializers.IntegerField(required=False)
     fechaEvento = serializers.DateField(required=False)
@@ -493,12 +567,10 @@ class ReservacionUpdateSerializer(serializers.Serializer):
         return ReservacionLecturaSerializer(instance).data
 
 
-class ReservacionResumenSerializer(serializers.ModelSerializer):
-    """Serializer minimalista para el calendario y vista resumida"""
-    cliente_nombre = serializers.CharField(source='cliente.nombre', read_only=True)
-    salon = serializers.CharField(source='montaje.salon.nombre', read_only=True)
+class DisponibilidadSalonSerializer(serializers.ModelSerializer):
+    salon_nombre = serializers.CharField(source='montaje.salon.nombre', read_only=True)
+    tipo_evento_nombre = serializers.CharField(source='tipo_evento.nombre', read_only=True)
     
     class Meta:
         model = models.Reservacion
-        fields = ['id', 'nombreEvento', 'fechaEvento', 'horaInicio', 'horaFin', 
-                  'cliente_nombre', 'salon', 'estado_reserva']
+        fields = ['id', 'nombreEvento', 'fechaEvento', 'horaInicio', 'horaFin', 'salon_nombre', 'tipo_evento_nombre']
