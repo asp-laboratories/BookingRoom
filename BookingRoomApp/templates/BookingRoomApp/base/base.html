@@ -21,6 +21,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{% static "BookingRoomApp/js/recepcion/full_calendar.js" %}" defer></script>
     <script src="{% static "BookingRoomApp/js/administracion/chart.js" %}" defer></script>
+    {% include "BookingRoomApp/includes/alert-confirmar.html" %}
+    {% include "BookingRoomApp/includes/alert-exito.html" %}
 
   </head>
   <body>
@@ -162,7 +164,7 @@
 
         </nav>
 
-        <a class="salir" href="{% url 'login' %}">
+        <a class="salir" href="#" onclick="confirmarLogout(event)">
           <svg class="icono blanco icono-32">
             <use href="{% static 'BookingRoomApp/img/icons/sprite.svg'%}#icon-logout"></use>
           </svg>
@@ -183,5 +185,27 @@
       </main>
     </div>
     {% include "BookingRoomApp/includes/alert-exito.html" %}
+    
+    <script>
+      function confirmarLogout(event) {
+        event.preventDefault();
+        abrirModalConfirmar(
+          'Cerrar sesión',
+          '¿Estás seguro de que quieres cerrar sesión?',
+          function() {
+            if (typeof auth !== 'undefined') {
+              auth.signOut().then(function() {
+                window.location.href = '{% url "login" %}';
+              }).catch(function(error) {
+                console.error('Error al cerrar sesión en Firebase:', error);
+                window.location.href = '{% url "login" %}';
+              });
+            } else {
+              window.location.href = '{% url "login" %}';
+            }
+          }
+        );
+      }
+    </script>
   </body>
 </html>

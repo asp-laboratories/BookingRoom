@@ -18,93 +18,178 @@ body {
 
 .registro-contenedor {
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  padding: 20px;
   background-image:
-    linear-gradient(rgb(255, 255, 255, 0.2), rgb(155, 88, 43, 0.5)),
+    linear-gradient(rgba(155, 88, 43, 0.3), rgba(155, 88, 43, 0.6)),
     url("../../img/salon-registro-background.webp");
   background-size: cover;
   background-position: center;
 }
 
-h1 {
-  padding-top: 25px;
-  text-align: center;
-  color: #fff;
+.registro {
+  width: 100%;
+  max-width: 400px;
+  padding: 30px 25px;
+  background-image: linear-gradient(to left top, #9b582b, #a86437, #b67143, #c37d4f, #d18a5b);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-.registro {
+.registro h1 {
+  text-align: center;
+  color: #fff;
+  margin-bottom: 25px;
+  font-size: 1.8rem;
+}
 
-  height: 400px;
-  width: 50%;
-  background-color: var(--color-primario);
-  border-radius: 20px;
+#error-mensaje {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+#success-mensaje {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 0.9rem;
 }
 
 form {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  height: 100%;
-  background-color: var(--color-primario);
+  gap: 15px;
+  background-image: linear-gradient(to left top, #9b582b, #a86437, #b67143, #c37d4f, #d18a5b);
   color: #fff;
-  border-radius: 20px;
 }
 
-
-label {
-    align-self: self-start;
-  margin-left: 15%;
-  margin-bottom: 5px;
-
+form label {
+  color: #fff;
+  font-weight: 500;
+  font-size: 0.95rem;
 }
 
-input {
-  width: 70%;
-  height: 25px;
-  border-radius: 5px;
-  padding: 10px;
-  border: none;
+form input {
+  width: 100%;
+  height: 45px;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+form input:focus {
+  outline: none;
+  border-color: var(--color-secundario);
+  box-shadow: 0 0 0 3px rgba(209, 138, 91, 0.3);
 }
 
 .btn-enviar {
-  margin-top: 25px;
-  width: 70%;
-  height: 40px;
+  width: 100%;
+  height: 48px;
   background-color: var(--color-secundario);
   color: #fff;
   border: none;
   border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-top: 10px;
 }
 
 .btn-enviar:hover {
   background-color: #b36938;
-  border-color: var(--color-border);
+  transform: translateY(-2px);
 }
 
-a {
+.btn-enviar:active {
+  transform: translateY(0);
+}
+
+.btn-enviar:disabled {
+  background-color: #a68b6a;
+  cursor: not-allowed;
+  transform: none;
+}
+
+form a {
   color: #fff;
   text-decoration: none;
+  text-align: center;
+  font-size: 0.9rem;
+  margin-top: 5px;
 }
 
-@media (min-width: 1000px) {
+form a:hover {
+  text-decoration: underline;
+}
+
+/* Media queries para responsividad */
+@media (max-width: 480px) {
   .registro {
-    height: 550px;
-    width: 50%;
-    background-color: var(--color-primario);
-    border-radius: 20px;
+    padding: 25px 20px;
   }
 
-  input {
-  width: 70%;
-  height: 25px;
-  padding: 20px;
-  border-radius: 5px;
-  border: none;
+  .registro h1 {
+    font-size: 1.5rem;
+  }
+
+  form input {
+    height: 44px;
+    font-size: 0.95rem;
+    padding: 10px 12px;
+  }
+
+  .btn-enviar {
+    height: 46px;
+  }
 }
+
+@media (min-width: 768px) {
+  .registro {
+    padding: 40px 35px;
+  }
+
+  .registro h1 {
+    font-size: 2rem;
+    margin-bottom: 30px;
+  }
+
+  form input {
+    height: 50px;
+    font-size: 1.1rem;
+    padding: 14px 18px;
+  }
+
+  form label {
+    font-size: 1rem;
+  }
+
+  .btn-enviar {
+    height: 52px;
+    font-size: 1.1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .registro {
+    max-width: 450px;
+    padding: 45px 40px;
+  }
+
+  form input {
+    height: 52px;
+  }
 }

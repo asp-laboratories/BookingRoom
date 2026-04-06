@@ -610,25 +610,34 @@ class PerfilView(APIView):
 
 @csrf_exempt
 def api_signup(request):
+    import logging
+    logger = logging.getLogger(__name__)
+    
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            logger.info(f"Signup request data keys: {data.keys()}")
+            
             token = data.get('token')
-            nombre_usuario = data.get('nombre', '')  # Nuevo: recibir nombre de Flutter
+            nombre_usuario = data.get('nombre', '')
             
             if not token:
+                logger.warning("Signup: Token requerido")
                 return JsonResponse({'error': 'Token requerido'}, status=400)
             
             if not FIREBASE_ENABLED:
+                logger.warning("Signup: Firebase no configurado")
                 return JsonResponse({'error': 'Firebase no configurado'}, status=500)
             
             if len(token) > 10000:
+                logger.warning("Signup: Token inválido (muy largo)")
                 return JsonResponse({'error': 'Token inválido'}, status=400)
             
             decoded = auth.verify_id_token(token)
             firebase_uid = decoded['uid']
             email = decoded.get('email', '')
             display_name = decoded.get('name', '')
+            logger.info(f"Signup: Firebase user verified - email: {email}")
             
             # Usar nombre de Flutter o el de Firebase
             nombre_final = nombre_usuario if nombre_usuario else display_name
@@ -641,16 +650,21 @@ def api_signup(request):
                     'nombre_usuario': nombre_final,
                     'correo_electronico': email,
                     'estado_cuenta': estado_cuenta,
-                    'disposicion': True
                 }
             )
             
             if created:
+                logger.info(f"Signup: Cuenta creada para {email}")
                 return JsonResponse({'success': True, 'message': 'Cuenta creada exitosamente'})
             else:
+                logger.info(f"Signup: Cuenta existente para {email}")
                 return JsonResponse({'success': True, 'message': 'Ya tenías una cuenta'})
                 
+        except json.JSONDecodeError as e:
+            logger.error(f"Signup: JSON decode error - {e}")
+            return JsonResponse({'error': f'JSON inválido: {str(e)}'}, status=400)
         except Exception as e:
+            logger.error(f"Signup: Error general - {type(e).__name__}: {e}")
             return JsonResponse({'error': str(e)}, status=400)
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)

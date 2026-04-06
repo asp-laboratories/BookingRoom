@@ -12,18 +12,15 @@
     />
   </head>
   <body>
+    {% include "BookingRoomApp/includes/alert-exito.html" %}
+    
     <div class="contenedor-login">
       <div class="login">
-        <h1>Inicio de sesion</h1>
-
-        <div
-          id="error-mensaje"
-          style="color: red; margin-bottom: 10px; display: none"
-        ></div>
+        <h1>Inicio de sesión</h1>
 
         <form id="loginForm">
           {% csrf_token %}
-          <label>Correo electronico:</label>
+          <label>Correo electronico</label>
           <input
             class="inputs"
             id="email"

@@ -18,11 +18,9 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const btnSubmit = document.getElementById('btnSubmit');
-    const errorDiv = document.getElementById('error-mensaje');
     
     btnSubmit.disabled = true;
     btnSubmit.textContent = 'Cargando...';
-    errorDiv.style.display = 'none';
 
     try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
@@ -41,8 +39,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             window.location.href = '/home/';
         } else {
             const data = await response.json();
-            errorDiv.textContent = data.error || 'Error al iniciar sesión';
-            errorDiv.style.display = 'block';
+            mostrarToastExito(data.error || 'Error al iniciar sesión', 'error');
         }
     } catch (error) {
         let mensaje = 'Error al iniciar sesión';
@@ -53,8 +50,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         } else if (error.code === 'auth/invalid-email') {
             mensaje = 'Email inválido';
         }
-        errorDiv.textContent = mensaje;
-        errorDiv.style.display = 'block';
+        mostrarToastExito(mensaje, 'error');
     } finally {
         btnSubmit.disabled = false;
         btnSubmit.textContent = 'Ingresar';

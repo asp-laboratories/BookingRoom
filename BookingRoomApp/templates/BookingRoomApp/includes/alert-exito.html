@@ -10,16 +10,18 @@
     padding: 15px 20px;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    display: none;
     z-index: 10000;
     max-width: 350px;
     animation: slideIn 0.3s ease-out;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(100%);
   }
 
   .toast-exito.mostrar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
   }
 
   .toast-exito.error {
@@ -108,13 +110,30 @@
       iconoEl.textContent = 'OK';
     }
     
-    toast.style.display = 'flex';
     toast.classList.add('mostrar');
 
-    setTimeout(function() {
+    clearTimeout(window.toastTimeout);
+    window.toastTimeout = setTimeout(function() {
       toast.classList.remove('mostrar');
+      toast.classList.add('ocultar');
+      setTimeout(function() {
+        toast.classList.remove('ocultar');
+      }, 300);
     }, 4000);
   }
+
+  function cerrarToastExito() {
+    clearTimeout(window.toastTimeout);
+    var toast = document.getElementById('toast-exito');
+    toast.classList.remove('mostrar');
+    toast.classList.add('ocultar');
+    setTimeout(function() {
+      toast.classList.remove('ocultar');
+    }, 300);
+  }
+
+  window.mostrarToastExito = mostrarToastExito;
+  window.cerrarToastExito = cerrarToastExito;
 
   (function() {
     console.log('Toast script loaded');
