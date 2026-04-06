@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("click", async function (e) {
     const btn = e.target.closest(".ver-detalles");
@@ -58,3 +59,35 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
+// funcion para hacer filtrado chido por fecha
+function filtrarRecientes() {
+  const contenedor = document.getElementById('contenedor-eventos');
+  const items = Array.from(contenedor.querySelectorAll('.contenedor-solicitud'));
+
+  items.forEach(item => item.style.display = '');
+
+  items.sort((a, b) => {
+    const fecha_1 = new Date(a.dataset.fecha || 0);
+    const fecha_2 = new Date(b.dataset.fecha || 0);
+    return fecha_2 - fecha_1;
+  });
+
+  items.forEach(item => contenedor.appendChild(item));
+
+}
+
+// funcion para hacer filtrado chido po estado
+function filtrarSolicitudes() {
+  const contenedor = document.getElementById('contenedor-eventos');
+  const items = contenedor.querySelectorAll('.contenedor-solicitud');
+
+  items.forEach(item => {
+    if (!estado || item.dataset.estado === 'SOLIC') {
+      item.style.display = '';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+
+}

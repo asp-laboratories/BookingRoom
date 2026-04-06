@@ -206,7 +206,7 @@ window.onclick = function(event) {
         evento_hora_inicio: document.getElementById("edit-evento-hora-inicio").value,
         evento_hora_fin: document.getElementById("edit-evento-hora-fin").value,
         evento_asistentes: document.getElementById("edit-evento-asistentes").value,
-        evento_estado: document.getElementById("edit-evento-estado").selectedOptions[0].textContent,
+        evento_estado: document.getElementById("edit-evento-estado").selectedOptions[0].value,
       };
 
       const formData = new FormData();

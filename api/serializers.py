@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.db.models import Sum
 from BookingRoomApp import models
+from .services.reservacionesService import cambio_estado_reservacion
 
 
 class TipoEquipaSerializer(serializers.ModelSerializer):
@@ -298,11 +299,17 @@ class PagoSerializer(serializers.ModelSerializer):
         if ultimo_pago_reserva:
             validated_data['no_pago'] = ultimo_pago_reserva.no_pago + 1
             validated_data['saldo'] = ultimo_pago_reserva.saldo - monto
+            reservacion = models.Reservacion.objects.get(id=validated_data['reservacion'].id)
+            cambio_estado_reservacion(reservacion, 'LIQUI')
         else:
             validated_data['no_pago'] = 1
             validated_data['saldo'] = reserva.total - monto
+            reservacion = models.Reservacion.objects.get(id=validated_data['reservacion'].id)
+            cambio_estado_reservacion(reservacion, 'PAGAD')
         
+
         return super().create(validated_data)
+
 
 
 class ConceptoPagoSerializer(serializers.ModelSerializer):

@@ -69,6 +69,7 @@ def cambio_estado_reservacion(original, estado_nuevo):
 
             # para verficiar q el salon no este ocupado ese mismo dia
             control = models.RegistrEstadSalon.objects.filter(salon_id=montaje.salon_id, fecha=original.fechaEvento).exists()
+
             if control:
                 raise Exception("El salon ya se encuentra ocupado ese dia")
             models.RegistrEstadSalon.objects.create(salon_id=montaje.salon_id, estado_salon_id='RESER', fecha=original.fechaEvento)
@@ -162,7 +163,6 @@ def cambio_estado_reservacion(original, estado_nuevo):
                 inventario.save(update_fields=['cantidad'])
 
 
-            
 # para los casos de abajo es obligatorio poner el total final al llamar a la api con estos campos, esto para determinar
 # cuanto se va a ocupar, se busca evitar a toda costa el tener q ingresar numeros negativos
 # ejemplo: la reservacion ya tenia 34 sillas, se modifico y ahora hay 30 sillas y 4 taburetes, lo que se envia es eso

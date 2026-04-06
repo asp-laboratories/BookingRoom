@@ -27,7 +27,7 @@
       <span class="titulo-solicitud" id="titulo-tab">Proximos eventos</span>
       <div id="contenedor-eventos">
         {% for reservacion in reservaciones %}
-        <div class="contenedor-solicitud">
+        <div class="contenedor-solicitud" data-estado="{{ reservacion.estado_reserva.id }}" data-fecha="{{ reservacion.fechaEvento }}">
           <span> {{reservacion.nombreEvento}} </span>
           <button class="boton-accion boton-beo ver-detalles" data-pk="{{ reservacion.pk }}">
             Ver detalles

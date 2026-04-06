@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.contrib import messages
 from BookingRoomApp import models
 from BookingRoomApp.views import get_cuenta_and_rol
+from api.services.reservacionesService import cambio_estado_reservacion
 
 
 class HistorialReservacionViw(generic.View):
@@ -63,7 +64,6 @@ class ReservacionView(generic.View):
             "salones": models.Salon.objects.filter(estado_salon='DISPO'),
             "tipos_servicio": models.TipoServicio.objects.filter(disposicion=True),
             "tipos_equipa": models.TipoEquipa.objects.filter(disposicion=True),
-            "tipos_equipamiento": models.TipoEquipa.objects.filter(disposicion=True),
             "rol": rol,
         })
 
@@ -280,7 +280,7 @@ def actualizar_reservacion(request, pk):
 
                 estado_codigo = request.POST.get('evento_estado', '')
                 if estado_codigo:
-                    reservacion.estado_reserva = models.EstadoReserva.objects.get(codigo=estado_codigo)
+                    cambio_estado_reservacion(reservacion, estado_codigo)
 
                 reservacion.save()
 

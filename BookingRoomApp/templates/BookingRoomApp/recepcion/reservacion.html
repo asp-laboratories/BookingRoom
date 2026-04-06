@@ -11,9 +11,10 @@
 {% include "BookingRoomApp/includes/alert-exito.html" %}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="{% static "BookingRoomApp/js/utils.js" %}" defer></script>
+<script src="{% static "BookingRoomApp/js/reservacion/crear_reservacion.js" %}" defer></script>
 <script src="{% static "BookingRoomApp/js/recepcion/pagos.js" %}" defer></script>
 <script src="{% static "BookingRoomApp/js/recepcion/añadir-selects.js" %}"></script>
-<script src="{% static "BookingRoomApp/js/reservacion/crear_reservacion.js" %}"></script>
 
 
 <h1 style="margin: 50px 0px 20px 20px;"><a style="color: black;" href="{% url 'home' %}">
@@ -274,7 +275,7 @@
                 <label class="reservacion-label">Tipo de equipamiento</label>
                 <select class="reservacion-input equipamiento-tipo" name="equipamiento_tipo_1">
                   <option value="">-- Elige un tipo --</option>
-                  {% for tipo in tipos_equipamiento %}
+                  {% for tipo in tipos_equipa %}
                   <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
                   {% endfor %}
                 </select>

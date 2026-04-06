@@ -322,6 +322,7 @@ class BuscarReservacionView(APIView):
             'estado': reservacion.estado_reserva.nombre
         })
 
+
 class ListarReservacionesView(APIView):
     def get(self, request):
         reservaciones = models.Reservacion.objects.all()

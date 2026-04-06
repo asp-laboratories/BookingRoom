@@ -50,7 +50,7 @@ function añadirEquipamiento() {
 
   const contenedor = document.getElementById("equipamientos-selects");
   const primerSelectTipo = document.querySelector(
-    "#equipamientos .reservacion-campo:first-child select",
+    "#equipamiento select",
   );
   const opcionesTipo = primerSelectTipo ? primerSelectTipo.innerHTML : "";
 

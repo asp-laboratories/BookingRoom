@@ -1,3 +1,4 @@
+
 function getPagosContainer() {
     return document.getElementById('modalPagos') || document.querySelector('.pagos-container');
 }
@@ -8,7 +9,7 @@ function queryField(selector) {
 }
 
 async function buscarReservacion() {
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    const csrfToken = getCookie('csrftoken');
     const numero = document.querySelector('[data-field="reservacion"]')?.value;
     
     if (!numero) {
@@ -74,10 +75,10 @@ function limpiarCampos() {
 }
 
 async function registrarPago() {
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    const csrfToken = getCookie('csrftoken');
     const reservaId = document.querySelector('[data-field="reservacion_id"]')?.value;
-    const monto = document.querySelector('[data-field="monto"]')?.value;
-    const saldo = document.querySelector('[data-field="saldo"]')?.value;
+    const monto = parseFloat(document.querySelector('[data-field="monto"]')?.value);
+    const saldo = parseFloat(document.querySelector('[data-field="saldo"]')?.value);
     const nota = document.querySelector('[data-field="nota"]')?.value;
 
     if (!reservaId) {
@@ -86,7 +87,7 @@ async function registrarPago() {
     }
 
     if(monto > saldo){
-        alert('No puedes pagar mas');
+        alert('No puedes pagar mas del costo');
         return
     }
 
