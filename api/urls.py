@@ -25,7 +25,10 @@ router.register(r'estado-salon', views.RegistrEstadSalonViewSet)
 router.register(r'montaje', views.MontajeViewSet)
 router.register(r'montaje-mobiliario', views.MontajeMobiliarioViewSet)
 router.register(r'reservacion', views.ReservacionViewSet)
-router.register(r'reserva_servicio', views.ReservaServicioViewSet)
+router.register(r'reserva-servicio', views.ReservaServicioViewSet)
+router.register(r'tipo-evento', views.TipoEventoViewSet)
+router.register(r'tipo-montaje', views.TipoMontajeViewSet)
+router.register(r'tipo-mobiliario', views.TipoMobiliarioViewSet)
 
 urlpatterns = router.urls + [
     path('login/', views.api_login, name='api_login'),

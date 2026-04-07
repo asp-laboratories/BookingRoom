@@ -21,14 +21,15 @@ class ListTipoEquipa(APIView):
     def get(self, request):
         tipo_equipa = models.TipoEquipa.objects.all()
         serializer = serializers.TipoEquipaSerializer(tipo_equipa, many=True)
-        tipo_equipa = models.TipoEquipa.objects.all()
-        serializer = serializers.TipoEquipaSerializer(tipo_equipa, many=True)
         return Response(serializer.data)
+    
+
+class TipoEventoViewSet(viewsets.ModelViewSet):
+    queryset = models.TipoEvento.objects.all()
+    serializer_class = serializers.TipoEventoSerializer
 
 
 class TipoServicioViewSet(viewsets.ModelViewSet):
-    queryset = models.TipoServicio.objects.all()
-    serializer_class = serializers.TipoServicioSerializer
     queryset = models.TipoServicio.objects.all()
     serializer_class = serializers.TipoServicioSerializer
 
@@ -53,6 +54,31 @@ class CuentaViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CuentaSerializer
 
 
+class TipoMobiliarioViewSet(viewsets.ModelViewSet):
+    queryset = models.TipoMobil.objects.all()
+    serializer_class = serializers.TipoMobilSerializer
+
+
+class TipoMontajeViewSet(viewsets.ModelViewSet):
+    queryset = models.TipoMontaje.objects.all()
+    serializer_class = serializers.TipoMontajeSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        salon_id = self.request.query_params.get('salon')
+
+        if salon_id:
+            try:
+                salon = models.Salon.objects.get(id=salon_id)
+
+                queryset = queryset.filter(capacidadIdeal__lte=salon.maxCapacidad)
+            except models.Salon.DoesNotExist:
+                pass
+
+        return queryset
+
+
 class TrabajadorViewSet(viewsets.ModelViewSet):
     queryset = models.Trabajador.objects.select_related('rol', 'cuenta').all()
     serializer_class = serializers.TrabajadorSerializer
@@ -70,7 +96,10 @@ class DatosClienteViewSet(viewsets.ModelViewSet):
 
 
 class MobiliarioViewSet(viewsets.ModelViewSet):
-    queryset = models.Mobiliario.objects.prefetch_related('caracter_mobi').all()
+    queryset = models.Mobiliario.objects.select_related('tipo_movil'
+                                                        ).prefetch_related('descripcion_mob',
+                                                                           'inventariomob_set',
+                                                                           'inventariomob_set__estado_mobil').all()
     serializer_class = serializers.MobiliarioSerializer
 
 
@@ -265,7 +294,7 @@ class RegistrEstadReservaViewSet(viewsets.ModelViewSet):
 
 
 class EquipamientoViewSet(viewsets.ModelViewSet):
-    queryset = models.Equipamiento.objects.select_related('tipo_equipa').all()
+    queryset = models.Equipamiento.objects.select_related('tipo_equipa').prefetch_related('inventarioequipa_set', 'inventarioequipa_set__estado_equipa').all()
     serializer_class = serializers.EquipamientoSerializer
 
 
@@ -362,7 +391,7 @@ def api_login(request):
             if len(token) > 10000:
                 return JsonResponse({'error': 'Token inválido'}, status=400)
             
-            decoded = auth.verify_id_token(token, clock_skew_seconds=10)
+            decoded = auth.verify_id_token(token, clock_skew_seconds=60)
             firebase_uid = decoded['uid']
             email = decoded.get('email', '')
             
@@ -403,12 +432,10 @@ def api_flutter_login(request):
             if len(token) > 10000:
                 return JsonResponse({'error': 'Token inválido'}, status=400)
             
-            decoded = auth.verify_id_token(token)
+            decoded = auth.verify_id_token(token, clock_skew_seconds=60)
             firebase_uid = decoded['uid']
             
             try:
-                cuenta = models.Cuenta.objects.get(firebase_uid=firebase_uid)
-            except models.Cuenta.DoesNotExist:
                 cuenta = models.Cuenta.objects.get(firebase_uid=firebase_uid)
             except models.Cuenta.DoesNotExist:
                 return JsonResponse({'error': 'Cuenta no registrada en el sistema'}, status=404)
@@ -634,7 +661,7 @@ def api_signup(request):
                 logger.warning("Signup: Token inválido (muy largo)")
                 return JsonResponse({'error': 'Token inválido'}, status=400)
             
-            decoded = auth.verify_id_token(token)
+            decoded = auth.verify_id_token(token, clock_skew_seconds=60)
             firebase_uid = decoded['uid']
             email = decoded.get('email', '')
             display_name = decoded.get('name', '')

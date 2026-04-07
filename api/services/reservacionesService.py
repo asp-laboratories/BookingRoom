@@ -27,6 +27,11 @@ def crear_reseracion(datos):
         else:
             estado = datos['estado_reserva']
 
+        if not datos.get('trabajador'):
+            trabajdor = None
+        else:
+            trabajdor = datos['trabajador']
+
         cliente = models.DatosCliente.objects.get(rfc=datos['cliente'])
 
         reservacion = models.Reservacion.objects.create(nombreEvento=datos['nombre'], descripEvento=datos['descripEvento'], 
@@ -34,7 +39,7 @@ def crear_reseracion(datos):
                                                         horaInicio=datos['horaInicio'], horaFin=datos['horaFin'], 
                                                         subtotal=subtotal, IVA=IVA, total=total, 
                                                         cliente_id=cliente.id, montaje_id=montaje.pk, estado_reserva_id=estado, 
-                                                        tipo_evento_id=datos['tipo_evento'], trabajador_id=datos['trabajador'])
+                                                        tipo_evento_id=datos['tipo_evento'], trabajador_id=trabajdor)
 
         for servicio in servicios:
             models.ReservaServicio.objects.create(servicio_id=servicio['id'], reservacion_id=reservacion.id)

@@ -130,23 +130,23 @@ class ReservacionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ReservacionCreacionSerializer(serializers.ModelSerializer):
-    trabajador_id = serializers.IntegerField(write_only=True, required=False)
+# class ReservacionCreacionSerializer(serializers.ModelSerializer):
+#     trabajador_id = serializers.IntegerField(write_only=True, required=False)
 
-    class Meta:
-        model = models.Reservacion
-        fields = '__all__'
-        extra_kwargs = {'trabajador': {'required': False}}
+#     class Meta:
+#         model = models.Reservacion
+#         fields = '__all__'
+#         extra_kwargs = {'trabajador': {'required': False}}
 
-    def create(self, validated_data):
-        trabajador_id = validated_data.pop('trabajador_id', None)
-        if trabajador_id:
-            try:
-                trabajador = models.Trabajador.objects.get(no_empleado=str(trabajador_id))
-                validated_data['trabajador'] = trabajador
-            except models.Trabajador.DoesNotExist:
-                pass
-        return super().create(validated_data)
+#     def create(self, validated_data):
+#         trabajador_id = validated_data.pop('trabajador_id', None)
+#         if trabajador_id:
+#             try:
+#                 trabajador = models.Trabajador.objects.get(no_empleado=str(trabajador_id))
+#                 validated_data['trabajador'] = trabajador
+#             except models.Trabajador.DoesNotExist:
+#                 pass
+#         return super().create(validated_data)
 
 
 class RegistrEstadReservaSerializer(serializers.ModelSerializer):
@@ -347,6 +347,16 @@ class EquipamientoSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Equipamiento
         fields = ['id', 'nombre', 'descripcion', 'costo', 'stock', 'tipo_equipa']
+    
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+
+        if instance.tipo_equipa:
+            response['tipo_equipa'] = TipoEquipaSerializer(instance.tipo_equipa).data
+        
+        response['inventario_detalles'] = InventarioEquipaSerializer(instance.inventarioequipa_set.all(), many=True).data
+
+        return response
 
 
 class InventarioEquipaSerializer(serializers.ModelSerializer):
@@ -374,12 +384,11 @@ class RegistrEstadSalonSerializer(serializers.ModelSerializer):
 
 
 class SalonEstadoSerializer(serializers.ModelSerializer):
-    estado_nombre = serializers.CharField(source='estado_salon.nombre', read_only=True)
-    estado_codigo = serializers.CharField(source='estado_salon.codigo', read_only=True)
+    estado_salon = EstadoSalonSerializer(read_only=True)
     
     class Meta:
         model = models.Salon
-        fields = ['id', 'nombre', 'estado_salon', 'estado_nombre', 'estado_codigo']
+        fields = '__all__'
 
 
 class SalonSerializer(serializers.ModelSerializer):
@@ -410,6 +419,18 @@ class MobiliarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Mobiliario
         fields = '__all__'
+    
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+
+        if instance.tipo_movil:
+            response['tipo_movil'] = TipoMobilSerializer(instance.tipo_movil).data
+        
+        response['descripcion_mob'] = CaracterMobilSerializer(instance.descripcion_mob.all(), many=True).data
+
+        response['inventario_detalles'] = InventarioMobSerializer(instance.inventariomob_set.all(), many=True).data
+        
+        return response
 
 
 class MontajeMobiliarioSerializer(serializers.ModelSerializer):
@@ -479,22 +500,22 @@ class MontajeCreacionSerializer(serializers.Serializer):
     mobiliarios = MobiliariosMontajeSerializer(many=True)
 
 class ReservacionCreacionSerializer(serializers.Serializer):
-    nombre = serializers.CharField() #
-    descripEvento = serializers.CharField() #
-    estimaAsistentes = serializers.IntegerField() #
-    fechaEvento = serializers.DateField() #
-    horaInicio = serializers.TimeField() #
-    horaFin = serializers.TimeField() #
+    nombre = serializers.CharField() # #
+    descripEvento = serializers.CharField() ##
+    estimaAsistentes = serializers.IntegerField() ##
+    fechaEvento = serializers.DateField() ##
+    horaInicio = serializers.TimeField() ##
+    horaFin = serializers.TimeField() ##
     subtotal = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2, required=False) # no se obtienen xd
     IVA = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2, required=False) # no se obtienen xd
     total = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2, required=False) # no se obtienen xd
-    cliente = serializers.CharField() #
-    trabajador = serializers.CharField() #
-    estado_reserva = EstadoReservaSerializer(required=False) # automatico como pendiente
+    cliente = serializers.CharField() ##
+    trabajador = serializers.CharField(required=False) ##
+    estado_reserva = serializers.CharField(required=False) # automatico como pendiente
     reserva_servicio = ServiciosReservacionSerializer(many=True, required=False, allow_empty=True) #
     reserva_equipa = EquipamientoReservacionSerializer(many=True, required=False, allow_empty=True) #
-    montaje = MontajeCreacionSerializer() #
-    tipo_evento = serializers.IntegerField()
+    montaje = MontajeCreacionSerializer() ##
+    tipo_evento = serializers.IntegerField() ##
 
 class ReservacionLecturaSerializer(serializers.ModelSerializer):
     cliente = DatosClienteSerializer(read_only=True)
@@ -582,3 +603,5 @@ class DisponibilidadSalonSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Reservacion
         fields = ['id', 'nombreEvento', 'fechaEvento', 'horaInicio', 'horaFin', 'salon_nombre', 'tipo_evento_nombre']
+
+

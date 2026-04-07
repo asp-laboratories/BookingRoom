@@ -97,13 +97,11 @@ def registrar_trabajador(request):
                     correo_electronico=cuenta_data["email"],
                     firebase_uid=firebase_uid,
                     estado_cuenta=estado_cuenta,
-                    disposicion=True,
                 )
 
                 models.Trabajador.objects.create(
                     no_empleado=request.POST.get("no_empleado"),
                     rfc=request.POST.get("rfc"),
-                    nombre_fiscal=f"{request.POST.get('nombre')} {request.POST.get('apellido_paterno')} {request.POST.get('apellido_materno')}",
                     nombre=request.POST.get("nombre"),
                     apellidoPaterno=request.POST.get("apellido_paterno"),
                     apelidoMaterno=request.POST.get("apellido_materno"),
