@@ -56,15 +56,24 @@ class ReservacionView(generic.View):
 
         trabajador = models.Trabajador.objects.get(cuenta=cuenta.pk)
 
+        reservaciones_solicitudes = models.Reservacion.objects.filter(
+            estado_reserva__codigo='SOLIC'
+        ).select_related(
+            "cliente", "estado_reserva", "montaje__salon"
+        ).order_by('-id')
+
         return render(request, self.template_name, {
             "tipos_evento": models.TipoEvento.objects.all(),
             "trabajador_id": trabajador.pk,
+            "trabajador_no_empleado": trabajador.no_empleado,
             "tipos_mobiliarios": models.TipoMobil.objects.filter(disposicion=True),
-            "salones": models.Salon.objects.filter(estado_salon='DISPO'),
+            "salones": models.Salon.objects.filter(estado_salon='DIS'),
             "tipos_servicio": models.TipoServicio.objects.filter(disposicion=True),
             "tipos_equipa": models.TipoEquipa.objects.filter(disposicion=True),
             "tipos_equipamiento": models.TipoEquipa.objects.filter(disposicion=True),
+            "tipos_montaje": models.TipoMontaje.objects.filter(disposicion=True),
             "rol": rol,
+            "reservaciones_solicitudes": reservaciones_solicitudes,
         })
 
 
@@ -119,7 +128,7 @@ def obtener_equipamiento_por_tipo(request):
             return JsonResponse({'equipamientos': []})
         
         inventarios = models.InventarioEquipa.objects.filter(
-            estado_equipa='DISPO',
+            estado_equipa='DISP',
             equipamiento__tipo_equipa_id=tipo_id
         ).select_related('equipamiento')
 
@@ -146,7 +155,7 @@ def mobiliarios_por_tipo(request):
         try:
 
             inventarios = models.InventarioMob.objects.filter(
-                estado_mobil='DISPO',
+                estado_mobil='DISP',
                 mobiliario__tipo_movil_id=tipo_id
             ).select_related('mobiliario')
 
@@ -156,7 +165,7 @@ def mobiliarios_por_tipo(request):
                     lista_mobiliarios.append({
                         'id': item.mobiliario.id,
                         'nombre': item.mobiliario.nombre,
-                        'costo': item.mobiliario.costo,
+                        'costo': str(item.mobiliario.costo),
                         'stock': item.cantidad
                     })
 
@@ -172,15 +181,23 @@ def montaje_por_salon(request):
     if not salonId:
         return JsonResponse({'montajes': []})
     
-    salon = models.Salon.objects.get(id=salonId)
-
     try:
-        # logica de filtrado
-        montajes = models.TipoMontaje.objects.filter(disposicion=True, capacidadIdeal__lte=salon.maxCapacidad)
+        salon = models.Salon.objects.get(id=salonId)
+        montajes = models.TipoMontaje.objects.filter(disposicion=True).exclude(capacidadIdeal__gt=salon.maxCapacidad)
 
-        lista = list(montajes.values('id', 'nombre'))
-        return JsonResponse({'montajes': lista})
+        lista = list(montajes.values('id', 'nombre', 'capacidadIdeal'))
+        return JsonResponse({
+            'montajes': lista,
+            'salon': {
+                'id': salon.id,
+                'nombre': salon.nombre,
+                'costo': str(salon.costo),
+                'capacidad': salon.maxCapacidad
+            }
+        })
 
+    except models.Salon.DoesNotExist:
+        return JsonResponse({'error': 'Salón no encontrado'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 

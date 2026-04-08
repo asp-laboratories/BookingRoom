@@ -185,6 +185,28 @@
   flex: 1;
 }
 
+.equipo-pair {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.equipo-pair .reservacion-campo {
+  flex: 1;
+}
+
+.mobil-pair {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.mobil-pair .reservacion-campo {
+  flex: 1;
+}
+
 .servicios-botones {
   display: flex;
   justify-content: flex-end;
@@ -204,9 +226,6 @@
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;
-  box-shadow:
-    rgba(0, 0, 0, 0.2) 0px 4px 6px -1px,
-    rgba(0, 0, 0, 0.2) 0px 3px 5px -1px;
 }
 
 .reservacion-grid-campos {

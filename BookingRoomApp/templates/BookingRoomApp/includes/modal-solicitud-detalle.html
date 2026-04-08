@@ -1,0 +1,226 @@
+{% load static %}
+
+<dialog id="modalSolicitud" class="modal-beo">
+  <div class="cabecera-modal">
+    <span class="titulo-modal">SOLICITUD: <span id="solicitud-titulo-evento">-</span></span>
+    <button onclick="document.getElementById('modalSolicitud').close()" class="cerrar-modal">X</button>
+  </div>
+
+  <div class="modal-grid">
+    <div class="modal-div modal-div-1">
+      <h3 class="titulo-info-cliente">Información del cliente</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Nombre:</label>
+          <span id="solicitud-cliente-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>RFC:</label>
+          <span id="solicitud-cliente-rfc">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Teléfono:</label>
+          <span id="solicitud-cliente-telefono">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-2">
+      <h3 class="titulo-seccion-modal">Información del evento</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Nombre:</label>
+          <span id="solicitud-evento-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Fecha:</label>
+          <span id="solicitud-evento-fecha">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Horario:</label>
+          <span id="solicitud-evento-horario">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Asistentes:</label>
+          <span id="solicitud-evento-asistentes">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Estado:</label>
+          <span id="solicitud-evento-estado">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-3">
+      <h3 class="titulo-seccion-modal">Salón y Montaje</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Salón:</label>
+          <span id="solicitud-salon-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Montaje:</label>
+          <span id="solicitud-montaje-nombre">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-4">
+      <h3 class="titulo-seccion-modal">Servicios</h3>
+      <div class="datos">
+        <span id="solicitud-servicios-lista">No hay servicios</span>
+      </div>
+    </div>
+    <div class="modal-div modal-div-5">
+      <h3 class="titulo-seccion-modal">Equipamientos</h3>
+      <div class="datos">
+        <span id="solicitud-equipamientos-lista">No hay equipamientos</span>
+      </div>
+    </div>
+    <div class="modal-div modal-div-6">
+      <h3 class="titulo-seccion-modal">Totales</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Subtotal:</label>
+          <span id="solicitud-total-subtotal">$0.00</span>
+        </div>
+        <div class="fila-dato">
+          <label>IVA:</label>
+          <span id="solicitud-total-iva">$0.00</span>
+        </div>
+        <div class="fila-dato">
+          <label>Total:</label>
+          <span id="solicitud-total-total">$0.00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-botones">
+    <button class="btn-modal btn-aceptar" id="btn-confirmar-solicitud">Confirmar Solicitud</button>
+    <button class="btn-modal btn-denegar" onclick="document.getElementById('modalSolicitud').close()">
+      Cerrar
+    </button>
+  </div>
+</dialog>
+
+<script>
+let solicitudIdActual = null;
+let datosSolicitudCompleta = null;
+
+async function cargarDetallesSolicitud(pk) {
+    try {
+        const response = await fetch(`/api/reservacion/${pk}/formulario/`);
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Error al cargar');
+        }
+        
+        solicitudIdActual = pk;
+        datosSolicitudCompleta = data;
+        
+        document.getElementById('solicitud-titulo-evento').textContent = data.nombreEvento || '-';
+        document.getElementById('solicitud-cliente-nombre').textContent = 
+            `${data.cliente_nombre || ''} ${data.cliente_apellido || ''}`.trim() || '-';
+        document.getElementById('solicitud-cliente-rfc').textContent = data.cliente_rfc || '-';
+        document.getElementById('solicitud-cliente-telefono').textContent = data.cliente?.telefono || '-';
+        
+        document.getElementById('solicitud-evento-nombre').textContent = data.nombreEvento || '-';
+        document.getElementById('solicitud-evento-fecha').textContent = data.fechaEvento || '-';
+        document.getElementById('solicitud-evento-horario').textContent = 
+            `${data.horaInicio ? data.horaInicio.substring(0, 5) : '-'} - ${data.horaFin ? data.horaFin.substring(0, 5) : '-'}`;
+        document.getElementById('solicitud-evento-asistentes').textContent = data.estimaAsistentes || '-';
+        document.getElementById('solicitud-evento-estado').textContent = data.estado_reserva?.nombre || '-';
+        
+        document.getElementById('solicitud-salon-nombre').textContent = data.salon_nombre || '-';
+        document.getElementById('solicitud-montaje-nombre').textContent = data.tipo_montaje_nombre || '-';
+        
+        // Cargar servicios
+        if (data.servicios && data.servicios.length > 0) {
+            const serviciosNombres = data.servicios.map(s => `• Servicio ID: ${s}`).join('<br>');
+            document.getElementById('solicitud-servicios-lista').innerHTML = serviciosNombres;
+        } else {
+            document.getElementById('solicitud-servicios-lista').textContent = 'No hay servicios';
+        }
+        
+        // Cargar equipamientos
+        if (data.equipamentos && data.equipamentos.length > 0) {
+            const equipamentosNombres = data.equipamentos.map(e => `• Equipamiento ID: ${e.id} (Cant: ${e.cantidad})`).join('<br>');
+            document.getElementById('solicitud-equipamientos-lista').innerHTML = equipamentosNombres;
+        } else {
+            document.getElementById('solicitud-equipamientos-lista').textContent = 'No hay equipamientos';
+        }
+        
+        document.getElementById('solicitud-total-subtotal').textContent = `$${data.subtotal || '0.00'}`;
+        document.getElementById('solicitud-total-iva').textContent = `$${data.IVA || '0.00'}`;
+        document.getElementById('solicitud-total-total').textContent = `$${data.total || '0.00'}`;
+        
+        document.getElementById('modalSolicitud').showModal();
+    } catch (error) {
+        console.error('Error al cargar detalles:', error);
+        mostrarToastExito('Error al cargar detalles de la solicitud', 'error');
+    }
+}
+
+async function confirmarSolicitud() {
+    if (!solicitudIdActual) return;
+    
+    try {
+        const response = await fetch(`/api/reservacion/${solicitudIdActual}/cambiar-estado/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ estado: 'CON' })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            document.getElementById('modalSolicitud').close();
+            mostrarToastExito('Solicitud confirmada correctamente', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            mostrarToastExito(data.error || 'Error al confirmar', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarToastExito('Error al confirmar la solicitud', 'error');
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.ver-detalles-solicitud').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const pk = this.dataset.pk;
+            cargarDetallesSolicitud(pk);
+        });
+    });
+    
+    document.getElementById('btn-confirmar-solicitud').addEventListener('click', function() {
+        if (solicitudIdActual) {
+            abrirModalConfirmar(
+                'Confirmar solicitud',
+                '¿Estás seguro de que deseas confirmar esta solicitud? El evento pasará a estado confirmado.',
+                confirmarSolicitud
+            );
+        }
+    });
+});
+</script>

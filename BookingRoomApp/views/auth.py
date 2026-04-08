@@ -32,10 +32,27 @@ class Home(generic.View):
         if not cuenta:
             return HttpResponseRedirect(reverse("login"))
 
-        reservaciones = models.Reservacion.objects.all()[:10]
+        # Estados para solicitudes (pendientes)
+        estados_solicitud = ['PEN', 'SOLIC']
+        
+        # Estados para confirmados
+        estados_confirmados = ['CON', 'PAGAD', 'ENPRO', 'FIN']
+
+        reservaciones_solicitudes = models.Reservacion.objects.select_related(
+            "cliente", "estado_reserva", "montaje__salon"
+        ).filter(
+            estado_reserva__codigo__in=estados_solicitud
+        ).order_by('-fechaEvento', '-id')[:20]
+
+        reservaciones_confirmados = models.Reservacion.objects.select_related(
+            "cliente", "estado_reserva", "montaje__salon"
+        ).filter(
+            estado_reserva__codigo__in=estados_confirmados
+        ).order_by('fechaEvento', '-id')[:20]
 
         return render(request, self.template_name, {
             "cuenta": cuenta,
             "rol": rol,
-            "reservaciones": reservaciones,
+            "reservaciones_solicitudes": reservaciones_solicitudes,
+            "reservaciones_confirmados": reservaciones_confirmados,
         })

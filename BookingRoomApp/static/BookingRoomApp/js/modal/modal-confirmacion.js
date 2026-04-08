@@ -15,9 +15,12 @@ function cerrarModalConfirmar() {
 document.addEventListener('DOMContentLoaded', function() {
     const confirmarBtn = document.getElementById('modal-confirmar-btn');
     if (confirmarBtn) {
-        confirmarBtn.addEventListener('click', function() {
+        confirmarBtn.addEventListener('click', async function() {
             if (callbackConfirmar && typeof callbackConfirmar === 'function') {
-                callbackConfirmar();
+                const result = callbackConfirmar();
+                if (result && typeof result.then === 'function') {
+                    await result;
+                }
             }
             cerrarModalConfirmar();
         });

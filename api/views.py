@@ -331,7 +331,14 @@ class ListarReservacionesView(APIView):
 class LlenarCalendarioReservaciones(APIView):
     def get(self, request):
         from datetime import datetime, date
-        reservaciones = models.Reservacion.objects.all()
+        # Excluir solicitudes (SOLIC y PEN)
+        reservaciones = models.Reservacion.objects.exclude(
+            estado_reserva__codigo__in=['SOLIC', 'PEN']
+        ).exclude(
+            es_paquete=True
+        ).exclude(
+            fechaEvento__isnull=True
+        )
         
         eventos = []
         for reservacion in reservaciones:
@@ -753,6 +760,49 @@ class DetalleReservacionView(APIView):
             return Response({'error': 'Reservación no encontrada'}, status=404)
 
 
+class ReservacionFormularioView(APIView):
+    """API para obtener datos de una reservación en formato de formulario"""
+    def get(self, request, pk):
+        try:
+            reservacion = models.Reservacion.objects.select_related(
+                'cliente', 'montaje__salon', 'montaje__tipo_montaje',
+                'tipo_evento'
+            ).prefetch_related(
+                'reservaservicio_set', 'reservaequipa_set', 'montaje__montajemobiliario_set'
+            ).get(pk=pk)
+            
+            serializer = serializers.ReservacionFormularioSerializer(reservacion)
+            return Response(serializer.data)
+        except models.Reservacion.DoesNotExist:
+            return Response({'error': 'Reservación no encontrada'}, status=404)
+
+
+class CambiarEstadoReservacionView(APIView):
+    """API para cambiar el estado de una reservación"""
+    def post(self, request, pk):
+        try:
+            nuevo_estado = request.data.get('estado')
+            if not nuevo_estado:
+                return Response({'error': 'Estado no proporcionado'}, status=400)
+            
+            reservacion = models.Reservacion.objects.get(pk=pk)
+            estado = models.EstadoReserva.objects.get(codigo=nuevo_estado)
+            
+            reservacion.estado_reserva = estado
+            reservacion.save()
+            
+            models.RegistrEstadReserva.objects.create(
+                reservacion_id=reservacion.pk,
+                estado_reserva=estado
+            )
+            
+            return Response({'mensaje': 'Estado actualizado correctamente', 'estado': estado.nombre})
+        except models.Reservacion.DoesNotExist:
+            return Response({'error': 'Reservación no encontrada'}, status=404)
+        except models.EstadoReserva.DoesNotExist:
+            return Response({'error': 'Estado no válido'}, status=400)
+
+
 class ListaReservacionesCoordinadorView(APIView):
     """API para listar todas las reservaciones del coordinador"""
     def get(self, request):
@@ -765,3 +815,36 @@ class ListaReservacionesCoordinadorView(APIView):
         
         serializer = serializers.ReservacionCoordinadorSerializer(reservaciones, many=True)
         return Response(serializer.data)
+
+
+class ListaPaquetesView(APIView):
+    """API para listar paquetes disponibles (para móvil)"""
+    def get(self, request):
+        paquetes = models.Reservacion.objects.filter(
+            es_paquete=True
+        ).select_related(
+            'montaje__salon', 'montaje__tipo_montaje'
+        ).prefetch_related(
+            'reservaservicio_set__servicio',
+            'reservaequipa_set__equipamiento'
+        ).order_by('nombre_paquete')
+        
+        serializer = serializers.PaqueteSerializer(paquetes, many=True)
+        return Response(serializer.data)
+
+
+class DetallePaqueteView(APIView):
+    """API para obtener detalle de un paquete (para móvil)"""
+    def get(self, request, pk):
+        try:
+            paquete = models.Reservacion.objects.select_related(
+                'montaje__salon', 'montaje__tipo_montaje'
+            ).prefetch_related(
+                'reservaservicio_set__servicio',
+                'reservaequipa_set__equipamiento'
+            ).get(pk=pk, es_paquete=True)
+            
+            serializer = serializers.PaqueteSerializer(paquete)
+            return Response(serializer.data)
+        except models.Reservacion.DoesNotExist:
+            return Response({'error': 'Paquete no encontrado'}, status=404)

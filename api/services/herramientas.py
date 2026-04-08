@@ -27,7 +27,7 @@ class Validador:
         
     def _validar_estado(self):
         salon = models.Salon.objects.get(id=self.salon_id)
-        if salon.estado_salon != 'DISPO':
+        if salon.estado_salon.codigo != 'DIS':
             raise ValidationError("El salon no se encuentra disponible")
         
 class Precios:

@@ -392,3 +392,69 @@
   color: white;
   animation: pulse 1.5s infinite;
 }
+
+.resumen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px;
+  padding: 0 5px;
+}
+
+.resumen-header h3 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.btn-volver {
+  background-color: #6c757d;
+  color: white;
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.btn-volver:hover {
+  background-color: #5a6268;
+}
+
+#contenedor-resumen .contenedor-solicitud,
+#contenedor-eventos .contenedor-solicitud,
+#contenedor-solicitudes .contenedor-solicitud {
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+#contenedor-resumen .contenedor-solicitud span:first-child,
+#contenedor-eventos .contenedor-solicitud span:first-child,
+#contenedor-solicitudes .contenedor-solicitud span:first-child {
+  flex: 1;
+  min-width: 150px;
+}
+
+.badge {
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  margin-left: 5px;
+}
+
+.estado-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.estado-badge.PEN, .estado-badge.SOLIC { background: #f39c12; color: white; }
+.estado-badge.CON, .estado-badge.PAGAD, .estado-badge.ENPRO { background: #27ae60; color: white; }
+.estado-badge.CAN { background: #e74c3c; color: white; }
+.estado-badge.FIN { background: #3498db; color: white; }
+
+.sin-resultados {
+  color: #999;
+  text-align: center;
+  padding: 20px;
+}

@@ -7,6 +7,65 @@
 
 <script src="{% static "BookingRoomApp/js/recepcion/mostrar-detalles.js" %}"></script> 
 <script src="{% static "BookingRoomApp/js/recepcion/buscar-fecha-manual.js" %}"></script> 
+<script src="{% static "BookingRoomApp/js/recepcion/home-solicitudes.js" %}"></script>
+
+<script>
+async function abrirModalDetalleCompleto(pk) {
+    try {
+        const response = await fetch(`/home/${pk}/json/`);
+        if (!response.ok) throw new Error("Error al obtener datos");
+        
+        const data = await response.json();
+        
+        document.getElementById('detalle-titulo-evento').textContent = data.nombre_evento || "Evento";
+        
+        document.getElementById('detalle-cliente-nombre').textContent = 
+            `${data.cliente?.nombre || '-'} ${data.cliente?.apellido_paterno || ''} ${data.cliente?.apellido_materno || ''}`.trim();
+        document.getElementById('detalle-cliente-correo').textContent = data.cliente?.correo || '-';
+        document.getElementById('detalle-cliente-telefono').textContent = data.cliente?.telefono || '-';
+        document.getElementById('detalle-cliente-rfc').textContent = data.cliente?.rfc || '-';
+        document.getElementById('detalle-cliente-nombre-fiscal').textContent = data.cliente?.nombre_fiscal || '-';
+        
+        document.getElementById('detalle-evento-nombre').textContent = data.nombre_evento || '-';
+        document.getElementById('detalle-evento-descripcion').textContent = data.descripcion || '-';
+        document.getElementById('detalle-evento-fecha').textContent = data.fecha || '-';
+        document.getElementById('detalle-evento-horario').textContent = 
+            `${data.hora_inicio || '-'} - ${data.hora_fin || '-'}`;
+        document.getElementById('detalle-evento-estado').textContent = data.estado || '-';
+        document.getElementById('detalle-evento-asistentes').textContent = data.asistentes || '-';
+        
+        document.getElementById('detalle-salon-nombre').textContent = data.salon || '-';
+        document.getElementById('detalle-salon-montaje').textContent = data.montaje || '-';
+        
+        const serviciosSpan = document.getElementById('detalle-servicios-lista');
+        if (data.servicios && data.servicios.length > 0) {
+            serviciosSpan.innerHTML = data.servicios.map(s => `<span class="item-lista">• ${s}</span>`).join('');
+        } else {
+            serviciosSpan.textContent = 'No hay servicios';
+        }
+        
+        document.getElementById('detalle-equipamientos-lista').textContent = 'Consultar en detalle';
+        
+        document.getElementById('detalle-total-iva').textContent = `$${data.iva || '0.00'}`;
+        document.getElementById('detalle-total-subtotal').textContent = `$${data.subtotal || '0.00'}`;
+        document.getElementById('detalle-total-total').textContent = `$${data.total || '0.00'}`;
+        
+        document.getElementById('modalDetalleCompleto').showModal();
+    } catch (error) {
+        console.error("Error:", error);
+        alert('No se pudo cargar los detalles');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.ver-detalles-completo').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const pk = this.dataset.pk;
+            abrirModalDetalleCompleto(pk);
+        });
+    });
+});
+</script> 
 
 
 <h1 class="titulo-seccion">
@@ -21,18 +80,26 @@
       </button>
       <button class="tab-btn tab-soli" onclick="openTab(event, 'tab2')">
         Solicitudes
+        {% with solicitudes_count=reservaciones_solicitudes|length %}
+          {% if solicitudes_count > 0 %}
+            <span class="badge">{{ solicitudes_count }}</span>
+          {% endif %}
+        {% endwith %}
       </button>
     </div>
     <div id="tab1" class="tab-content active">
       <span class="titulo-solicitud" id="titulo-tab">Proximos eventos</span>
       <div id="contenedor-eventos">
-        {% for reservacion in reservaciones %}
+        {% for reservacion in reservaciones_confirmados %}
         <div class="contenedor-solicitud">
-          <span> {{reservacion.nombreEvento}} </span>
-          <button class="boton-accion boton-beo ver-detalles" data-pk="{{ reservacion.pk }}">
+          <span>{{ reservacion.nombreEvento }}</span>
+          <span class="estado-badge {{ reservacion.estado_reserva.codigo }}">{{ reservacion.estado_reserva.nombre }}</span>
+          <button class="boton-accion boton-beo ver-detalles-completo" data-pk="{{ reservacion.pk }}">
             Ver detalles
           </button>
         </div>
+        {% empty %}
+        <p class="sin-resultados">No hay eventos confirmados</p>
         {% endfor %}
       </div>
     </div>
@@ -52,25 +119,27 @@
     }
   </script>
     <div id="tab2" class="tab-content">
-      <span class="titulo-solicitud">Solicitudes</span>
-      {% for reservacion in reservaciones %}
-      <div class="contenedor-solicitud" id="cerrar-contenedor">
-        <span> {{reservacion.nombreEvento}} </span>
-        <button
-          class="boton-accion boton-beo ver-detalles"
-          data-pk="{{ reservacion.pk }}"
-        >
-          Ver detalles
-        </button>
+      <span class="titulo-solicitud">Solicitudes pendientes</span>
+      <div id="contenedor-solicitudes">
+        {% for reservacion in reservaciones_solicitudes %}
+        <div class="contenedor-solicitud" id="cerrar-contenedor">
+          <span>{{ reservacion.nombreEvento }}</span>
+          <span class="estado-badge {{ reservacion.estado_reserva.codigo }}">{{ reservacion.estado_reserva.nombre }}</span>
+          <button class="boton-accion boton-beo ver-detalles-solicitud" data-pk="{{ reservacion.pk }}">
+            Ver detalles
+          </button>
+        </div>
+        {% empty %}
+        <p class="sin-resultados">No hay solicitudes pendientes</p>
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
   </div>
   <div class="div3">
     <h2 class="label-buscar">Buscar</h2>
     <div class="buscar-row">
-      <input class="buscar-fecha" type="date" />
-      <button class="boton-accion" id="buscar-manual-fechas" onclick="remover()">Buscar</button>
+      <input class="buscar-fecha" id="buscar-fecha-input" type="date" placeholder="Selecciona una fecha" />
+      <button class="boton-accion" id="btn-buscar-fecha">Buscar</button>
     </div>
   </div>
   <div class="div5">
@@ -83,5 +152,7 @@
 </div>
 
 {% include "BookingRoomApp/includes/modal-detalle-reservacion.html" with modal_id="miModal" id_prefix="modal-" %}
+{% include "BookingRoomApp/includes/modal-solicitud-detalle.html" %}
+{% include "BookingRoomApp/includes/modal-detalle-completo.html" %}
 
 {% endblock inicio %}

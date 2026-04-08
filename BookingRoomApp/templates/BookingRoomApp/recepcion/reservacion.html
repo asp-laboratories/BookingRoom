@@ -47,12 +47,19 @@
           </button>
           <h2>Bandeja de solicitudes</h2>
           <div class="reservacion-lista-notificaciones">
+            {% for reservacion in reservaciones_solicitudes %}
             <div class="contenedor-solicitud">
-              <span>Evento 1</span>
-              <button class="boton-accion boton-beo" onclick="abrirModalBEO()">
-                Ver BEO
+              <span>{{ reservacion.nombreEvento }}</span>
+              <span class="estado-badge {{ reservacion.estado_reserva.codigo }}">{{ reservacion.estado_reserva.nombre }}</span>
+              <button class="boton-accion boton-beo ver-detalles-solicitud" data-pk="{{ reservacion.pk }}">
+                Ver detalles
               </button>
             </div>
+            {% empty %}
+            <div class="contenedor-solicitud">
+              <span>No hay solicitudes pendientes</span>
+            </div>
+            {% endfor %}
           </div>
         </div>
       </div>
@@ -70,57 +77,67 @@
               type="text"
               class="reservacion-input"
               id="buscar-cliente-input"
-              placeholder="Buscar por RFC o Nombre del contacto"
-            /> 
+              placeholder="Buscar por RFC o nombre del contacto..."
+            />
             <button type="button" class="boton-accion" id="btn-buscar-cliente">Buscar</button>
           </div>
 
           <div class="reservacion-campo">
             <label class="reservacion-label">Tipo de cliente</label>
             <div class="reservacion-radio-group">
-              <label><input type="radio" name="tipo-cliente" id="tipo-moral" /> Persona moral</label>
-              <label><input type="radio" name="tipo-cliente" id="tipo-fisica" /> Persona física</label>
+              <label><input type="radio" name="tipo-cliente" id="tipo-moral" value="moral" disabled /> Empresa</label>
+              <label><input type="radio" name="tipo-cliente" id="tipo-fisica" value="fisica" disabled /> Persona física</label>
             </div>
           </div>
           <div class="reservacion-campo">
             <label class="reservacion-label">RFC</label>
             <!-- de aca se obtiene el id del cliente -->
-            <input type="text" class="reservacion-input cliente-input" id="cliente-rfc" placeholder="ABCD123456XYZ" disabled />
+            <input type="text" class="reservacion-input cliente-input" id="cliente-rfc" placeholder="Ej: XAXX010101000" disabled />
           </div>
 
           <div class="reservacion-campo span-2">
-            <label class="reservacion-label">Nombre completo / Razón Social</label>
-            <input type="text" class="reservacion-input cliente-input" id="cliente-nombre" disabled />
+            <label class="reservacion-label" id="label-nombre-contacto">Nombre completo / Razón Social</label>
+            <input type="text" class="reservacion-input cliente-input" id="cliente-nombre" placeholder="Ej: Juan Pérez García" disabled />
           </div>
 
-          <div class="reservacion-campo">
-            <label class="reservacion-label">Primer apellido</label>
-            <input type="text" class="reservacion-input cliente-input" id="cliente-apellido-paterno" disabled />
+          <div class="reservacion-campo" id="campo-apellido-paterno">
+            <label class="reservacion-label" id="label-apellido-paterno">Primer apellido</label>
+            <input type="text" class="reservacion-input cliente-input" id="cliente-apellido-paterno" placeholder="Ej: Pérez" disabled />
           </div>
 
-          <div class="reservacion-campo">
-            <label class="reservacion-label">Segundo apellido</label>
-            <input type="text" class="reservacion-input cliente-input" id="cliente-apellido-materno" disabled />
+          <div class="reservacion-campo" id="campo-apellido-materno">
+            <label class="reservacion-label" id="label-apellido-materno">Segundo apellido</label>
+            <input type="text" class="reservacion-input cliente-input" id="cliente-apellido-materno" placeholder="Ej: García" disabled />
           </div>
 
           <div class="reservacion-campo span-2">
-            <label class="reservacion-label">Nombre Fiscal</label>
-            <input type="text" class="reservacion-input cliente-input" id="cliente-nombre-fiscal" disabled />
+            <label class="reservacion-label" id="label-nombre-fiscal">Nombre Fiscal</label>
+            <input type="text" class="reservacion-input cliente-input" id="cliente-nombre-fiscal" placeholder="Ej: Empresa ABC S.A. de C.V." disabled />
           </div>
 
           <div class="reservacion-campo">
             <label class="reservacion-label">Colonia</label>
-            <input type="text" class="reservacion-input cliente-input" id="cliente-colonia" disabled />
+            <input type="text" class="reservacion-input cliente-input" id="cliente-colonia" placeholder="Ej: Centro" disabled />
           </div>
 
           <div class="reservacion-campo">
             <label class="reservacion-label">Calle</label>
-            <input type="text" class="reservacion-input cliente-input" id="cliente-calle" disabled />
+            <input type="text" class="reservacion-input cliente-input" id="cliente-calle" placeholder="Ej: Av. Insurgentes" disabled />
           </div>
 
           <div class="reservacion-campo">
             <label class="reservacion-label">Número</label>
-            <input type="number" class="reservacion-input cliente-input" id="cliente-numero" disabled />
+            <input type="number" class="reservacion-input cliente-input" id="cliente-numero" placeholder="Ej: 123" disabled />
+          </div>
+
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Teléfono</label>
+            <input type="tel" class="reservacion-input cliente-input" id="cliente-telefono" placeholder="Ej: 55 1234 5678" disabled />
+          </div>
+
+          <div class="reservacion-campo">
+            <label class="reservacion-label">Correo</label>
+            <input type="email" class="reservacion-input cliente-input" id="cliente-correo" placeholder="Ej: correo@ejemplo.com" disabled />
           </div>
 
           <button type="button" class="boton-accion" id="btn-registrar-cliente" disabled>Registrar cliente</button>
@@ -135,14 +152,14 @@
             <div class="reservacion-campo span-2">
               <label class="reservacion-label">Nombre del evento</label>
               <!-- de aca se obtiene el nombre -->
-              <input type="text" class="reservacion-input" id="nombreEvento" placeholder="Ej" />
+              <input type="text" class="reservacion-input" id="nombreEvento" placeholder="Ej: XV años de María" />
             </div>
 
             <div class="reservacion-campo span-2">
-              <label class="reservacion-label">Nombre del evento</label>
+              <label class="reservacion-label">Tipo de evento</label>
               <!-- de aca se obtiene el tipo_evento -->
                 <select class="reservacion-input" id="tipo_evento">
-                  <option value="">-- Elige un tipo --</option>
+                  <option value="">-- Selecciona un tipo --</option>
                   {% for tipo in tipos_evento %}
                   <option value="{{tipo.id}}">{{tipo.nombre}}</option>
                   {% endfor %}
@@ -158,7 +175,7 @@
           <div class="reservacion-campo">
             <label class="reservacion-label">Estimado de asistentes</label>
             <!-- de aca se obtiene estimaAsistentes -->
-            <input type="number" class="reservacion-input" id="estimado_asistentes" placeholder="0" />
+            <input type="number" class="reservacion-input" id="estimado_asistentes" placeholder="Ej: 150" />
           </div>
 
           <div class="reservacion-campo">
@@ -176,7 +193,7 @@
           <div class="reservacion-campo span-2">
             <label class="reservacion-label">Descripción del evento</label>
             <!-- de aca se obtiene la descripEvento -->
-            <textarea rows="3" class="reservacion-textarea" id="descripcion_evento" placeholder="Detalles adicionales..."></textarea>
+            <textarea rows="3" class="reservacion-textarea" id="descripcion_evento" placeholder="Ej: Decoración floral, pastel de 3 pisos, mesa de dulces..."></textarea>
           </div>
         </div>
       </section>
@@ -209,7 +226,7 @@
               <div class="reservacion-campo">
                 <label class="reservacion-label">Tipo de mobiliario</label>
                 <select class="reservacion-input mobiliario-tipo" name="mobiliario_tipo_1" disabled>
-                  <option value="">-- Elige un tipo --</option>
+                  <option value="">-- Selecciona un tipo --</option>
                   {% for tipo in tipos_mobiliarios %}
                   <option value="{{tipo.id}}">{{tipo.nombre}}</option>
                   {% endfor %}
@@ -218,13 +235,13 @@
               <div class="reservacion-campo">
                 <label class="reservacion-label">Seleccionar Mobiliario</label>
                 <select class="reservacion-input mobiliario-select" name="mobiliario_1" disabled>
-                  <option value="">-- Selecciona un tipo primero --</option>
+                  <option value="">-- Selecciona un mobiliario --</option>
                   <!-- tecnicamente de aca se obtiene mobiliario -->
                 </select>
               </div>
               <div class="reservacion-campo">
                 <label class="reservacion-label">Cantidad</label>
-                <input type="number" class="reservacion-input" name="mobiliario_cantidad_1" value="1" min="1" />
+                <input type="number" class="reservacion-input" name="mobiliario_cantidad_1" value="1" min="1" placeholder="1" />
               </div>
             </div>
           </div>
@@ -243,7 +260,7 @@
               <div class="reservacion-campo">
                 <label class="reservacion-label">Tipo de servicio</label>
                 <select class="reservacion-input servicio-tipo" name="servicio_tipo_1">
-                  <option value="">-- Elige un tipo --</option>
+                  <option value="">-- Selecciona un tipo --</option>
                   {% for tipo in tipos_servicio %}
                   <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
                   {% endfor %}
@@ -252,7 +269,7 @@
               <div class="reservacion-campo">
                 <label class="reservacion-label">Seleccionar Servicio</label>
                 <select class="reservacion-input servicio-select" name="servicio_1" disabled>
-                  <option value="">-- Selecciona un tipo primero --</option>
+                  <option value="">-- Selecciona un servicio --</option>
                   <!-- tecnicamente de aca se obtiene reserva_servicio -->
                 </select>
               </div>
@@ -273,7 +290,7 @@
               <div class="reservacion-campo">
                 <label class="reservacion-label">Tipo de equipamiento</label>
                 <select class="reservacion-input equipamiento-tipo" name="equipamiento_tipo_1">
-                  <option value="">-- Elige un tipo --</option>
+                  <option value="">-- Selecciona un tipo --</option>
                   {% for tipo in tipos_equipamiento %}
                   <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
                   {% endfor %}
@@ -282,13 +299,13 @@
               <div class="reservacion-campo">
                 <label class="reservacion-label">Seleccionar Equipo</label>
                 <select class="reservacion-input equipamiento-select" name="equipamiento_1" disabled>
-                  <option value="">-- Selecciona un tipo primero --</option>
+                  <option value="">-- Selecciona un equipo --</option>
                   <!-- tecnicamente de aca se obtiene reserva_equipa -->
                 </select>
               </div>
               <div class="reservacion-campo">
                 <label class="reservacion-label">Cantidad</label>
-                <input type="number" class="reservacion-input" name="equipamiento_cantidad_1" value="1" min="1" />
+                <input type="number" class="reservacion-input" name="equipamiento_cantidad_1" value="1" min="1" placeholder="1" />
               </div>
             </div>
           </div>
@@ -321,15 +338,15 @@
           </div>
           <div class="reservacion-fila">
             <span>Atendido por:</span>
-            <span>Usuario</span>
+            <span>{{ trabajador_no_empleado }}</span>
           </div>
         </div>
 
         <div class="reservacion-botones">
-          <button class="reservacion-btn reservacion-btn-confirmar" onclick="abrirModalConfirmar('Confirmar reservación', '¿Estás seguro de que deseas confirmar esta reservación?', function() { document.getElementById('modalPagos').showModal(); })"> 
+          <button class="reservacion-btn reservacion-btn-confirmar" id="btn-confirmar-reservacion">
             Confirmar
           </button>
-          <button class="reservacion-btn reservacion-btn-cancelar" onclick="abrirModalCancelar('Cancelar reservación', '¿Estás seguro de que quieres cancelar?', function() { console.log('Cancelar'); })">
+          <button class="reservacion-btn reservacion-btn-cancelar" onclick="window.location.href='/'">
             Cancelar
           </button>
         </div>
@@ -346,6 +363,37 @@
 
 
 {% include "BookingRoomApp/includes/modal-detalle-reservacion.html" with modal_id="miModal" %}
+{% include "BookingRoomApp/includes/modal-solicitud-detalle.html" %}
+
+<style>
+  .estado-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    white-space: nowrap;
+    align-self: center;
+  }
+  .estado-badge.SOLIC { background: #f39c12; color: white; }
+  .estado-badge.CON { background: #27ae60; color: white; }
+  .reservacion-lista-notificaciones {
+    max-height: 160px;
+    overflow-y: auto;
+  }
+  .reservacion-lista-notificaciones .contenedor-solicitud {
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    height: auto;
+    min-height: 50px;
+    padding: 6px 8px;
+  }
+  .reservacion-lista-notificaciones .contenedor-solicitud span:first-child {
+    flex: 1;
+    min-width: 150px;
+  }
+</style>
 
 
 <dialog id="modalPagos" class="modal-beo">
@@ -360,16 +408,16 @@
             <div class="pagos-section-title">Buscar reservación</div>
             <div class="pagos-field-group">
                 <label class="pagos-label">Número de reservación</label>
-                <input data-field="reservacion" type="number" class="pagos-input-text" placeholder="Ingrese número">
+                <input data-field="reservacion" type="number" class="pagos-input-text" placeholder="Ej: 1">
             </div>
-
-
+ 
+ 
             <button id="btn-buscar-reservacion" class="pagos-btn pagos-btn-buscar boton-accion">Buscar</button>
             <div class="pagos-field-group">
                 <label class="pagos-label">Estado</label>
-                <input data-field="estado" type="text" class="pagos-input-text" readonly>
+                <input data-field="estado" type="text" class="pagos-input-text" readonly placeholder="--">
             </div>
-
+ 
             <input data-field="reservacion_id" type="hidden">
         </div>
 
@@ -378,26 +426,26 @@
             <div class="pagos-row">
                 <div class="pagos-field-group">
                     <label class="pagos-label">Cliente</label>
-                    <input data-field="cliente" type="text" class="pagos-input-text" readonly>
+                    <input data-field="cliente" type="text" class="pagos-input-text" readonly placeholder="--">
                 </div>
                 <div class="pagos-field-group">
                     <label class="pagos-label">Nombre del evento</label>
-                    <input data-field="nombre_evento" type="text" class="pagos-input-text" readonly>
+                    <input data-field="nombre_evento" type="text" class="pagos-input-text" readonly placeholder="--">
                 </div>
             </div>
 
             <div class="pagos-row">
                 <div class="pagos-field-group">
                     <label class="pagos-label">Subtotal</label>
-                    <input data-field="subtotal" type="text" class="pagos-input-text" readonly>
+                    <input data-field="subtotal" type="text" class="pagos-input-text" readonly placeholder="$0.00">
                 </div>
                 <div class="pagos-field-group">
                     <label class="pagos-label">Total</label>
-                    <input data-field="total" type="text" class="pagos-input-text" readonly>
+                    <input data-field="total" type="text" class="pagos-input-text" readonly placeholder="$0.00">
                 </div>
                             <div class="pagos-field-group">
                 <label class="pagos-label">Descripción</label>
-                <input data-field="descripcion" type="text" class="pagos-input-text" readonly>
+                <input data-field="descripcion" type="text" class="pagos-input-text" readonly placeholder="--">
             </div>
             </div>
         </div>
@@ -407,24 +455,24 @@
     <div class="pagos-row">
         <div class="pagos-field-group">
             <label class="pagos-label">Monto a pagar</label>
-            <input data-field="monto" type="number" step="0.01" class="pagos-input-text" placeholder="$0.00">
+            <input data-field="monto" type="number" step="0.01" class="pagos-input-text" placeholder="Ej: 500.00">
         </div>
         <div class="pagos-field-group">
             <label class="pagos-label">Saldo restante</label>
-            <input data-field="saldo" type="text" class="pagos-input-text" readonly>
+            <input data-field="saldo" type="text" class="pagos-input-text" readonly placeholder="$0.00">
         </div>
     </div>
 
     <div class="pagos-field-group">
         <label class="pagos-label">Nota</label>
-        <input data-field="nota" type="text" class="pagos-input-text" placeholder="Observaciones">
+        <input data-field="nota" type="text" class="pagos-input-text" placeholder="Ej: Pago parcial, saldo pendiente">
     </div>
 
     <div class="pagos-section-title">Concepto de pago</div>
     <div class="pagos-options-group">
         <label class="pagos-option"><input type="radio" name="concepto" checked class="pagos-input-radio pagos-concepto" value="ABONO"> Abono</label>
         <label class="pagos-option"><input type="radio" name="concepto" class="pagos-input-radio pagos-concepto" value="LIQUI"> Liquidación</label>
-        <label class="pagos-option"><input type="radio" name="concepto" class="pagos-input-radio pagos-concepto" value="UNICO"> Pago único</label>
+        <label class="pagos-option"><input type="radio" name="concepto" class="pagos-input-radio pagos-concepto" value="EXTR"> Extra</label>
     </div>
 
     <div class="pagos-section-title">Método de pago</div>

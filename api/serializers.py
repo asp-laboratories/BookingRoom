@@ -129,7 +129,8 @@ class ReservacionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ReservacionCreacionSerializer(serializers.ModelSerializer):
+class ReservacionBasicSerializer(serializers.ModelSerializer):
+    """Serializer básico para operaciones simples de reservación."""
     trabajador_id = serializers.IntegerField(write_only=True, required=False)
 
     class Meta:
@@ -575,3 +576,115 @@ class DisponibilidadSalonSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Reservacion
         fields = ['id', 'nombreEvento', 'fechaEvento', 'horaInicio', 'horaFin', 'salon_nombre', 'tipo_evento_nombre']
+
+
+class ReservacionResumenSerializer(serializers.ModelSerializer):
+    cliente_nombre = serializers.CharField(source='cliente.nombre', read_only=True)
+    salon_nombre = serializers.CharField(source='montaje.salon.nombre', read_only=True)
+    estado_nombre = serializers.CharField(source='estado_reserva.nombre', read_only=True)
+    estado_codigo = serializers.CharField(source='estado_reserva.codigo', read_only=True)
+    
+    class Meta:
+        model = models.Reservacion
+        fields = ['id', 'nombreEvento', 'fechaEvento', 'horaInicio', 'horaFin', 
+                  'cliente_nombre', 'salon_nombre', 'estado_nombre', 'estado_codigo', 'total']
+
+
+class ReservacionFormularioSerializer(serializers.ModelSerializer):
+    cliente_rfc = serializers.CharField(source='cliente.rfc', read_only=True)
+    cliente_nombre = serializers.CharField(source='cliente.nombre', read_only=True)
+    cliente_apellido = serializers.CharField(source='cliente.apellidoPaterno', read_only=True)
+    salon_id = serializers.IntegerField(source='montaje.salon.id', read_only=True)
+    salon_nombre = serializers.CharField(source='montaje.salon.nombre', read_only=True)
+    tipo_montaje_id = serializers.IntegerField(source='montaje.tipo_montaje.id', read_only=True)
+    tipo_montaje_nombre = serializers.CharField(source='montaje.tipo_montaje.nombre', read_only=True)
+    
+    servicios = serializers.SerializerMethodField()
+    equipamentos = serializers.SerializerMethodField()
+    mobiliarios = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = models.Reservacion
+        fields = [
+            'id', 'nombreEvento', 'descripEvento', 'fechaEvento', 'horaInicio', 'horaFin',
+            'estimaAsistentes', 'subtotal', 'IVA', 'total',
+            'cliente_rfc', 'cliente_nombre', 'cliente_apellido',
+            'salon_id', 'salon_nombre', 'tipo_montaje_id', 'tipo_montaje_nombre',
+            'tipo_evento',
+            'servicios', 'equipamentos', 'mobiliarios'
+        ]
+    
+    def get_servicios(self, obj):
+        return list(obj.reservaservicio_set.values_list('servicio_id', flat=True))
+    
+    def get_equipamentos(self, obj):
+        return [
+            {'id': re.equipamiento_id, 'cantidad': re.cantidad}
+            for re in obj.reservaequipa_set.all()
+        ]
+    
+    def get_mobiliarios(self, obj):
+        return [
+            {'id': mm.mobiliario_id, 'cantidad': mm.cantidad}
+            for mm in obj.montaje.montajemobiliario_set.all()
+        ]
+
+
+class PaqueteSerializer(serializers.ModelSerializer):
+    salon_nombre = serializers.CharField(source='montaje.salon.nombre', read_only=True)
+    salon_id = serializers.IntegerField(source='montaje.salon.id', read_only=True)
+    montaje_nombre = serializers.CharField(source='montaje.tipo_montaje.nombre', read_only=True)
+    montaje_id = serializers.IntegerField(source='montaje.id', read_only=True)
+    
+    servicios = serializers.SerializerMethodField()
+    equipamentos = serializers.SerializerMethodField()
+    mobiliarios = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = models.Reservacion
+        fields = [
+            'id', 'nombre_paquete', 'descripEvento',
+            'subtotal', 'IVA', 'total',
+            'salon_id', 'salon_nombre', 'montaje_id', 'montaje_nombre',
+            'servicios', 'equipamentos', 'mobiliarios',
+        ]
+    
+    def get_servicios(self, obj):
+        return [
+            {
+                'id': rs.servicio.id,
+                'nombre': rs.servicio.nombre,
+                'costo': int(rs.servicio.costo),
+                'precio': int(rs.servicio.costo),
+                'tipo': rs.servicio.tipo_servicio.nombre if rs.servicio.tipo_servicio else '',
+            }
+            for rs in obj.reservaservicio_set.select_related('servicio__tipo_servicio').all()
+        ]
+    
+    def get_equipamentos(self, obj):
+        return [
+            {
+                'id': re.equipamiento.id,
+                'nombre': re.equipamiento.nombre,
+                'costo': int(re.equipamiento.costo),
+                'precio': int(re.equipamiento.costo),
+                'cantidad': re.cantidad,
+                'tipo': re.equipamiento.tipo_equipa.nombre if re.equipamiento.tipo_equipa else '',
+            }
+            for re in obj.reservaequipa_set.select_related('equipamiento__tipo_equipa').all()
+        ]
+    
+    def get_mobiliarios(self, obj):
+        if not obj.montaje:
+            return []
+        return [
+            {
+                'id': mm.mobiliario.id,
+                'nombre': mm.mobiliario.nombre,
+                'costo': int(mm.mobiliario.costo),
+                'precio': int(mm.mobiliario.costo),
+                'cantidad': mm.cantidad,
+                'tipo': mm.mobiliario.tipo_movil.nombre if mm.mobiliario.tipo_movil else '',
+            }
+            for mm in obj.montaje.montajemobiliario_set.select_related('mobiliario__tipo_movil').all()
+        ]

@@ -4,146 +4,522 @@
 {% block inicio %}
 
 <link rel="stylesheet" href="{% static 'BookingRoomApp/css/recepcion/reservacion.css' %}">
-
+<link rel="stylesheet" href="{% static 'BookingRoomApp/css/administracion/paquetes.css' %}">
 
 <div class="paquetes-container">
-  <h1 class="paquetes-titulo">Crear Paquetes</h1>
+  <h1 class="paquetes-titulo">Paquetes</h1>
 
-  <div class="paquetes-grid">
-    
-    <section id="paquete-salon" class="paquetes-seccion">
-      <h2 class="paquetes-titulo-seccion">Salón y Montaje</h2>
-      <div class="paquetes-campos-row">
-        <div class="paquetes-campo">
-          <label class="paquetes-label">Seleccionar Salón</label>
-          <select class="paquetes-input" id="paquete-salon-select">
+  <div class="paquetes-tabs">
+    <button class="paquetes-tab-btn active" onclick="openPaquetesTab('crear', this)">Crear Paquete</button>
+    <button class="paquetes-tab-btn" onclick="openPaquetesTab('lista', this)">Lista de Paquetes</button>
+  </div>
+
+  <div id="paquetes-tab-crear" class="paquetes-tab-content active">
+    <div class="paquetes-grid">
+      
+      <section id="paquete-salon" class="paquetes-seccion">
+        <h2 class="paquetes-titulo-seccion">Salón y Montaje</h2>
+        <div class="paquetes-campos-row">
+          <div class="paquetes-campo">
+            <label class="paquetes-label">Seleccionar Salón</label>
+            <select class="paquetes-input" id="paquete-salon-select">
+              <option value="">-- Selecciona un salón --</option>
+              {% for salon in salones %}
+              <option value="{{ salon.id }}">{{ salon.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="paquetes-campo">
+            <label class="paquetes-label">Seleccionar Montaje</label>
+            <select class="paquetes-input" id="paquete-montaje-select" disabled>
+              <option value="">-- Selecciona un salón primero --</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section id="paquete-servicios" class="paquetes-seccion">
+        <h3 class="paquetes-titulo-seccion">Servicios Incluidos</h3>
+        <div class="paquetes-servicios-container">
+          <div class="paquetes-servicios-list" id="paquete-servicios-list">
+            <div class="paquetes-servicio-pair" data-index="1">
+              <div class="paquetes-campo">
+                <label class="paquetes-label">Tipo de servicio</label>
+                <select class="paquetes-input paquete-servicio-tipo" name="servicio_tipo_1">
+                  <option value="">-- Elige un tipo --</option>
+                  {% for tipo in tipos_servicio %}
+                  <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="paquetes-campo">
+                <label class="paquetes-label">Seleccionar Servicio</label>
+                <select class="paquetes-input paquete-servicio-select" name="servicio_1" disabled>
+                  <option value="">-- Selecciona un tipo primero --</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="paquetes-servicios-botones">
+            <button type="button" class="paquetes-btn-quitar" onclick="quitarPaqueteSelect('servicios')">- Quitar</button>
+            <button type="button" class="paquetes-btn-anadir" onclick="anadirPaqueteServicio()">+ Añadir Servicio</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="paquete-equipamiento" class="paquetes-seccion">
+        <h3 class="paquetes-titulo-seccion">Equipamiento Incluido</h3>
+        <div class="paquetes-servicios-container">
+          <div class="paquetes-servicios-list" id="paquete-equipamiento-list">
+            <div class="paquetes-servicio-pair" data-index="1">
+              <div class="paquetes-campo">
+                <label class="paquetes-label">Tipo de equipamiento</label>
+                <select class="paquetes-input paquete-equipamiento-tipo" name="equipamiento_tipo_1">
+                  <option value="">-- Elige un tipo --</option>
+                  {% for tipo in tipos_equipamiento %}
+                  <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="paquetes-campo">
+                <label class="paquetes-label">Seleccionar Equipo</label>
+                <select class="paquetes-input paquete-equipamiento-select" name="equipamiento_1" disabled>
+                  <option value="">-- Selecciona un tipo primero --</option>
+                </select>
+              </div>
+              <div class="paquetes-campo">
+                <label class="paquetes-label">Cantidad</label>
+                <input type="number" class="paquetes-input" name="equipamiento_cantidad_1" value="1" min="1" />
+              </div>
+            </div>
+          </div>
+          <div class="paquetes-servicios-botones">
+            <button type="button" class="paquetes-btn-quitar" onclick="quitarPaqueteSelect('equipamientos')">- Quitar</button>
+            <button type="button" class="paquetes-btn-anadir" onclick="anadirPaqueteEquipamiento()">+ Añadir Equipamiento</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="paquete-mobiliario" class="paquetes-seccion">
+        <h3 class="paquetes-titulo-seccion">Mobiliario Incluido</h3>
+        <div class="paquetes-servicios-container">
+          <div class="paquetes-servicios-list" id="paquete-mobiliario-list">
+            <div class="paquetes-servicio-pair" data-index="1">
+              <div class="paquetes-campo">
+                <label class="paquetes-label">Tipo de mobiliario</label>
+                <select class="paquetes-input paquete-mobiliario-tipo" name="mobiliario_tipo_1">
+                  <option value="">-- Elige un tipo --</option>
+                  {% for tipo in tipos_mobiliarios %}
+                  <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="paquetes-campo">
+                <label class="paquetes-label">Seleccionar Mobiliario</label>
+                <select class="paquetes-input paquete-mobiliario-select" name="mobiliario_1" disabled>
+                  <option value="">-- Selecciona un tipo primero --</option>
+                </select>
+              </div>
+              <div class="paquetes-campo">
+                <label class="paquetes-label">Cantidad</label>
+                <input type="number" class="paquetes-input" name="mobiliario_cantidad_1" value="1" min="1" />
+              </div>
+            </div>
+          </div>
+          <div class="paquetes-servicios-botones">
+            <button type="button" class="paquetes-btn-quitar" onclick="quitarPaqueteSelect('mobiliarios')">- Quitar</button>
+            <button type="button" class="paquetes-btn-anadir" onclick="anadirPaqueteMobiliario()">+ Añadir Mobiliario</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="paquete-precios" class="paquetes-seccion">
+        <h3 class="paquetes-titulo-seccion">Precio del Paquete</h3>
+        <div class="paquetes-precios-grid">
+          <div class="paquetes-campo">
+            <label class="paquetes-label">Subtotal</label>
+            <input type="number" class="paquetes-input" id="paquete-subtotal" placeholder="0.00" step="0.01" />
+          </div>
+          <div class="paquetes-campo">
+            <label class="paquetes-label">IVA (%)</label>
+            <input type="number" class="paquetes-input" id="paquete-iva" placeholder="16" value="16" />
+          </div>
+          <div class="paquetes-campo">
+            <label class="paquetes-label">Total</label>
+            <input type="number" class="paquetes-input" id="paquete-total" placeholder="0.00" step="0.01" readonly />
+          </div>
+        </div>
+        <button type="button" class="btn-calcular" onclick="calcularPaqueteTotal()">Calcular Total</button>
+      </section>
+
+      <section id="paquete-detalles" class="paquetes-seccion">
+        <h3 class="paquetes-titulo-seccion">Información del Paquete</h3>
+        <div class="paquetes-detalles-grid">
+          <div class="paquetes-campo span-2">
+            <label class="paquetes-label">Nombre del Paquete</label>
+            <input type="text" class="paquetes-input" id="paquete-nombre" placeholder="Ej: Paquete Básico, Paquete Premium" />
+          </div>
+          <div class="paquetes-campo span-2">
+            <label class="paquetes-label">Descripción</label>
+            <textarea rows="3" class="paquetes-textarea" id="paquete-descripcion" placeholder="Detalles adicionales del paquete..."></textarea>
+          </div>
+        </div>
+      </section>
+
+      <div class="paquetes-botones">
+        <button class="paquetes-btn-confirmar" onclick="guardarPaquete()"> 
+          Guardar Paquete
+        </button>
+        <button class="paquetes-btn-cancelar" onclick="location.reload()">
+          Cancelar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="paquetes-tab-lista" class="paquetes-tab-content">
+    <div class="paquetes-lista-container">
+      {% if paquetes_lista %}
+      {% for item in paquetes_lista %}
+      <div class="paquetes-item" data-id="{{ item.paquete.id }}">
+        <div class="paquetes-item-header">
+          <h3 class="paquetes-item-nombre">{{ item.paquete.nombre_paquete|default:"Sin nombre" }}</h3>
+          <span class="estado-badge PLANT">Plantilla</span>
+        </div>
+        <div class="paquetes-item-info">
+          <p><strong>Salón:</strong> 
+            {% if item.paquete.montaje and item.paquete.montaje.salon %}
+              {{ item.paquete.montaje.salon.nombre }} - {{ item.paquete.montaje.tipo_montaje.nombre }}
+            {% else %}
+              No asignado
+            {% endif %}
+          </p>
+          <p><strong>Precio:</strong> ${{ item.paquete.total|default:"0.00" }}</p>
+          <div class="paquetes-item-contadores">
+            <span class="contador-badge">Servicios: {{ item.servicios_count }}</span>
+            <span class="contador-badge">Equipamiento: {{ item.equipamiento_count }}</span>
+            <span class="contador-badge">Mobiliario: {{ item.mobiliario_count }}</span>
+          </div>
+        </div>
+        <div class="paquetes-item-acciones">
+          <button class="btn-accion btn-ver" onclick="verPaquete({{ item.paquete.id }})">Ver</button>
+          <button class="btn-accion btn-editar" onclick="editarPaquete({{ item.paquete.id }})">Editar</button>
+          <button class="btn-accion btn-duplicar" onclick="duplicarPaquete({{ item.paquete.id }})">Duplicar</button>
+          <button class="btn-accion btn-eliminar" onclick="eliminarPaquete({{ item.paquete.id }})">Eliminar</button>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p class="sin-resultados">No hay paquetes creados</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<dialog id="modal-ver-paquete" class="modal-paquete">
+  <div class="modal-paquete-content">
+    <div class="modal-paquete-header">
+      <h2 id="modal-paquete-titulo">Detalle del Paquete</h2>
+      <button onclick="document.getElementById('modal-ver-paquete').close()" class="cerrar-modal">X</button>
+    </div>
+    <div class="modal-paquete-body" id="modal-paquete-body">
+    </div>
+    <div class="modal-paquete-footer">
+      <button onclick="document.getElementById('modal-ver-paquete').close()" class="btn-cerrar">Cerrar</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="modal-editar-paquete" class="modal-paquete">
+  <div class="modal-paquete-content">
+    <div class="modal-paquete-header">
+      <h2>Editar Paquete</h2>
+      <button onclick="cerrarModalEditar()" class="cerrar-modal">X</button>
+    </div>
+    <div class="modal-paquete-body" id="modal-editar-paquete-body">
+      <div class="editar-paquete-form">
+        <div class="form-grupo">
+          <label>Nombre del Paquete</label>
+          <input type="text" id="editar-nombre" class="form-input" />
+        </div>
+        <div class="form-grupo">
+          <label>Salón</label>
+          <select id="editar-salon" class="form-input">
             <option value="">-- Selecciona un salón --</option>
             {% for salon in salones %}
             <option value="{{ salon.id }}">{{ salon.nombre }}</option>
             {% endfor %}
           </select>
         </div>
-        <div class="paquetes-campo">
-          <label class="paquetes-label">Seleccionar Montaje</label>
-          <select class="paquetes-input" id="paquete-montaje-select">
-            <option value="">-- Selecciona un montaje --</option>
-            {% for montaje in tipos_montaje %}
-            <option value="{{ montaje.id }}">{{ montaje.nombre }}</option>
-            {% endfor %}
+        <div class="form-grupo">
+          <label>Montaje</label>
+          <select id="editar-montaje" class="form-input" disabled>
+            <option value="">-- Selecciona un salón primero --</option>
           </select>
         </div>
-      </div>
-    </section>
-
-    <section id="paquete-servicios" class="paquetes-seccion">
-      <h3 class="paquetes-titulo-seccion">Servicios Incluidos</h3>
-      <div class="paquetes-servicios-container">
-        <div class="paquetes-servicios-list" id="paquete-servicios-list">
-          <div class="paquetes-servicio-pair" data-index="1">
-            <div class="paquetes-campo">
-              <label class="paquetes-label">Tipo de servicio</label>
-              <select class="paquetes-input paquete-servicio-tipo" name="servicio_tipo_1">
-                <option value="">-- Elige un tipo --</option>
-                {% for tipo in tipos_servicio %}
-                <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="paquetes-campo">
-              <label class="paquetes-label">Seleccionar Servicio</label>
-              <select class="paquetes-input paquete-servicio-select" name="servicio_1" disabled>
-                <option value="">-- Selecciona un tipo primero --</option>
-              </select>
-            </div>
-          </div>
+        <div class="form-grupo">
+          <label>Subtotal</label>
+          <input type="number" id="editar-subtotal" class="form-input" step="0.01" />
         </div>
-        <div class="paquetes-servicios-botones">
-          <button type="button" class="paquetes-btn-quitar" onclick="quitarPaqueteSelect('servicios')">- Quitar</button>
-          <button type="button" class="paquetes-btn-anadir" onclick="anadirPaqueteServicio()">+ Añadir Servicio</button>
+        <div class="form-grupo">
+          <label>IVA (%)</label>
+          <input type="number" id="editar-iva" class="form-input" step="0.01" />
+        </div>
+        <div class="form-grupo">
+          <label>Total</label>
+          <input type="number" id="editar-total" class="form-input" step="0.01" readonly />
         </div>
       </div>
-    </section>
-
-    <section id="paquete-equipamiento" class="paquetes-seccion">
-      <h3 class="paquetes-titulo-seccion">Equipamiento Incluido</h3>
-      <div class="paquetes-servicios-container">
-        <div class="paquetes-servicios-list" id="paquete-equipamiento-list">
-          <div class="paquetes-servicio-pair" data-index="1">
-            <div class="paquetes-campo">
-              <label class="paquetes-label">Tipo de equipamiento</label>
-              <select class="paquetes-input paquete-equipamiento-tipo" name="equipamiento_tipo_1">
-                <option value="">-- Elige un tipo --</option>
-                {% for tipo in tipos_equipamiento %}
-                <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="paquetes-campo">
-              <label class="paquetes-label">Seleccionar Equipo</label>
-              <select class="paquetes-input paquete-equipamiento-select" name="equipamiento_1" disabled>
-                <option value="">-- Selecciona un tipo primero --</option>
-              </select>
-            </div>
-            <div class="paquetes-campo">
-              <label class="paquetes-label">Cantidad</label>
-              <input type="number" class="paquetes-input" name="equipamiento_cantidad_1" value="1" min="1" />
-            </div>
-          </div>
-        </div>
-        <div class="paquetes-servicios-botones">
-          <button type="button" class="paquetes-btn-quitar" onclick="quitarPaqueteSelect('equipamientos')">- Quitar</button>
-          <button type="button" class="paquetes-btn-anadir" onclick="anadirPaqueteEquipamiento()">+ Añadir Equipamiento</button>
-        </div>
-      </div>
-    </section>
-
-    <section id="paquete-precios" class="paquetes-seccion">
-      <h3 class="paquetes-titulo-seccion">Precio del Paquete</h3>
-      <div class="paquetes-precios-grid">
-        <div class="paquetes-campo">
-          <label class="paquetes-label">Subtotal</label>
-          <input type="number" class="paquetes-input" id="paquete-subtotal" placeholder="0.00" step="0.01" />
-        </div>
-        <div class="paquetes-campo">
-          <label class="paquetes-label">IVA (%)</label>
-          <input type="number" class="paquetes-input" id="paquete-iva" placeholder="16" value="16" />
-        </div>
-        <div class="paquetes-campo">
-          <label class="paquetes-label">Total</label>
-          <input type="number" class="paquetes-input" id="paquete-total" placeholder="0.00" step="0.01" readonly />
-        </div>
-      </div>
-    </section>
-
-    <section id="paquete-detalles" class="paquetes-seccion">
-      <h3 class="paquetes-titulo-seccion">Información del Paquete</h3>
-      <div class="paquetes-detalles-grid">
-        <div class="paquetes-campo span-2">
-          <label class="paquetes-label">Nombre del Paquete</label>
-          <input type="text" class="paquetes-input" id="paquete-nombre" placeholder="Ej: Paquete Básico, Paquete Premium" />
-        </div>
-        <div class="paquetes-campo span-2">
-          <label class="paquetes-label">Descripción</label>
-          <textarea rows="3" class="paquetes-textarea" id="paquete-descripcion" placeholder="Detalles adicionales del paquete..."></textarea>
-        </div>
-      </div>
-    </section>
-
-    <div class="paquetes-botones">
-      <button class="paquetes-btn-confirmar" onclick="guardarPaquete()"> 
-        Guardar Paquete
-      </button>
-      <button class="paquetes-btn-cancelar" onclick="location.reload()">
-        Cancelar
-      </button>
     </div>
-
+    <div class="modal-paquete-footer">
+      <button onclick="guardarEdicionPaquete()" class="btn-guardar">Guardar Cambios</button>
+      <button onclick="cerrarModalEditar()" class="btn-cerrar">Cancelar</button>
+    </div>
   </div>
-</div>
+</dialog>
 
+<style>
+.editar-paquete-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
 
-<link rel="stylesheet" href="{% static 'BookingRoomApp/css/administracion/paquetes.css' %}">
+.form-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-grupo label {
+  font-weight: bold;
+  color: #333;
+}
+
+.form-input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primario);
+}
+
+dialog.modal-paquete {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  max-height: 90vh;
+}
+</style>
+
+<script>
+let paqueteEditandoId = null;
+</script>
 
 <script src="{% static 'BookingRoomApp/js/administracion/paquetes.js' %}"></script>
+
+<style>
+.paquetes-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.paquetes-tab-btn {
+  padding: 10px 20px;
+  border: none;
+  background-color: #e0e0e0;
+  cursor: pointer;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.paquetes-tab-btn.active {
+  background-color: var(--color-primario);
+  color: white;
+}
+
+.paquetes-tab-content {
+  display: none;
+}
+
+.paquetes-tab-content.active {
+  display: block;
+}
+
+.paquetes-lista-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.paquetes-item {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.paquetes-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.paquetes-item-nombre {
+  margin: 0;
+  color: #333;
+}
+
+.paquetes-item-info p {
+  margin: 5px 0;
+  color: #666;
+}
+
+.paquetes-item-contadores {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.contador-badge {
+  background: #f0f0f0;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.paquetes-item-acciones {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn-accion {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-ver { background: #3498db; color: white; }
+.btn-editar { background: #f39c12; color: white; }
+.btn-duplicar { background: #9b59b6; color: white; }
+.btn-eliminar { background: #e74c3c; color: white; }
+
+.modal-paquete {
+  width: 700px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+}
+
+.modal-paquete::backdrop {
+  background: rgba(0,0,0,0.5);
+}
+
+.modal-paquete-content {
+  padding: 20px;
+}
+
+.modal-paquete-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.modal-paquete-header h2 {
+  margin: 0;
+}
+
+.cerrar-modal {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.modal-paquete-body {
+  margin-bottom: 20px;
+}
+
+.modal-paquete-footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 10px;
+  border-top: 1px solid #ddd;
+}
+
+.btn-guardar {
+  background: #27ae60;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-cerrar {
+  background: #6c757d;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-calcular {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: var(--color-secundario);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.detalle-seccion {
+  margin-bottom: 15px;
+}
+
+.detalle-seccion h4 {
+  margin: 0 0 5px 0;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.detalle-lista {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.estado-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.estado-badge.PLANT { background: #95a5a6; color: white; }
+</style>
 
 {% endblock inicio %}

@@ -1,3 +1,4 @@
+
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from BookingRoomApp import models
@@ -23,7 +24,7 @@ def crear_reseracion(datos):
         total = subtotal + IVA
 
         if not datos.get('estado_reserva'):
-            estado = 'PENDI'
+            estado = 'PEN'
         else:
             estado = datos['estado_reserva']
 
@@ -41,14 +42,60 @@ def crear_reseracion(datos):
 
         for equipo in equipos:
             models.ReservaEquipa.objects.create(cantidad=equipo['cantidad'], reservacion_id=reservacion.pk, equipamiento_id=equipo['id'])
+            reservar_equipamiento(equipo['id'], equipo['cantidad'])
 
-        models.RegistrEstadReserva.objects.create(reservacion_id=reservacion.pk, estado_reserva_id="PENDI")
+        for mobiliario in mobiliarios:
+            reservar_mobiliario(mobiliario['id'], mobiliario['cantidad'])
 
-        # la modificacion de estados de salon, equipamientos y mobiliarios se hacen cuando la reservacion sea aceptada (cuando este pagada)
-        # en caso de cambiar el estado (desde el historial), se cambiaran los estados de equipamientos, mobiliarios y salon desde el service de cambio estao de reservacion
+        models.RegistrEstadReserva.objects.create(reservacion_id=reservacion.pk, estado_reserva_id="PEN")
 
         return reservacion
 
+
+def reservar_mobiliario(mobiliario_id, cantidad):
+    inventario_disp = models.InventarioMob.objects.filter(
+        mobiliario_id=mobiliario_id, 
+        estado_mobil_id='DISP'
+    ).first()
+    
+    if not inventario_disp or inventario_disp.cantidad < cantidad:
+        mobiliario = models.Mobiliario.objects.get(id=mobiliario_id)
+        raise ValidationError(f"No hay suficiente stock disponible de {mobiliario.nombre}")
+    
+    inventario_disp.cantidad -= cantidad
+    inventario_disp.save(update_fields=['cantidad'])
+    
+    inventario_resv, created = models.InventarioMob.objects.get_or_create(
+        mobiliario_id=mobiliario_id,
+        estado_mobil_id='OCUP',
+        defaults={'cantidad': cantidad}
+    )
+    if not created:
+        inventario_resv.cantidad += cantidad
+        inventario_resv.save(update_fields=['cantidad'])
+
+
+def reservar_equipamiento(equipamiento_id, cantidad):
+    inventario_disp = models.InventarioEquipa.objects.filter(
+        equipamiento_id=equipamiento_id, 
+        estado_equipa_id='DISP'
+    ).first()
+    
+    if not inventario_disp or inventario_disp.cantidad < cantidad:
+        equipamiento = models.Equipamiento.objects.get(id=equipamiento_id)
+        raise ValidationError(f"No hay suficiente stock disponible de {equipamiento.nombre}")
+    
+    inventario_disp.cantidad -= cantidad
+    inventario_disp.save(update_fields=['cantidad'])
+    
+    inventario_resv, created = models.InventarioEquipa.objects.get_or_create(
+        equipamiento_id=equipamiento_id,
+        estado_equipa_id='OCUP',
+        defaults={'cantidad': cantidad}
+    )
+    if not created:
+        inventario_resv.cantidad += cantidad
+        inventario_resv.save(update_fields=['cantidad'])
 
 def cambio_estado_reservacion(original, estado_nuevo):
     with transaction.atomic():
@@ -71,7 +118,7 @@ def cambio_estado_reservacion(original, estado_nuevo):
             control = models.RegistrEstadSalon.objects.filter(salon_id=montaje.salon_id, fecha=original.fechaEvento).exists()
             if control:
                 raise Exception("El salon ya se encuentra ocupado ese dia")
-            models.RegistrEstadSalon.objects.create(salon_id=montaje.salon_id, estado_salon_id='RESER', fecha=original.fechaEvento)
+            models.RegistrEstadSalon.objects.create(salon_id=montaje.salon_id, estado_salon_id='RESV', fecha=original.fechaEvento)
 
             # se cambian los estados de los mobiliarios (esto por medio de su inventario)
             mobiliarios = models.MontajeMobiliario.objects.filter(montaje_id=montaje.pk)
@@ -81,7 +128,7 @@ def cambio_estado_reservacion(original, estado_nuevo):
                 mobil = models.Mobiliario.objects.get(id=mobiliario.mobiliario.pk)
 
                 #se cambia su estado
-                estado = models.InventarioMob.objects.get(mobiliario_id=mobil.pk, estado_mobil_id='DISPO')
+                estado = models.InventarioMob.objects.get(mobiliario_id=mobil.pk, estado_mobil_id='DISP')
 
                 # validacion para determinar que se pueden reservar los mobiliarios
                 if estado.cantidad < mobiliario.cantidad:
@@ -95,7 +142,7 @@ def cambio_estado_reservacion(original, estado_nuevo):
                 # si no existia se crae con cantidad igual a la de los equipamientso a utilizar
                 inventario, fue_creado = models.InventarioMob.objects.get_or_create(
                     mobiliario_id= mobil.pk,
-                    estado_mobil_id= 'RESER',
+                    estado_mobil_id= 'RESV',
                     defaults= {
                         'cantidad': mobiliario.cantidad,
                     }
@@ -110,14 +157,14 @@ def cambio_estado_reservacion(original, estado_nuevo):
             equipos = models.ReservaEquipa.objects.filter(reservacion_id=original.pk)
             for equipo in equipos:
                 equipamiento = models.Equipamiento.objects.get(id=equipo.equipamiento.pk)
-                inventario = models.InventarioEquipa.objects.get(equipamiento_id=equipamiento.pk, estado_equipa_id='DISPO')
+                inventario = models.InventarioEquipa.objects.get(equipamiento_id=equipamiento.pk, estado_equipa_id='DISP')
                 if inventario.cantidad < equipo.cantidad:
                     raise Exception(f"No hay suficiente {equipamiento.nombre} para reservar")
                 inventario.cantidad -= equipo.cantidad
                 inventario.save(update_fields=['cantidad'])
                 inventarioequipa, fue_creado = models.InventarioEquipa.objects.get_or_create(
                     equipamiento_id= equipamiento.pk,
-                    estado_equipa_id='RESER',
+                    estado_equipa_id='RESV',
                     defaults={
                         'cantidad': equipo.cantidad
                     }
@@ -127,9 +174,9 @@ def cambio_estado_reservacion(original, estado_nuevo):
                     inventarioequipa.save(update_fields=['cantidad'])
 
         # si se cancela una reservacion, es necesario modificar estados de mobilairios, equipamientos (inventarios), posterior se tienen que eliminar el registro de estado del salon, y actualizar registro de reservacion
-        elif texto_estado == 'CANCE':
+        elif texto_estado == 'CAN':
             montaje = models.Montaje.objects.get(id=original.montaje.pk)
-            models.RegistrEstadSalon.objects.filter(salon_id=montaje.salon_id, estado_salon_id='RESER', fecha=original.fechaEvento).delete()
+            models.RegistrEstadSalon.objects.filter(salon_id=montaje.salon_id, estado_salon_id='RESV', fecha=original.fechaEvento).delete()
 
             # se obtienen los mobiliarios del montaje utilizado en la reservacion
             mobiliarios = models.MontajeMobiliario.objects.filter(montaje_id=montaje.pk)
@@ -139,12 +186,12 @@ def cambio_estado_reservacion(original, estado_nuevo):
                 mobil = models.Mobiliario.objects.get(id=mobiliario.mobiliario.pk)
 
                 # se obtienen los disponibles y se le suma la cantidad q era de la reservacion
-                estado = models.InventarioMob.objects.get(mobiliario_id=mobil.pk, estado_mobil_id='DISPO')
+                estado = models.InventarioMob.objects.get(mobiliario_id=mobil.pk, estado_mobil_id='DISP')
                 estado.cantidad += mobiliario.cantidad
                 estado.save(update_fields=['cantidad'])
 
                 # se obtienen los reservados y se le resta la cantidad q era de la reservacion
-                inventario = models.InventarioMob.objects.get(mobiliario_id=mobil.pk, estado_mobil_id='RESER')
+                inventario = models.InventarioMob.objects.get(mobiliario_id=mobil.pk, estado_mobil_id='RESV')
                 inventario.cantidad -= mobiliario.cantidad
                 inventario.save(update_fields=['cantidad'])
 
@@ -153,11 +200,11 @@ def cambio_estado_reservacion(original, estado_nuevo):
             for equipo in equipos:
                 equipamiento = models.Equipamiento.objects.get(id=equipo.equipamiento.pk)
 
-                estado = models.InventarioEquipa.objects.get(equipamiento_id=equipamiento.pk, estado_equipa_id='DISPO')
+                estado = models.InventarioEquipa.objects.get(equipamiento_id=equipamiento.pk, estado_equipa_id='DISP')
                 estado.cantidad += equipo.cantidad
                 estado.save(update_fields=['cantidad'])
                 
-                inventario = models.InventarioEquipa.objects.get(equipamiento_id=equipamiento.pk, estado_equipa_id='RESER')
+                inventario = models.InventarioEquipa.objects.get(equipamiento_id=equipamiento.pk, estado_equipa_id='RESV')
                 inventario.cantidad -= equipo.cantidad
                 inventario.save(update_fields=['cantidad'])
 
@@ -182,7 +229,7 @@ def modificacion_aditamentos(original, nuevos_datos):
             # en caso de que se actualice la fecha del evento imporante actualizar el registro de ocupacion del salon
             if campo == 'fechaEvento':
                 montaje = models.Montaje.objects.get(id=reservacion.montaje.id)
-                registro_salon = models.RegistrEstadSalon.objects.get(salon_id=montaje.salon.id, fecha=reservacion.fechaEvento, estado_salon='RESER')
+                registro_salon = models.RegistrEstadSalon.objects.get(salon_id=montaje.salon.id, fecha=reservacion.fechaEvento, estado_salon='RESV')
                 registro_salon.fecha = valor
                 registro_salon.save(update_fields=['fecha'])
             setattr(original, campo, valor)
@@ -203,7 +250,7 @@ def modificacion_aditamentos(original, nuevos_datos):
                 for new_mobil in new_mobilairios:
                     
                     # obtenemos su inventario disponible
-                    inventario = models.InventarioMob.objects.get(mobiliario_id=new_mobil['id'], estado_mobil='DISPO')
+                    inventario = models.InventarioMob.objects.get(mobiliario_id=new_mobil['id'], estado_mobil='DISP')
 
                     # validacion de que hay mas inventario disponible que cantidad pedida para la reservacion                    
                     if new_mobil['cantidad'] > inventario.cantidad:
@@ -214,7 +261,7 @@ def modificacion_aditamentos(original, nuevos_datos):
                     inventario.save(update_fields=['cantidad'])
                     inventario_2, fue_creado = models.InventarioMob.objects.get_or_create(
                         mobiliario_id=new_mobil['id'], 
-                        estado_mobil='RESER',
+                        estado_mobil='RESV',
                         defaults={
                             'cantidad': new_mobil['cantidad']
                         })
@@ -227,7 +274,7 @@ def modificacion_aditamentos(original, nuevos_datos):
 
             # en caso de que la reservacion este como pendiente, cancelada, solicitud se hace un caso especial para que no se
             # guaden las reservas de mobilairios
-            elif reservacion.estado_reserva in ['CANCE', 'PENDI', 'SOLIC']:
+            elif reservacion.estado_reserva in ['CAN', 'PEN', 'SOLIC']:
                 for new_mobil in new_mobilairios:
 
                     # se intenta crear o obtener el registro de montaje mobiliario, en caso de que se cree se dara en cantidad en
@@ -248,7 +295,7 @@ def modificacion_aditamentos(original, nuevos_datos):
                         montaje_mobil.save(update_fields=['cantidad', 'completado'])
                     
                     # se obtiene el mobiliario disponible del mobiliario en iteracion
-                    inventario = models.InventarioMob.objects.get(mobiliario_id=new_mobil['id'], estado_mobil='DISPO')
+                    inventario = models.InventarioMob.objects.get(mobiliario_id=new_mobil['id'], estado_mobil='DISP')
                     if new_mobil['cantidad'] > (inventario.cantidad + total):
                         raise Exception(f"No hay suficientes {new_mobil['id']} para la reservacion")
 
@@ -268,8 +315,8 @@ def modificacion_aditamentos(original, nuevos_datos):
                         old_mobil.save(update_fields=['cantidad', 'completado'])
 
                     # obtenemos disponibles del mobiliario actual
-                    inventario_di = models.InventarioMob.objects.get(mobiliario_id=new_mobil['id'], estado_mobil_id='DISPO')
-                    inventario_re = models.InventarioMob.objects.get(mobiliario_id=new_mobil['id'], estado_mobil_id='RESER')
+                    inventario_di = models.InventarioMob.objects.get(mobiliario_id=new_mobil['id'], estado_mobil_id='DISP')
+                    inventario_re = models.InventarioMob.objects.get(mobiliario_id=new_mobil['id'], estado_mobil_id='RESV')
 
                     if new_mobil['cantidad'] > inventario_di.cantidad:
                         raise Exception(f"No hay suficientes {new_mobil['id']} para la reservacion")
@@ -284,14 +331,14 @@ def modificacion_aditamentos(original, nuevos_datos):
         if new_equipamientos:
             if reservacion.estado_reserva == 'ENPRO':
                 for new_equipo in new_equipamientos:
-                    inventario = models.InventarioEquipa.objects.get(equipamiento_id=new_equipo['id'], estado_equipa='DISPO')                 
+                    inventario = models.InventarioEquipa.objects.get(equipamiento_id=new_equipo['id'], estado_equipa='DISP')                 
                     if new_equipo['cantidad'] > inventario.cantidad:
                         raise Exception(f"No hay suficientes {new_equipo['id']} para la reservacion")
                     inventario.cantidad -= new_equipo['cantidad']
                     inventario.save(update_fields=['cantidad'])
                     inventario_2, fue_creado = models.InventarioEquipa.objects.get_or_create(
                         equipamiento_id=new_equipo['id'], 
-                        estado_equipa='RESER',
+                        estado_equipa='RESV',
                         defaults={
                             'cantidad': new_equipo['cantidad']
                         })
@@ -300,7 +347,7 @@ def modificacion_aditamentos(original, nuevos_datos):
                         inventario_2.save(update_fields=['cantidad'])
                     models.ReservaEquipa.objects.create(reservacion_id=reservacion.id, equipamiento_id=new_equipo['id'], cantidad= new_equipo['cantidad'], extra=True)
 
-            elif reservacion.estado_reserva in ['CANCE', 'PENDI', 'SOLIC', 'PAQUE']:
+            elif reservacion.estado_reserva in ['CAN', 'PEN', 'SOLIC', 'PLANT']:
                 for new_equipo in new_equipamientos:
                     equipos_reserva, fue_creado = models.ReservaEquipa.objects.get_or_create(
                         equipamiento_id=new_equipo['id'], 
@@ -315,7 +362,7 @@ def modificacion_aditamentos(original, nuevos_datos):
                         equipos_reserva.completado = False
                         equipos_reserva.save(update_fields=['cantidad', 'completado'])
 
-                    inventario = models.InventarioEquipa.objects.get(equipamiento_id=new_equipo['id'], estado_equipa='DISPO')           
+                    inventario = models.InventarioEquipa.objects.get(equipamiento_id=new_equipo['id'], estado_equipa='DISP')           
                     if new_equipo['cantidad'] > (inventario.cantidad + total):
                         raise Exception(f"No hay suficientes {new_equipo['id']} para la reservacion")
 
@@ -332,8 +379,8 @@ def modificacion_aditamentos(original, nuevos_datos):
                         old_equipo.save(update_fields=['cantidad', 'completado'])
 
                     # obtenemos disponibles del mobiliario actual
-                    inventario_di = models.InventarioEquipa.objects.get(equipamiento_id=new_equipo['id'], estado_equipa_id='DISPO')
-                    inventario_re = models.InventarioEquipa.objects.get(equipamiento_id=new_equipo['id'], estado_equipa_id='RESER')
+                    inventario_di = models.InventarioEquipa.objects.get(equipamiento_id=new_equipo['id'], estado_equipa_id='DISP')
+                    inventario_re = models.InventarioEquipa.objects.get(equipamiento_id=new_equipo['id'], estado_equipa_id='RESV')
 
                     if new_equipo['cantidad'] > inventario_di.cantidad:
                         raise Exception(f"No hay suficientes {new_equipo['id']} para la reservacion")
@@ -358,8 +405,8 @@ def modificacion_aditamentos(original, nuevos_datos):
 
 # funcion de apoyo para revertir cambios de estados en mobilairios
 def _liberar_reservados_mobiliarios(old_mob):
-    inventario_di = models.InventarioMob.objects.get(estado_mobil='DISPO', mobiliario_id=old_mob.mobiliario)
-    inventario_re = models.InventarioMob.objects.get(estado_mobil='RESER', mobiliario_id=old_mob.mobiliario)
+    inventario_di = models.InventarioMob.objects.get(estado_mobil='DISP', mobiliario_id=old_mob.mobiliario)
+    inventario_re = models.InventarioMob.objects.get(estado_mobil='RESV', mobiliario_id=old_mob.mobiliario)
     inventario_di.cantidad += old_mob.cantidad
     inventario_re.cantidad -= old_mob.cantidad
     inventario_di.save(update_fields=['cantidad'])
@@ -368,8 +415,8 @@ def _liberar_reservados_mobiliarios(old_mob):
 
 # funcion de apoyo para cambiar estados de equipamientos
 def _liberar_reservados_equipos(old_equipo):
-    inventario_di = models.InventarioEquipa.objects.get(estado_equipa='DISPO', equipamiento_id=old_equipo.equipamiento)
-    inventario_re = models.InventarioEquipa.objects.get(estado_equipa='RESER', equipamiento_id=old_equipo.equipamiento)
+    inventario_di = models.InventarioEquipa.objects.get(estado_equipa='DISP', equipamiento_id=old_equipo.equipamiento)
+    inventario_re = models.InventarioEquipa.objects.get(estado_equipa='RESV', equipamiento_id=old_equipo.equipamiento)
     inventario_di.cantidad += old_equipo.cantidad
     inventario_re.cantidad -= old_equipo.cantidad
     inventario_di.save(update_fields=['cantidad'])

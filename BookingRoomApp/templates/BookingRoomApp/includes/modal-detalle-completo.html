@@ -1,0 +1,130 @@
+{% load static %}
+
+<dialog id="modalDetalleCompleto" class="modal-beo">
+  <div class="cabecera-modal">
+    <span class="titulo-modal">
+      DETALLE: <span id="detalle-titulo-evento">-</span>
+    </span>
+    <button onclick="document.getElementById('modalDetalleCompleto').close()" class="cerrar-modal">X</button>
+  </div>
+
+  <div class="modal-grid">
+    <div class="modal-div modal-div-1">
+      <h3 class="titulo-info-cliente">Información del cliente</h3>
+
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Nombre completo:</label>
+          <span id="detalle-cliente-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Correo electrónico:</label>
+          <span id="detalle-cliente-correo">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Teléfono:</label>
+          <span id="detalle-cliente-telefono">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>RFC:</label>
+          <span id="detalle-cliente-rfc">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Nombre fiscal:</label>
+          <span id="detalle-cliente-nombre-fiscal">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-2">
+      <h3 class="titulo-seccion-modal">Información del evento</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Nombre:</label>
+          <span id="detalle-evento-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Descripción:</label>
+          <span id="detalle-evento-descripcion">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Fecha:</label>
+          <span id="detalle-evento-fecha">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Horario:</label>
+          <span id="detalle-evento-horario">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Estado:</label>
+          <span id="detalle-evento-estado">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Asistentes:</label>
+          <span id="detalle-evento-asistentes">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-3">
+      <h3 class="titulo-seccion-modal">Salón y Montaje</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Salón:</label>
+          <span id="detalle-salon-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Montaje:</label>
+          <span id="detalle-salon-montaje">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-4">
+      <h3 class="titulo-seccion-modal">Servicios</h3>
+      <div class="datos">
+        <span id="detalle-servicios-lista">No hay servicios</span>
+      </div>
+    </div>
+    <div class="modal-div modal-div-5">
+      <h3 class="titulo-seccion-modal">Equipamientos</h3>
+      <div class="datos">
+        <span id="detalle-equipamientos-lista">No hay equipamientos</span>
+      </div>
+    </div>
+    <div class="modal-div modal-div-6">
+      <h3 class="titulo-seccion-modal">Totales</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <span>IVA:</span>
+          <span id="detalle-total-iva">$0.00</span>
+        </div>
+        <div class="fila-dato">
+          <span>Subtotal:</span>
+          <span id="detalle-total-subtotal">$0.00</span>
+        </div>
+        <div class="fila-dato">
+          <span>Total:</span>
+          <span id="detalle-total-total">$0.00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-botones">
+    <button class="btn-modal btn-cerrar" onclick="document.getElementById('modalDetalleCompleto').close()">
+      Cerrar
+    </button>
+  </div>
+</dialog>
+
+<style>
+  .modal-botones .btn-cerrar {
+    background-color: #6c757d;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .modal-botones .btn-cerrar:hover {
+    background-color: #5a6268;
+  }
+</style>

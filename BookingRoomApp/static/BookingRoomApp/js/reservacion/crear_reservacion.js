@@ -1,9 +1,58 @@
 
 function datosReservacion() {
-    // id del cliente y trabajador
+    // Validar cliente
     const cliente = document.getElementById('cliente-rfc')?.value;
+    const clienteNombre = document.getElementById('cliente-nombre')?.value?.trim();
+    const clienteApellidoPaterno = document.getElementById('cliente-apellido-paterno')?.value?.trim();
+    const clienteNombreFiscal = document.getElementById('cliente-nombre-fiscal')?.value?.trim();
+    const clienteColonia = document.getElementById('cliente-colonia')?.value?.trim();
+    const clienteCalle = document.getElementById('cliente-calle')?.value?.trim();
+    const clienteNumero = document.getElementById('cliente-numero')?.value?.trim();
+    const clienteTelefono = document.getElementById('cliente-telefono')?.value?.trim();
+    const clienteCorreo = document.getElementById('cliente-correo')?.value?.trim();
+
     if (!cliente) {
-        mostrarToastExito('Cliente no localizado', 'error');
+        mostrarToastExito('Cliente no localizado. Busca o registra un cliente.', 'error');
+        return null;
+    }
+
+    if (!clienteNombre) {
+        mostrarToastExito('Falta el nombre del cliente', 'error');
+        return null;
+    }
+
+    if (!clienteApellidoPaterno) {
+        mostrarToastExito('Falta el primer apellido del cliente', 'error');
+        return null;
+    }
+
+    if (!clienteNombreFiscal) {
+        mostrarToastExito('Falta el nombre fiscal del cliente', 'error');
+        return null;
+    }
+
+    if (!clienteColonia) {
+        mostrarToastExito('Falta la colonia del cliente', 'error');
+        return null;
+    }
+
+    if (!clienteCalle) {
+        mostrarToastExito('Falta la calle del cliente', 'error');
+        return null;
+    }
+
+    if (!clienteNumero) {
+        mostrarToastExito('Falta el número del cliente', 'error');
+        return null;
+    }
+
+    if (!clienteTelefono) {
+        mostrarToastExito('Falta el teléfono del cliente', 'error');
+        return null;
+    }
+
+    if (!clienteCorreo) {
+        mostrarToastExito('Falta el correo del cliente', 'error');
         return null;
     }
 
@@ -13,7 +62,7 @@ function datosReservacion() {
         return null;
     }
 
-    // Reservacion info
+    // Validar datos del evento
     const nombre = document.getElementById('nombreEvento')?.value?.trim();
     const tipo_evento = document.getElementById('tipo_evento')?.value;
     const fechaEvento = document.getElementById('fecha_evento')?.value;
@@ -22,17 +71,59 @@ function datosReservacion() {
     const horaFin = document.getElementById('hora_fin')?.value;
     const descripEvento = document.getElementById('descripcion_evento')?.value?.trim();
 
-    if (!nombre || !tipo_evento || !fechaEvento || !estimaAsistentes || !horaInicio || !horaFin || !descripEvento) {
-        mostrarToastExito('Datos faltantes de reservacion', 'error')
+    if (!nombre) {
+        mostrarToastExito('Falta el nombre del evento', 'error');
         return null;
     }
 
+    if (!tipo_evento) {
+        mostrarToastExito('Falta seleccionar el tipo de evento', 'error');
+        return null;
+    }
 
-    // montaje/salon/mobiliario
+    if (!fechaEvento) {
+        mostrarToastExito('Falta la fecha del evento', 'error');
+        return null;
+    }
+
+    if (!estimaAsistentes) {
+        mostrarToastExito('Falta el número de asistentes', 'error');
+        return null;
+    }
+
+    if (!horaInicio) {
+        mostrarToastExito('Falta la hora de inicio', 'error');
+        return null;
+    }
+
+    if (!horaFin) {
+        mostrarToastExito('Falta la hora de fin', 'error');
+        return null;
+    }
+
+    if (!descripEvento) {
+        mostrarToastExito('Falta la descripción del evento', 'error');
+        return null;
+    }
+
+    // Validar salón y montaje
     const salon = document.getElementById('select-salon')?.value;
     const tipo_montaje = document.getElementById('select-montaje')?.value;
 
+    if (!salon) {
+        mostrarToastExito('Falta seleccionar un salón', 'error');
+        return null;
+    }
+
+    if (!tipo_montaje) {
+        mostrarToastExito('Falta seleccionar un montaje', 'error');
+        return null;
+    }
+
+    // Validar mobiliarios (al menos uno)
     const mobiliarios = [];
+    let hayMobiliarioValido = false;
+    
     document.querySelectorAll('.mobil-pair').forEach(pair => {
         const mobiliarioSeleccionado = pair.querySelector('.mobiliario-select');
         const cantidad = pair.querySelector('input[type="number"]');
@@ -42,26 +133,24 @@ function datosReservacion() {
                 id: mobiliarioSeleccionado.value,
                 cantidad: parseInt(cantidad.value)
             });
-        } else {
-            mostrarToastExito("Datos de mobiliario incompletos", "error")
-            return null;
+            hayMobiliarioValido = true;
+        } else if (mobiliarioSeleccionado && mobiliarioSeleccionado.value) {
+            mostrarToastExito("Datos de mobiliario incompletos", "error");
         }
-
     });
 
-    if (!salon || !tipo_montaje) {
-        mostrarToastExito("No se han completado los campos de salon y montaje", 'error');
+    if (!hayMobiliarioValido) {
+        mostrarToastExito('Agrega al menos un mobiliario', 'error');
         return null;
     }
 
-    montaje = {
+    const montaje = {
         salon: parseInt(salon),
         tipo_montaje: parseInt(tipo_montaje),
         mobiliarios
     };
 
-
-    // servicios
+    // Servicios (OPCIONAL)
     const reserva_servicio = [];
     document.querySelectorAll('.servicio-select').forEach(pair => {
         if (pair.value) {
@@ -69,8 +158,7 @@ function datosReservacion() {
         }
     });
 
-
-    // equipamientos
+    // Equipamiento (OPCIONAL)
     const reserva_equipa = [];
     document.querySelectorAll('.equipo-pair').forEach(pair => {
         const equipamiento = pair.querySelector('.equipamiento-select');
@@ -85,7 +173,6 @@ function datosReservacion() {
 
     });
 
-    // armao del json q se enviara
     return {
         nombre: nombre,
         descripEvento: descripEvento,
@@ -100,11 +187,9 @@ function datosReservacion() {
         montaje: montaje,
         tipo_evento: parseInt(tipo_evento)
     };
-
 }
 
-
-function otenerError(info) {
+function obtenerError(info) {
     if (info.error) return info.error;
     if (typeof info === 'object') {
         for (const key in info) {
@@ -116,11 +201,9 @@ function otenerError(info) {
     return 'No se localizo el error';
 }
 
-
 async function crearReservacion() {
     const datos = datosReservacion();
-
-    if (!datos) return;
+    if (!datos) return false;
 
     try {
         const respuesta = await fetch('/api/reservacion/', {
@@ -132,31 +215,59 @@ async function crearReservacion() {
         const data = await respuesta.json();
 
         if (respuesta.ok) {
-            mostrarToastExito("Reservacion creada con exito", 'success');
+            return { success: true, id: data.id, data: data };
         } else {
-            const errro = otenerError(data);
-            mostrarToastExito(`Error: ${errro}`, 'error')
+            const error = obtenerError(data);
+            mostrarToastExito(`Error: ${error}`, 'error')
             console.error('Error API:', data)
+            return { success: false };
         }
 
-
-    }
-    catch (error) {
+    } catch (error) {
         mostrarToastExito("Error en la conexion con el servidor", 'error');
         console.error(error)
+        return { success: false };
     }
-
 }
 
+let reservacionCreadaId = null;
+
+async function confirmarReservacion() {
+    const resultado = await crearReservacion();
+    
+    if (resultado && resultado.success) {
+        reservacionCreadaId = resultado.id;
+        abrirModalConfirmar(
+            'Reservación creada',
+            `La reservación #${resultado.id} se creó exitosamente. ¿Deseas realizar un pago ahora?`,
+            function() {
+                abrirModalPagosConReservacion(reservacionCreadaId);
+            }
+        );
+    }
+}
+
+function abrirModalPagosConReservacion(reservacionId) {
+    const modal = document.getElementById('modalPagos');
+    if (modal) {
+        const inputReservacion = modal.querySelector('[data-field="reservacion"]');
+        const inputReservacionId = modal.querySelector('[data-field="reservacion_id"]');
+        
+        if (inputReservacion) inputReservacion.value = reservacionId;
+        if (inputReservacionId) inputReservacionId.value = reservacionId;
+        
+        modal.showModal();
+    }
+}
 
 document.addEventListener('DOMContentLoaded', function () {
     const botonReservacion = document.querySelector('.reservacion-btn-confirmar');
     if (botonReservacion) {
         botonReservacion.onclick = function () {
             abrirModalConfirmar(
-                'Confirmar reservacion',
-                '¿Estas seguro de realizar esta reservacion?',
-                crearReservacion
+                'Confirmar reservación',
+                '¿Estás seguro de que deseas crear esta reservación?',
+                confirmarReservacion
             );
         };
     }

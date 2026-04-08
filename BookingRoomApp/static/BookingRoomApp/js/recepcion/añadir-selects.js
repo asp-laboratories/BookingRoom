@@ -311,15 +311,21 @@ async function cargarMontajesSalon(salon) {
       datos.montajes.forEach((montaje) => {
         const option = document.createElement("option");
         option.value = montaje.id;
-        option.textContent = montaje.nombre;
+        option.textContent = `${montaje.nombre} (Capacidad: ${montaje.capacidadIdeal || 'N/A'})`;
         montajeElegido.appendChild(option);
       });
     } else {
       montajeElegido.innerHTML =
         '<option value="">-- No se encontraron montajes --</option>';
     }
+
+    // Mostrar información del salón seleccionado en la consola
+    if (datos.salon) {
+      console.log(`Salón: ${datos.salon.nombre} - Costo: $${datos.salon.costo} - Capacidad: ${datos.salon.capacidad}`);
+    }
   } catch (error) {
     console.error("Error al cargar los montajes", error);
+    mostrarToastExito("Error al cargar montajes", "error");
   }
 
   montajeElegido.addEventListener(
