@@ -10,6 +10,7 @@ urlpatterns = [
     path('reservacion/buscar-cliente/', views.buscar_cliente, name='buscar_cliente'),
     path('reservacion/servicios-por-tipo/', views.obtener_servicios_por_tipo, name='obtener_servicios_por_tipo'),
     path('reservacion/equipamiento-por-tipo/', views.obtener_equipamiento_por_tipo, name='obtener_equipamiento_por_tipo'),
+    path('reservacion/mobiliarios-tipo/', views.mobiliarios_por_tipo, name='mobiliarios_por_tipo'),
     path('reservacion/<int:pk>/', views.DetallesReservacionView.as_view(), name="reservacion"),
     path('administracion/servicios/', views.Servicios.as_view(), name="servicios"),
     path('administracion/servicios/<int:pk>/actualizar/', views.actualizar_servicio, name="actualizar_servicio"),
@@ -37,5 +38,4 @@ urlpatterns = [
     path("almacen/inventario-mobiliario/", views.inventario_mobiliario, name="inventario_mobiliario"),
     path("almacen/actualizar-estado-mobiliario/", views.actualizar_estado_mobiliario, name="actualizar_estado_mobiliario"),
     path('reservacion/montajes-salon/', views.montaje_por_salon, name='montaje_salon'),
-    path('reservacion/mobiliarios-tipo/', views.mobiliarios_por_tipo, name='mobiliarios_por_tipo'),
 ]

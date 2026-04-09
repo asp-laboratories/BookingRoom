@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", function () {
     const inputFecha = document.querySelector('.buscar-fecha');
     const btnBuscar = document.getElementById('buscar-manual-fechas');

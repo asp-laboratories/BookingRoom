@@ -155,11 +155,6 @@ class RegistrEstadReservaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ReservaEquipaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.ReservaEquipa
-        fields = '__all__'
-
 class FechasReservaciones(serializers.ModelSerializer):
     class Meta:
         model = models.Reservacion
@@ -359,6 +354,12 @@ class EquipamientoSerializer(serializers.ModelSerializer):
         return response
 
 
+class ReservaEquipaSerializer(serializers.ModelSerializer):
+    equipamiento = EquipamientoSerializer(read_only=True)
+    class Meta:
+        model = models.ReservaEquipa
+        fields = '__all__'
+
 class InventarioEquipaSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.InventarioEquipa
@@ -434,6 +435,7 @@ class MobiliarioSerializer(serializers.ModelSerializer):
 
 
 class MontajeMobiliarioSerializer(serializers.ModelSerializer):
+    mobiliario = MobiliarioSerializer(read_only=True)
     class Meta:
         model = models.MontajeMobiliario
         fields = '__all__'
@@ -463,6 +465,7 @@ class TipoMobilSerializer(serializers.ModelSerializer):
         fields = '__all__'
     
 class ReservaServicioSerializer(serializers.ModelSerializer):
+    servicio = ServicioSerializer(read_only=True)
     class Meta:
         model = models.ReservaServicio
         fields = '__all__'
@@ -503,14 +506,15 @@ class ReservacionCreacionSerializer(serializers.Serializer):
     nombre = serializers.CharField() # #
     descripEvento = serializers.CharField() ##
     estimaAsistentes = serializers.IntegerField() ##
-    fechaEvento = serializers.DateField() ##
-    horaInicio = serializers.TimeField() ##
-    horaFin = serializers.TimeField() ##
+    fechaEvento = serializers.DateField(required=False) ##
+    horaInicio = serializers.TimeField(required=False) ##
+    horaFin = serializers.TimeField(required=False) ##
     subtotal = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2, required=False) # no se obtienen xd
     IVA = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2, required=False) # no se obtienen xd
     total = serializers.DecimalField(allow_null=True, max_digits=10, decimal_places=2, required=False) # no se obtienen xd
-    cliente = serializers.CharField() ##
+    cliente = serializers.CharField(required=False) ##
     trabajador = serializers.CharField(required=False) ##
+    es_paquete = serializers.BooleanField(required=False)
     estado_reserva = serializers.CharField(required=False) # automatico como pendiente
     reserva_servicio = ServiciosReservacionSerializer(many=True, required=False, allow_empty=True) #
     reserva_equipa = EquipamientoReservacionSerializer(many=True, required=False, allow_empty=True) #

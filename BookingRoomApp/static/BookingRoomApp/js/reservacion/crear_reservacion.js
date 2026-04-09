@@ -148,8 +148,10 @@ async function crearReservacion() {
 
     if (respuesta.ok) {
       mostrarToastExito("Reservacion creada con exito", "success");
-      const modalPago = document.getElementById('modalPagos');
-      const reservacion_id = modalPago.querySelector('[data-field="reservacion"]');
+      const modalPago = document.getElementById("modalPagos");
+      const reservacion_id = modalPago.querySelector(
+        '[data-field="reservacion"]',
+      );
       if (reservacion_id) {
         reservacion_id.value = data.id;
       }

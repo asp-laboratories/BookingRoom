@@ -43,4 +43,5 @@ urlpatterns = router.urls + [
     path('reservaciones-coordinador/', views.ListaReservacionesCoordinadorView.as_view(), name='reservaciones_coordinador'),
     path('perfil/', views.PerfilView.as_view(), name='perfil'),
     path('tipo-equipa/', views.ListTipoEquipa.as_view(), name='tipo_equipa'),
+    path('lista-paquetes/', views.ListaPaquetesViewSet.as_view(), name="lista_paquetes"),
 ]

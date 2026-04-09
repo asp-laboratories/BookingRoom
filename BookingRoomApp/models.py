@@ -339,16 +339,19 @@ class Reservacion(models.Model):
     descripEvento = models.CharField(max_length=550)
     estimaAsistentes = models.IntegerField()
     fechaReservacion = models.DateField(auto_now_add=True)
-    fechaEvento = models.DateField()
-    horaInicio = models.TimeField()
-    horaFin = models.TimeField()
+    fechaEvento = models.DateField(null=True, blank=True)
+    horaInicio = models.TimeField(null=True, blank=True)
+    horaFin = models.TimeField(null=True, blank=True)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     IVA = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     total = models.DecimalField(max_digits=10, decimal_places=2, null=True)
-    cliente = models.ForeignKey(DatosCliente, on_delete=models.PROTECT)
     montaje = models.ForeignKey(Montaje, on_delete=models.PROTECT)
-    estado_reserva = models.ForeignKey(EstadoReserva, on_delete=models.PROTECT)
     tipo_evento = models.ForeignKey(TipoEvento, on_delete=models.PROTECT)
+    es_paquete = models.BooleanField(default=False, blank=True)
+    # el tipo paquete se guardara como un estado de la reservacion
+    estado_reserva = models.ForeignKey(EstadoReserva, on_delete=models.PROTECT)
+    # Con esto se permite que la reservacion (paquetes) puedan ser generados sin cliente o trabajador
+    cliente = models.ForeignKey(DatosCliente, on_delete=models.PROTECT, null=True, blank=True)
     trabajador = models.ForeignKey(Trabajador, on_delete=models.PROTECT, null=True, blank=True)
 
     # === cliente-validar: Aceptar/Rechazar reservación ===

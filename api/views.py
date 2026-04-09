@@ -793,3 +793,14 @@ class ListaReservacionesCoordinadorView(APIView):
         
         serializer = serializers.ReservacionCoordinadorSerializer(reservaciones, many=True)
         return Response(serializer.data)
+
+class ListaPaquetesViewSet(APIView):
+
+    def get(self, request):
+        reservaciones = models.Reservacion.objects.filter(estado_reserva__codigo="PAQUE"
+                                                          ).select_related('tipo_evento', 'montaje', 'montaje__salon', 'montaje__tipo_montaje'
+                                                          ).prefetch_related('reservaservicio_set__servicio', 'reservaequipa_set__equipamiento', 'montaje__montajemobiliario_set', 
+                                                                             'montaje__montajemobiliario_set__mobiliario')
+        serializer = serializers.ReservacionLecturaSerializer(reservaciones, many=True)
+        return Response(serializer.data)
+    

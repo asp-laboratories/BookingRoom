@@ -17,29 +17,58 @@ def crear_reseracion(datos):
                                      mobiliarios=mobiliarios, equipamientos=equipos)
         
         montaje = crear_montaje(datos['montaje'])
-        
-        subtotal = localizador_precio.sumar_todo()
-        IVA = subtotal * Decimal(0.16)
-        total = subtotal + IVA
 
+        subtotal = localizador_precio.sumar_todo()
+
+        # en caso de no ingresarse el estado en el que se encontrara la reservacion, se pone automaticamente com pendiente
         if not datos.get('estado_reserva'):
             estado = 'PENDI'
         else:
+            # en caso de que si haya un estado, se pondra el estado como tal
             estado = datos['estado_reserva']
+            if datos['estado_reserva'] == "PAQUE":
+                # en caso de que el estado sea paquete se pondra el subtotal ingresado desde el json
+                subtotal = Decimal(datos["subtotal"])
+ 
+        IVA = subtotal * Decimal(0.16)
+        total = subtotal + IVA
+
+        # seccion de validacion en contra de nulos en el envio
+        if not datos.get('fechaEvento'):
+            fechaEvento = None
+        else:
+            fechaEvento = datos['fechaEvento']
+
+        if not datos.get('horaInicio'):
+            horaIncio = None
+        else:
+            horaIncio = datos['horaInicio']
+
+        if not datos.get('horaFin'):
+            horaFin = None
+        else:
+            horaFin = datos['horaFin']
 
         if not datos.get('trabajador'):
             trabajdor = None
         else:
             trabajdor = datos['trabajador']
+        
+        if not datos.get('cliente'):
+            cliente = None
+        else:
+            cliente = models.DatosCliente.objects.get(rfc=datos['cliente']).id
 
-        cliente = models.DatosCliente.objects.get(rfc=datos['cliente'])
+        if not datos.get('es_paquete'):
+            es_paquete = False    
+        else:
+            es_paquete = datos['es_paquete']    
 
         reservacion = models.Reservacion.objects.create(nombreEvento=datos['nombre'], descripEvento=datos['descripEvento'], 
-                                                        estimaAsistentes=datos['estimaAsistentes'], fechaEvento=datos['fechaEvento'], 
-                                                        horaInicio=datos['horaInicio'], horaFin=datos['horaFin'], 
-                                                        subtotal=subtotal, IVA=IVA, total=total, 
-                                                        cliente_id=cliente.id, montaje_id=montaje.pk, estado_reserva_id=estado, 
-                                                        tipo_evento_id=datos['tipo_evento'], trabajador_id=trabajdor)
+                                                        estimaAsistentes=datos['estimaAsistentes'], fechaEvento=fechaEvento, 
+                                                        horaInicio=horaIncio, horaFin=horaFin, subtotal=subtotal, IVA=IVA, 
+                                                        total=total, cliente_id=cliente, montaje_id=montaje.pk, estado_reserva_id=estado, 
+                                                        tipo_evento_id=datos['tipo_evento'], trabajador_id=trabajdor, es_paquete= es_paquete)
 
         for servicio in servicios:
             models.ReservaServicio.objects.create(servicio_id=servicio['id'], reservacion_id=reservacion.id)

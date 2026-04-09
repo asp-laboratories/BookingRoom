@@ -3,34 +3,71 @@
 
 {% block inicio %}
 
-<link rel="stylesheet" href="{% static 'BookingRoomApp/css/recepcion/reservacion.css' %}">
-
+<link rel="stylesheet"
+  href="{% static 'BookingRoomApp/css/recepcion/reservacion.css' %}">
 
 <div class="paquetes-container">
   <h1 class="paquetes-titulo">Crear Paquetes</h1>
 
   <div class="paquetes-grid">
-    
+
     <section id="paquete-salon" class="paquetes-seccion">
       <h2 class="paquetes-titulo-seccion">Salón y Montaje</h2>
       <div class="paquetes-campos-row">
         <div class="paquetes-campo">
           <label class="paquetes-label">Seleccionar Salón</label>
           <select class="paquetes-input" id="paquete-salon-select">
-            <option value="">-- Selecciona un salón --</option>
+            <option value>-- Selecciona un salón --</option>
             {% for salon in salones %}
-            <option value="{{ salon.id }}">{{ salon.nombre }}</option>
+            <option data-costo="{{ salon.costo }}"
+              data-capacidad="{{ salon.maxCapacidad }}"
+              value="{{ salon.id }}">{{ salon.nombre }}</option>
             {% endfor %}
           </select>
         </div>
         <div class="paquetes-campo">
           <label class="paquetes-label">Seleccionar Montaje</label>
           <select class="paquetes-input" id="paquete-montaje-select">
-            <option value="">-- Selecciona un montaje --</option>
+            <option value>-- Selecciona un montaje --</option>
             {% for montaje in tipos_montaje %}
             <option value="{{ montaje.id }}">{{ montaje.nombre }}</option>
             {% endfor %}
           </select>
+        </div>
+      </div>
+      <!-- aca va lo de los mobiliarios -->
+      <div class="paquetes-servicios-container">
+        <div class="paquetes-servicios-list" id="paquete-mobiliario-list">
+          <div class="paquetes-mobiliario-pair" data-index="1">
+            <div class="paquetes-campo">
+              <label class="paquetes-label">Tipo de mobiliario</label>
+              <select class="paquetes-input paquete-mobiliario-tipo"
+                name="mobiliario_tipo_1">
+                <option value>-- Elige un tipo --</option>
+                {% for tipo in tipos_mobiliario %}
+                <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="paquetes-campo">
+              <label class="paquetes-label">Seleccionar mobiliario</label>
+              <select class="paquetes-input paquete-mobiliario-select"
+                name="mobiliario_1" disabled>
+                <option value>-- Selecciona un tipo primero --</option>
+              </select>
+            </div>
+            <div class="paquetes-campo">
+              <label class="paquetes-label">Cantidad</label>
+              <input type="number" class="paquetes-input"
+                name="mobiliario_cantidad_1" value="1" min="1" />
+            </div>
+          </div>
+        </div>
+        <div class="paquetes-servicios-botones">
+          <button type="button" class="paquetes-btn-quitar"
+            onclick="quitarPaqueteItem('mobiliario')">- Quitar</button>
+          <button type="button" class="paquetes-btn-anadir"
+            onclick="anadirPaqueteMobiliarios()">+ Añadir Mobiliario</button>
         </div>
       </div>
     </section>
@@ -42,8 +79,9 @@
           <div class="paquetes-servicio-pair" data-index="1">
             <div class="paquetes-campo">
               <label class="paquetes-label">Tipo de servicio</label>
-              <select class="paquetes-input paquete-servicio-tipo" name="servicio_tipo_1">
-                <option value="">-- Elige un tipo --</option>
+              <select class="paquetes-input paquete-servicio-tipo"
+                name="servicio_tipo_1">
+                <option value>-- Elige un tipo --</option>
                 {% for tipo in tipos_servicio %}
                 <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
                 {% endfor %}
@@ -51,15 +89,18 @@
             </div>
             <div class="paquetes-campo">
               <label class="paquetes-label">Seleccionar Servicio</label>
-              <select class="paquetes-input paquete-servicio-select" name="servicio_1" disabled>
-                <option value="">-- Selecciona un tipo primero --</option>
+              <select class="paquetes-input paquete-servicio-select"
+                name="servicio_1" disabled>
+                <option value>-- Selecciona un tipo primero --</option>
               </select>
             </div>
           </div>
         </div>
         <div class="paquetes-servicios-botones">
-          <button type="button" class="paquetes-btn-quitar" onclick="quitarPaqueteSelect('servicios')">- Quitar</button>
-          <button type="button" class="paquetes-btn-anadir" onclick="anadirPaqueteServicio()">+ Añadir Servicio</button>
+          <button type="button" class="paquetes-btn-quitar"
+            onclick="quitarPaqueteItem('servicios')">- Quitar</button>
+          <button type="button" class="paquetes-btn-anadir"
+            onclick="anadirPaqueteServicio()">+ Añadir Servicio</button>
         </div>
       </div>
     </section>
@@ -67,12 +108,13 @@
     <section id="paquete-equipamiento" class="paquetes-seccion">
       <h3 class="paquetes-titulo-seccion">Equipamiento Incluido</h3>
       <div class="paquetes-servicios-container">
-        <div class="paquetes-servicios-list" id="paquete-equipamiento-list">
-          <div class="paquetes-servicio-pair" data-index="1">
+        <div class="paquetes-servicios-list" id="paquete-equipamientos-list">
+          <div class="paquetes-equipamiento-pair" data-index="1">
             <div class="paquetes-campo">
               <label class="paquetes-label">Tipo de equipamiento</label>
-              <select class="paquetes-input paquete-equipamiento-tipo" name="equipamiento_tipo_1">
-                <option value="">-- Elige un tipo --</option>
+              <select class="paquetes-input paquete-equipamiento-tipo"
+                name="equipamiento_tipo_1">
+                <option value>-- Elige un tipo --</option>
                 {% for tipo in tipos_equipamiento %}
                 <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
                 {% endfor %}
@@ -80,19 +122,23 @@
             </div>
             <div class="paquetes-campo">
               <label class="paquetes-label">Seleccionar Equipo</label>
-              <select class="paquetes-input paquete-equipamiento-select" name="equipamiento_1" disabled>
-                <option value="">-- Selecciona un tipo primero --</option>
+              <select class="paquetes-input paquete-equipamiento-select"
+                name="equipamiento_1" disabled>
+                <option value>-- Selecciona un tipo primero --</option>
               </select>
             </div>
             <div class="paquetes-campo">
               <label class="paquetes-label">Cantidad</label>
-              <input type="number" class="paquetes-input" name="equipamiento_cantidad_1" value="1" min="1" />
+              <input type="number" class="paquetes-input"
+                name="equipamiento_cantidad_1" value="1" min="1" />
             </div>
           </div>
         </div>
         <div class="paquetes-servicios-botones">
-          <button type="button" class="paquetes-btn-quitar" onclick="quitarPaqueteSelect('equipamientos')">- Quitar</button>
-          <button type="button" class="paquetes-btn-anadir" onclick="anadirPaqueteEquipamiento()">+ Añadir Equipamiento</button>
+          <button type="button" class="paquetes-btn-quitar"
+            onclick="quitarPaqueteItem('equipamientos')">- Quitar</button>
+          <button type="button" class="paquetes-btn-anadir"
+            onclick="anadirPaqueteEquipamiento()">+ Añadir Equipamiento</button>
         </div>
       </div>
     </section>
@@ -102,15 +148,18 @@
       <div class="paquetes-precios-grid">
         <div class="paquetes-campo">
           <label class="paquetes-label">Subtotal</label>
-          <input type="number" class="paquetes-input" id="paquete-subtotal" placeholder="0.00" step="0.01" />
+          <input type="number" class="paquetes-input" id="paquete-subtotal"
+            placeholder="0.00" step="0.01" />
         </div>
         <div class="paquetes-campo">
           <label class="paquetes-label">IVA (%)</label>
-          <input type="number" class="paquetes-input" id="paquete-iva" placeholder="16" value="16" />
+          <input type="number" class="paquetes-input" id="paquete-iva"
+            placeholder="16" value="16" />
         </div>
         <div class="paquetes-campo">
           <label class="paquetes-label">Total</label>
-          <input type="number" class="paquetes-input" id="paquete-total" placeholder="0.00" step="0.01" readonly />
+          <input type="number" class="paquetes-input" id="paquete-total"
+            placeholder="0.00" step="0.01" readonly />
         </div>
       </div>
     </section>
@@ -120,17 +169,34 @@
       <div class="paquetes-detalles-grid">
         <div class="paquetes-campo span-2">
           <label class="paquetes-label">Nombre del Paquete</label>
-          <input type="text" class="paquetes-input" id="paquete-nombre" placeholder="Ej: Paquete Básico, Paquete Premium" />
+          <input type="text" class="paquetes-input" id="paquete-nombre"
+            placeholder="Ej: Paquete Básico, Paquete Premium" />
+        </div>
+        <div class="paquetes-campo span-2">
+          <label class="paquetes-label">Asistentes recomendados</label>
+          <input type="number" class="paquetes-input" id="paquete-asistentes"
+            placeholder="Ej: 50, 75, 100" />
+        </div>
+        <div class="paquetes-campo span-2">
+          <label class="paquetes-label">Tipo de evento</label>
+          <select class="paquetes-input" id="paquete-tipo-evento"
+            name="tipo-evento">
+            <option value>-- Elige un tipo --</option>
+            {% for tipo in tipos_eventos %}
+            <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+            {% endfor %}
+          </select>
         </div>
         <div class="paquetes-campo span-2">
           <label class="paquetes-label">Descripción</label>
-          <textarea rows="3" class="paquetes-textarea" id="paquete-descripcion" placeholder="Detalles adicionales del paquete..."></textarea>
+          <textarea rows="3" class="paquetes-textarea" id="paquete-descripcion"
+            placeholder="Detalles adicionales del paquete..."></textarea>
         </div>
       </div>
     </section>
 
     <div class="paquetes-botones">
-      <button class="paquetes-btn-confirmar" onclick="guardarPaquete()"> 
+      <button class="paquetes-btn-confirmar" onclick="guardarPaquete()">
         Guardar Paquete
       </button>
       <button class="paquetes-btn-cancelar" onclick="location.reload()">
@@ -141,9 +207,11 @@
   </div>
 </div>
 
+<link rel="stylesheet"
+  href="{% static 'BookingRoomApp/css/administracion/paquetes.css' %}">
 
-<link rel="stylesheet" href="{% static 'BookingRoomApp/css/administracion/paquetes.css' %}">
-
-<script src="{% static 'BookingRoomApp/js/administracion/paquetes.js' %}"></script>
+<script src="{% static 'BookingRoomApp/js/utils.js' %}"></script>
+<script
+  src="{% static 'BookingRoomApp/js/administracion/paquetes.js' %}"></script>
 
 {% endblock inicio %}

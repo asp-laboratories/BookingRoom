@@ -21,7 +21,7 @@ class HistorialReservacionViw(generic.View):
         
         reservaciones = models.Reservacion.objects.select_related(
             "cliente", "estado_reserva", "montaje__salon",
-        )
+        ).exclude(estado_reserva__codigo='PAQUE')
         estados = models.EstadoReserva.objects.all()
         reservacion_total = models.Reservacion.objects.count()
 
@@ -130,7 +130,8 @@ def obtener_equipamiento_por_tipo(request):
                     'id': item.equipamiento.id,
                     'nombre': item.equipamiento.nombre,
                     'costo': item.equipamiento.costo,
-                    'stock': item.cantidad
+                    'stock': item.cantidad,
+                    'stockTotal': item.equipamiento.stock
                 })
 
         return JsonResponse({'equipamientos': lista_equipos})
@@ -157,7 +158,8 @@ def mobiliarios_por_tipo(request):
                         'id': item.mobiliario.id,
                         'nombre': item.mobiliario.nombre,
                         'costo': item.mobiliario.costo,
-                        'stock': item.cantidad
+                        'stock': item.cantidad,
+                        'stockTotal': item.mobiliario.stock
                     })
 
             return JsonResponse({'mobiliarios': lista_mobiliarios})

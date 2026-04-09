@@ -14,11 +14,15 @@ def paquetes(request):
     tipos_montaje = models.TipoMontaje.objects.all()
     tipos_servicio = models.TipoServicio.objects.filter(disposicion=True)
     tipos_equipamiento = models.TipoEquipa.objects.filter(disposicion=True)
+    tipos_mobiliarios = models.TipoMobil.objects.filter(disposicion=True)
+    tipos_eventos = models.TipoEvento.objects.filter(disposicion=True)
 
     return render(request, "BookingRoomApp/administracion/paquetes.html", {
         "salones": salones,
         "tipos_montaje": tipos_montaje,
         "tipos_servicio": tipos_servicio,
         "tipos_equipamiento": tipos_equipamiento,
+        "tipos_mobiliario": tipos_mobiliarios,
+        "tipos_eventos": tipos_eventos,
         "rol": rol,
     })
