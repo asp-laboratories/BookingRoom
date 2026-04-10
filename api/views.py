@@ -236,7 +236,10 @@ class ReservacionViewSet(viewsets.ModelViewSet):
         if self.action == "create":
             return serializers.ReservacionCreacionSerializer
         
-        if self.action in ['list', 'retrieve']:
+        if self.action == 'retrieve':
+            return serializers.ReservacionDetalleSerializer
+        
+        if self.action in ['list']:
             return serializers.ReservacionLecturaSerializer
         
         if self.action in ['update', 'partial_update']:
@@ -789,7 +792,7 @@ class DetalleReservacionView(APIView):
                 'montaje__montajemobiliario_set__mobiliario'
             ).get(pk=pk)
             
-            serializer = serializers.ReservacionCoordinadorSerializer(reservacion)
+            serializer = serializers.ReservacionDetalleSerializer(reservacion)
             return Response(serializer.data)
         except models.Reservacion.DoesNotExist:
             return Response({'error': 'Reservación no encontrada'}, status=404)
@@ -965,3 +968,160 @@ class DetallePaqueteView(APIView):
             return Response(serializer.data)
         except models.Reservacion.DoesNotExist:
             return Response({'error': 'Paquete no encontrado'}, status=404)
+
+
+class ReservacionesFechaView(APIView):
+    """API para obtener las reservaciones de una fecha específica"""
+    def get(self, request):
+        from django.utils.dateparse import parse_date
+        
+        fecha_str = request.query_params.get('fecha')
+        
+        if not fecha_str:
+            return Response({'error': 'Fecha no proporcionada'}, status=400)
+        
+        fecha = parse_date(fecha_str)
+        if not fecha:
+            return Response({'error': 'Formato de fecha inválido'}, status=400)
+        
+        reservaciones = models.Reservacion.objects.filter(
+            fechaEvento=fecha
+        ).exclude(
+            estado_reserva__codigo='CANCEL'
+        ).select_related(
+            'montaje__salon', 'tipo_evento', 'cliente__cuenta'
+        )
+        
+        resultado = []
+        for r in reservaciones:
+            resultado.append({
+                'id': r.id,
+                'salon_nombre': r.montaje.salon.nombre if r.montaje and r.montaje.salon else None,
+                'salon_id': r.montaje.salon.id if r.montaje and r.montaje.salon else None,
+                'fechaEvento': r.fechaEvento.isoformat() if r.fechaEvento else None,
+                'horaInicio': r.horaInicio.isoformat() if r.horaInicio else None,
+                'horaFin': r.horaFin.isoformat() if r.horaFin else None,
+                'nombreEvento': r.nombreEvento,
+                'tipo_evento_nombre': r.tipo_evento.nombre if r.tipo_evento else None,
+                'cliente_nombre': r.cliente.cuenta.nombre_usuario if r.cliente and r.cliente.cuenta else None,
+            })
+        
+        return Response(resultado)
+
+
+class SolicitudesExtraView(APIView):
+    """API para obtener las solicitudes extra (mobiliario, equipamiento y servicios) de reservaciones activas"""
+    # Estados activos: SOLIC (solicitud), PEN (pendiente), CONF/CON (confirmada), PROC (en proceso)
+    estados_activos = ['SOLIC', 'PEN', 'CONF', 'CON', 'PROC']
+    
+    def get(self, request):
+        reservaciones = models.Reservacion.objects.filter(
+            estado_reserva__codigo__in=self.estados_activos
+        ).select_related(
+            'montaje__salon', 'cliente__cuenta', 'estado_reserva'
+        ).prefetch_related(
+            'montaje__montajemobiliario_set__mobiliario',
+            'reservaequipa_set__equipamiento',
+            'reservaservicio_set__servicio'
+        )
+        
+        resultado = []
+        for r in reservaciones:
+            mobiliarios_extra = []
+            equipamentos_extra = []
+            servicios_extra = []
+            
+            if r.montaje:
+                for mm in r.montaje.montajemobiliario_set.all():
+                    if mm.extra:
+                        mobiliarios_extra.append({
+                            'id': mm.id,
+                            'mobiliario_id': mm.mobiliario.id,
+                            'nombre': mm.mobiliario.nombre,
+                            'descripcion': mm.mobiliario.descripcion,
+                            'cantidad': mm.cantidad,
+                            'precio': float(mm.mobiliario.costo) if mm.mobiliario.costo else 0,
+                            'completado': mm.completado or False,
+                        })
+            
+            for re in r.reservaequipa_set.all():
+                if re.extra:
+                    equipamentos_extra.append({
+                        'id': re.id,
+                        'equipamiento_id': re.equipamiento.id,
+                        'nombre': re.equipamiento.nombre,
+                        'descripcion': re.equipamiento.descripcion,
+                        'cantidad': re.cantidad,
+                        'precio': float(re.equipamiento.costo) if re.equipamiento.costo else 0,
+                        'completado': re.completado or False,
+                    })
+            
+            for rs in r.reservaservicio_set.all():
+                if rs.extra:
+                    servicios_extra.append({
+                        'id': rs.id,
+                        'servicio_id': rs.servicio.id,
+                        'nombre': rs.servicio.nombre,
+                        'descripcion': rs.servicio.descripcion,
+                        'precio': float(rs.servicio.costo) if rs.servicio.costo else 0,
+                        'completado': False,
+                    })
+            
+            if mobiliarios_extra or equipamentos_extra or servicios_extra:
+                resultado.append({
+                    'id': r.id,
+                    'nombre': r.nombreEvento,
+                    'fecha': r.fechaEvento.isoformat() if r.fechaEvento else None,
+                    'hora_inicio': r.horaInicio.isoformat() if r.horaInicio else None,
+                    'hora_fin': r.horaFin.isoformat() if r.horaFin else None,
+                    'salon_nombre': r.montaje.salon.nombre if r.montaje and r.montaje.salon else None,
+                    'cliente_nombre': r.cliente.cuenta.nombre_usuario if r.cliente and r.cliente.cuenta else None,
+                    'estado_codigo': r.estado_reserva.codigo,
+                    'estado_nombre': r.estado_reserva.nombre,
+                    'mobiliarios_extra': mobiliarios_extra,
+                    'equipamiento_extra': equipamentos_extra,
+                    'servicios_extra': servicios_extra,
+                })
+        
+        return Response({'reservaciones': resultado})
+
+
+class CompletarSolicitudExtraView(APIView):
+    """API para marcar como completados los items extra de una reservación"""
+    def patch(self, request, reservacion_id):
+        try:
+            reservacion = models.Reservacion.objects.get(pk=reservacion_id)
+        except models.Reservacion.DoesNotExist:
+            return Response({'error': 'Reservación no encontrada'}, status=404)
+        
+        mobiliarios = request.data.get('mobiliarios', [])
+        equipamentos = request.data.get('equipamentos', [])
+        
+        errores = []
+        
+        for mob_data in mobiliarios:
+            try:
+                mm = models.MontajeMobiliario.objects.get(
+                    pk=mob_data.get('id'),
+                    montaje__reservacion=reservacion
+                )
+                mm.completado = mob_data.get('completado', False)
+                mm.save(update_fields=['completado'])
+            except models.MontajeMobiliario.DoesNotExist:
+                errores.append(f"Mobiliario {mob_data.get('id')} no encontrado")
+        
+        for eq_data in equipamentos:
+            try:
+                re = models.ReservaEquipa.objects.get(
+                    pk=eq_data.get('id'),
+                    reservacion=reservacion
+                )
+                re.completado = eq_data.get('completado', False)
+                re.save(update_fields=['completado'])
+            except models.ReservaEquipa.DoesNotExist:
+                errores.append(f"Equipamiento {eq_data.get('id')} no encontrado")
+        
+        if errores:
+            return Response({'error': 'Algunos items no se actualizaron', 'detalles': errores}, status=400)
+        
+        return Response({'mensaje': 'Items actualizados correctamente'})

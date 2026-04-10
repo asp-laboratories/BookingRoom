@@ -284,7 +284,7 @@ def modificacion_aditamentos(original, nuevos_datos):
 
             # en caso de que la reservacion este como pendiente, cancelada, solicitud se hace un caso especial para que no se
             # guaden las reservas de mobilairios
-            elif reservacion.estado_reserva in ['CAN', 'PEN', 'SOLIC']:
+            elif reservacion.estado_reserva in ['CAN', 'PEN', 'SOLIC', 'CON']:
                 for new_mobil in new_mobilairios:
 
                     # se intenta crear o obtener el registro de montaje mobiliario, en caso de que se cree se dara en cantidad en
@@ -325,16 +325,29 @@ def modificacion_aditamentos(original, nuevos_datos):
                         old_mobil.save(update_fields=['cantidad', 'completado'])
 
                     # obtenemos disponibles del mobiliario actual
-                    inventario_di = models.InventarioMob.objects.get(mobiliario_id=new_mobil['id'], estado_mobil_id='DISP')
-                    inventario_re = models.InventarioMob.objects.get(mobiliario_id=new_mobil['id'], estado_mobil_id='RESV')
+                    try:
+                        inventario_di = models.InventarioMob.objects.get(mobiliario_id=new_mobil['id'], estado_mobil_id='DISP')
+                    except models.InventarioMob.DoesNotExist:
+                        raise Exception(f"No hay inventario disponible para mobiliario {new_mobil['id']}")
+                    
+                    try:
+                        inventario_re, _ = models.InventarioMob.objects.get_or_create(
+                            mobiliario_id=new_mobil['id'], 
+                            estado_mobil_id='RESV',
+                            defaults={'cantidad': 0}
+                        )
+                    except models.InventarioMob.DoesNotExist:
+                        inventario_re = None
 
                     if new_mobil['cantidad'] > inventario_di.cantidad:
                         raise Exception(f"No hay suficientes {new_mobil['id']} para la reservacion")
                     
                     inventario_di.cantidad -= new_mobil['cantidad']
-                    inventario_re.cantidad += new_mobil['cantidad']
                     inventario_di.save(update_fields=['cantidad'])
-                    inventario_re.save(update_fields=['cantidad'])
+                    
+                    if inventario_re:
+                        inventario_re.cantidad += new_mobil['cantidad']
+                        inventario_re.save(update_fields=['cantidad'])
 
 
         # misma logica de funcionamiento que mobiliarios
@@ -357,7 +370,7 @@ def modificacion_aditamentos(original, nuevos_datos):
                         inventario_2.save(update_fields=['cantidad'])
                     models.ReservaEquipa.objects.create(reservacion_id=reservacion.id, equipamiento_id=new_equipo['id'], cantidad= new_equipo['cantidad'], extra=True)
 
-            elif reservacion.estado_reserva in ['CAN', 'PEN', 'SOLIC', 'PLANT']:
+            elif reservacion.estado_reserva in ['CAN', 'PEN', 'SOLIC', 'PLANT', 'CON']:
                 for new_equipo in new_equipamientos:
                     equipos_reserva, fue_creado = models.ReservaEquipa.objects.get_or_create(
                         equipamiento_id=new_equipo['id'], 
@@ -388,47 +401,80 @@ def modificacion_aditamentos(original, nuevos_datos):
                         old_equipo.completado = False
                         old_equipo.save(update_fields=['cantidad', 'completado'])
 
-                    # obtenemos disponibles del mobiliario actual
-                    inventario_di = models.InventarioEquipa.objects.get(equipamiento_id=new_equipo['id'], estado_equipa_id='DISP')
-                    inventario_re = models.InventarioEquipa.objects.get(equipamiento_id=new_equipo['id'], estado_equipa_id='RESV')
+                    # obtenemos disponibles del equipamento actual
+                    try:
+                        inventario_di = models.InventarioEquipa.objects.get(equipamiento_id=new_equipo['id'], estado_equipa_id='DISP')
+                    except models.InventarioEquipa.DoesNotExist:
+                        raise Exception(f"No hay inventario disponible para equipamento {new_equipo['id']}")
+                    
+                    try:
+                        inventario_re, _ = models.InventarioEquipa.objects.get_or_create(
+                            equipamiento_id=new_equipo['id'], 
+                            estado_equipa_id='RESV',
+                            defaults={'cantidad': 0}
+                        )
+                    except models.InventarioEquipa.DoesNotExist:
+                        inventario_re = None
 
                     if new_equipo['cantidad'] > inventario_di.cantidad:
                         raise Exception(f"No hay suficientes {new_equipo['id']} para la reservacion")
                     
                     inventario_di.cantidad -= new_equipo['cantidad']
-                    inventario_re.cantidad += new_equipo['cantidad']
                     inventario_di.save(update_fields=['cantidad'])
-                    inventario_re.save(update_fields=['cantidad'])
+                    
+                    if inventario_re:
+                        inventario_re.cantidad += new_equipo['cantidad']
+                        inventario_re.save(update_fields=['cantidad'])
 
         # logica parecida para anadir servicios
         if new_servicios:
             for servicio in new_servicios:
-                control = models.ReservaServicio.objects.filter(reservacion_id=reservacion.id ,id=servicio['id']).exists()
-                if not control:
-                    raise Exception(f"La reservacion ya tiene el servicio {servicio['id']}")
-                else:            
-                    if reservacion.estado_reserva == 'ENPRO':
-                        models.ReservaServicio.objects.create(servicio_id=servicio['id'], reservacion_id= reservacion.id, extra=True)
-                    else:
-                        models.ReservaServicio.objects.create(servicio_id=servicio['id'], reservacion_id= reservacion.id)
+                # Siempre crear como servicio extra para solicitudes adicionales
+                models.ReservaServicio.objects.create(
+                    servicio_id=servicio['id'], 
+                    reservacion_id=reservacion.id,
+                    extra=True
+                )
 
 
 # funcion de apoyo para revertir cambios de estados en mobilairios
 def _liberar_reservados_mobiliarios(old_mob):
-    inventario_di = models.InventarioMob.objects.get(estado_mobil='DISP', mobiliario_id=old_mob.mobiliario)
-    inventario_re = models.InventarioMob.objects.get(estado_mobil='RESV', mobiliario_id=old_mob.mobiliario)
-    inventario_di.cantidad += old_mob.cantidad
-    inventario_re.cantidad -= old_mob.cantidad
-    inventario_di.save(update_fields=['cantidad'])
-    inventario_re.save(update_fields=['cantidad'])
+    try:
+        inventario_di = models.InventarioMob.objects.get(estado_mobil='DISP', mobiliario_id=old_mob.mobiliario)
+    except models.InventarioMob.DoesNotExist:
+        inventario_di = None
+    
+    try:
+        inventario_re = models.InventarioMob.objects.get(estado_mobil='RESV', mobiliario_id=old_mob.mobiliario)
+    except models.InventarioMob.DoesNotExist:
+        inventario_re = None
+    
+    if inventario_di:
+        inventario_di.cantidad += old_mob.cantidad
+        inventario_di.save(update_fields=['cantidad'])
+    
+    if inventario_re:
+        inventario_re.cantidad -= old_mob.cantidad
+        inventario_re.save(update_fields=['cantidad'])
 
 
 # funcion de apoyo para cambiar estados de equipamientos
 def _liberar_reservados_equipos(old_equipo):
-    inventario_di = models.InventarioEquipa.objects.get(estado_equipa='DISP', equipamiento_id=old_equipo.equipamiento)
-    inventario_re = models.InventarioEquipa.objects.get(estado_equipa='RESV', equipamiento_id=old_equipo.equipamiento)
-    inventario_di.cantidad += old_equipo.cantidad
-    inventario_re.cantidad -= old_equipo.cantidad
-    inventario_di.save(update_fields=['cantidad'])
-    inventario_re.save(update_fields=['cantidad'])
+    try:
+        inventario_di = models.InventarioEquipa.objects.get(estado_equipa='DISP', equipamiento_id=old_equipo.equipamiento)
+    except models.InventarioEquipa.DoesNotExist:
+        inventario_di = None
+    
+    try:
+        inventario_re = models.InventarioEquipa.objects.get(estado_equipa='RESV', equipamiento_id=old_equipo.equipamiento)
+    except models.InventarioEquipa.DoesNotExist:
+        inventario_re = None
+    
+    if inventario_di:
+        inventario_di.cantidad += old_equipo.cantidad
+        inventario_di.save(update_fields=['cantidad'])
+    
+    if inventario_re:
+        inventario_re.cantidad -= old_equipo.cantidad
+        inventario_re.save(update_fields=['cantidad'])
 

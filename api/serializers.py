@@ -541,6 +541,92 @@ class ReservacionLecturaSerializer(serializers.ModelSerializer):
                   'trabajador', 'reserva_servicio', 'reserva_equipa']
 
 
+class ReservacionDetalleSerializer(serializers.ModelSerializer):
+    """Serializer completo para detalles de reservación del cliente"""
+    cliente_datos = serializers.SerializerMethodField()
+    montaje_datos = serializers.SerializerMethodField()
+    tipo_evento_datos = serializers.SerializerMethodField()
+    estado_reserva_datos = serializers.SerializerMethodField()
+    servicios = serializers.SerializerMethodField()
+    equipamentos = serializers.SerializerMethodField()
+    mobiliarios = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Reservacion
+        fields = [
+            'id', 'nombreEvento', 'descripEvento', 'fechaReservacion', 'fechaEvento',
+            'horaInicio', 'horaFin', 'estimaAsistentes', 'subtotal', 'IVA', 'total',
+            'cliente_datos', 'montaje_datos', 'tipo_evento_datos', 'estado_reserva_datos',
+            'servicios', 'equipamentos', 'mobiliarios',
+            'cliente', 'montaje', 'tipo_evento', 'estado_reserva'
+        ]
+    
+    def get_cliente_datos(self, obj):
+        if not obj.cliente:
+            return None
+        cuenta = obj.cliente.cuenta
+        return {
+            'nombre': obj.cliente.nombre,
+            'apellidoPaterno': obj.cliente.apellidoPaterno,
+            'apelidoMaterno': obj.cliente.apelidoMaterno,
+            'rfc': obj.cliente.rfc,
+            'nombre_fiscal': obj.cliente.nombre_fiscal,
+            'telefono': obj.cliente.telefono,
+            'dir_colonia': obj.cliente.dir_colonia,
+            'dir_calle': obj.cliente.dir_calle,
+            'dir_numero': obj.cliente.dir_numero,
+            'correo_electronico': cuenta.correo_electronico if cuenta else None,
+        }
+    
+    def get_montaje_datos(self, obj):
+        if not obj.montaje:
+            return None
+        salon = obj.montaje.salon
+        tipo_montaje = obj.montaje.tipo_montaje
+        return {
+            'salon': {
+                'nombre': salon.nombre if salon else None,
+                'precio': salon.costo if salon else None,
+            } if salon else None,
+            'tipo_montaje': {
+                'nombre': tipo_montaje.nombre if tipo_montaje else None,
+            } if tipo_montaje else None,
+            'costo': obj.montaje.costo,
+            'montaje_mobiliario': [
+                {
+                    'id': mm.id,
+                    'cantidad': mm.cantidad,
+                    'nombre': mm.mobiliario.nombre if mm.mobiliario else None,
+                    'costo': float(mm.mobiliario.costo) if mm.mobiliario and mm.mobiliario.costo else 0,
+                }
+                for mm in obj.montaje.montajemobiliario_set.select_related('mobiliario').all()
+            ],
+        }
+    
+    def get_tipo_evento_datos(self, obj):
+        if not obj.tipo_evento:
+            return None
+        return {'nombre': obj.tipo_evento.nombre}
+    
+    def get_estado_reserva_datos(self, obj):
+        if not obj.estado_reserva:
+            return None
+        return {'nombre': obj.estado_reserva.nombre, 'codigo': obj.estado_reserva.codigo}
+    
+    def get_servicios(self, obj):
+        return list(obj.reservaservicio_set.select_related('servicio').values(
+            'id', 'servicio__nombre', 'servicio__costo'
+        ))
+    
+    def get_equipamentos(self, obj):
+        return list(obj.reservaequipa_set.select_related('equipamiento').values(
+            'id', 'cantidad', 'equipamiento__nombre', 'equipamiento__costo'
+        ))
+    
+    def get_mobiliarios(self, obj):
+        return []
+
+
 class ReservacionCoordinadorSerializer(serializers.ModelSerializer):
     """Serializer completo para detalles de reservación del coordinador"""
     cliente_nombre = serializers.CharField(source='cliente.cuenta.nombre_usuario', read_only=True)

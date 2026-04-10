@@ -45,8 +45,11 @@ urlpatterns = router.urls + [
     path('reservaciones-coordinador/', views.ListaReservacionesCoordinadorView.as_view(), name='reservaciones_coordinador'),
     path('mis-reservaciones/', views.MisReservacionesView.as_view(), name='mis_reservaciones'),
     path('reservacion-proxima/', views.ReservacionProximaView.as_view(), name='reservacion_proxima'),
+    path('reservaciones-fecha/', views.ReservacionesFechaView.as_view(), name='reservaciones_fecha'),
     path('perfil/', views.PerfilView.as_view(), name='perfil'),
     path('tipo-equipa/', views.ListTipoEquipa.as_view(), name='tipo_equipa'),
     path('paquetes/', views.ListaPaquetesView.as_view(), name='lista_paquetes'),
     path('paquetes/<int:pk>/', views.DetallePaqueteView.as_view(), name='detalle_paquete'),
+    path('solicitudes-extra/', views.SolicitudesExtraView.as_view(), name='solicitudes_extra'),
+    path('solicitudes-extra/<int:reservacion_id>/completar/', views.CompletarSolicitudExtraView.as_view(), name='completar_solicitud_extra'),
 ]
