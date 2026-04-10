@@ -183,9 +183,18 @@ def montaje_por_salon(request):
     
     try:
         salon = models.Salon.objects.get(id=salonId)
-        montajes = models.TipoMontaje.objects.filter(disposicion=True).exclude(capacidadIdeal__gt=salon.maxCapacidad)
+        
+        montajes = models.Montaje.objects.filter(salon=salon).select_related('tipo_montaje')
 
-        lista = list(montajes.values('id', 'nombre', 'capacidadIdeal'))
+        lista = []
+        for m in montajes:
+            lista.append({
+                'id': m.id,
+                'nombre': m.tipo_montaje.nombre,
+                'capacidadIdeal': m.tipo_montaje.capacidadIdeal,
+                'costo': str(m.costo)
+            })
+        
         return JsonResponse({
             'montajes': lista,
             'salon': {

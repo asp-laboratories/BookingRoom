@@ -56,6 +56,10 @@ def paquetes(request):
 def crear_paquete(request):
     if request.method == 'POST':
         try:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"DEBUG POST data: {dict(request.POST)}")
+            
             data = request.POST
             
             nombre_paquete = data.get('nombre_paquete', '').strip()
@@ -66,13 +70,18 @@ def crear_paquete(request):
             total = float(data.get('total', 0))
             
             servicios_ids = request.POST.getlist('servicios[]')
+            logger.error(f"DEBUG servicios_ids: {servicios_ids}")
+            
             equipamiento_data = []
             for key, value in request.POST.items():
+                logger.error(f"DEBUG key: {key}, value: {value}")
                 if key.startswith('equipamiento_') and key.endswith('_id'):
                     index = key.split('_')[1]
                     eq_id = value
                     cantidad = request.POST.get(f'equipamiento_{index}_cantidad', 1)
                     equipamiento_data.append({'id': eq_id, 'cantidad': int(cantidad)})
+            
+            logger.error(f"DEBUG equipamento_data: {equipamiento_data}")
             
             mobiliario_data = []
             for key, value in request.POST.items():
@@ -81,6 +90,8 @@ def crear_paquete(request):
                     mob_id = value
                     cantidad = request.POST.get(f'mobiliario_{index}_cantidad', 1)
                     mobiliario_data.append({'id': mob_id, 'cantidad': int(cantidad)})
+            
+            logger.error(f"DEBUG mobiliario_data: {mobiliario_data}")
             
             with transaction.atomic():
                 estado_plantilla = models.EstadoReserva.objects.get_or_create(

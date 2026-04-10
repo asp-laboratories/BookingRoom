@@ -381,6 +381,8 @@ document.addEventListener('DOMContentLoaded', function() {
         servicios.push(select.value);
       }
     });
+    alert('DEBUG servicios: ' + JSON.stringify(servicios));
+    console.log('DEBUG servicios:', servicios);
     
     const equipamiento = [];
     document.querySelectorAll('.paquete-equipamiento-select').forEach(function(select) {
@@ -393,6 +395,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
     });
+    alert('DEBUG equipamiento: ' + JSON.stringify(equipamiento));
+    console.log('DEBUG equipamiento:', equipamiento);
     
     const mobiliario = [];
     document.querySelectorAll('.paquete-mobiliario-select').forEach(function(select) {
@@ -405,6 +409,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
     });
+    alert('DEBUG mobiliario: ' + JSON.stringify(mobiliario));
+    console.log('DEBUG mobiliario:', mobiliario);
     
     const formData = new FormData();
     formData.append('nombre_paquete', nombre);
@@ -546,11 +552,12 @@ document.addEventListener('DOMContentLoaded', function() {
       montajeSelect.innerHTML = '<option value="">-- Selecciona un montaje --</option>';
       
       if (data.montajes && data.montajes.length > 0) {
-        data.montajes.forEach(montaje => {
+        data.montajes.forEach(m => {
           const option = document.createElement('option');
-          option.value = montage.id;
-          option.textContent = `${montaje.nombre} (Capacidad: ${montaje.capacidadIdeal})`;
-          if (selectedMontajeId && montage.id == selectedMontajeId) {
+          option.value = m.id;
+          option.textContent = `${m.nombre} (Capacidad: ${m.capacidadIdeal}) - $${m.costo}`;
+          option.dataset.costo = m.costo;
+          if (selectedMontajeId && m.id == selectedMontajeId) {
             option.selected = true;
           }
           montajeSelect.appendChild(option);
@@ -704,10 +711,11 @@ document.addEventListener('DOMContentLoaded', function() {
       montajeSelect.innerHTML = '<option value="">-- Selecciona un montaje --</option>';
       
       if (data.montajes && data.montajes.length > 0) {
-        data.montajes.forEach(montaje => {
+        data.montajes.forEach(m => {
           const option = document.createElement('option');
-          option.value = montage.id;
-          option.textContent = `${montaje.nombre} (Capacidad: ${montaje.capacidadIdeal})`;
+          option.value = m.id;
+          option.textContent = `${m.nombre} (Capacidad: ${m.capacidadIdeal}) - $${m.costo}`;
+          option.dataset.costo = m.costo;
           montajeSelect.appendChild(option);
         });
         montajeSelect.disabled = false;
