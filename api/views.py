@@ -48,6 +48,21 @@ class TipoClienteViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.TipoClienteSerializer
 
 
+class TipoMontajeViewSet(viewsets.ModelViewSet):
+    queryset = models.TipoMontaje.objects.all()
+    serializer_class = serializers.TipoMontajeSerializer
+
+
+class TipoMobilViewSet(viewsets.ModelViewSet):
+    queryset = models.TipoMobil.objects.all()
+    serializer_class = serializers.TipoMobilSerializer
+
+
+class TipoEventoViewSet(viewsets.ModelViewSet):
+    queryset = models.TipoEvento.objects.all()
+    serializer_class = serializers.TipoEventoSerializer
+
+
 class CuentaViewSet(viewsets.ModelViewSet):
     queryset = models.Cuenta.objects.all()
     serializer_class = serializers.CuentaSerializer
@@ -70,7 +85,7 @@ class DatosClienteViewSet(viewsets.ModelViewSet):
 
 
 class MobiliarioViewSet(viewsets.ModelViewSet):
-    queryset = models.Mobiliario.objects.prefetch_related('caracter_mobi').all()
+    queryset = models.Mobiliario.objects.select_related('tipo_movil').all()
     serializer_class = serializers.MobiliarioSerializer
 
 
@@ -88,9 +103,10 @@ class SalonViewSet(viewsets.ModelViewSet):
     queryset = models.Salon.objects.select_related('estado_salon').all()
 
     def get_serializer_class(self):
-        if self.action in ['list', 'retrieve']:
-            return serializers.SalonEstadoSerializer
         return serializers.SalonSerializer
+
+    def get_queryset(self):
+        return models.Salon.objects.select_related('estado_salon').all()
 
     def update(self, request, *args, **kwargs):
         import logging
@@ -691,15 +707,32 @@ class DisponibilidadSalonesView(APIView):
         if not fecha:
             return Response({'error': 'Formato de fecha inválido'}, status=400)
         
-        # Reservaciones de la fecha
-        reservaciones = models.Reservacion.objects.filter(
-            fechaEvento=fecha
-        ).select_related(
-            'montaje__salon', 'tipo_evento'
+        # Obtener todos los salones
+        salones = models.Salon.objects.all().select_related('estado_salon')
+        
+        # Obtener los IDs de salones ocupados en esa fecha (reservaciones aceptadas o confirmadas)
+        salon_ids_ocupados = set(
+            models.Reservacion.objects.filter(
+                fechaEvento=fecha
+            ).exclude(
+                estado_reserva__codigo='CANCEL'
+            ).values_list('montaje__salon_id', flat=True).distinct()
         )
         
-        serializer = serializers.DisponibilidadSalonSerializer(reservaciones, many=True)
-        return Response(serializer.data)
+        # Construir respuesta con disponibilidad
+        resultado = []
+        for salon in salones:
+            esta_ocupado = salon.id in salon_ids_ocupados
+            resultado.append({
+                'id': salon.id,
+                'nombre': salon.nombre,
+                'capacidad': salon.maxCapacidad if salon.maxCapacidad else 0,
+                'precio': float(salon.costo) if salon.costo else 0,
+                'estado': 'Ocupado' if esta_ocupado else 'Disponible',
+                'reservado': esta_ocupado,
+            })
+        
+        return Response(resultado)
         # === CÓDIGO COMENTADO - Available for reference ===
         # Original: devolvía salones con su estado (no reservaciones)
         # salones = models.Salon.objects.select_related('estado_salon').all()
@@ -751,7 +784,9 @@ class DetalleReservacionView(APIView):
                 'montaje__salon', 'montaje__tipo_montaje',
                 'estado_reserva', 'tipo_evento'
             ).prefetch_related(
-                'reservaservicio_set', 'reservaequipa_set__equipamiento'
+                'reservaservicio_set__servicio', 
+                'reservaequipa_set__equipamiento',
+                'montaje__montajemobiliario_set__mobiliario'
             ).get(pk=pk)
             
             serializer = serializers.ReservacionCoordinadorSerializer(reservacion)
@@ -815,6 +850,88 @@ class ListaReservacionesCoordinadorView(APIView):
         
         serializer = serializers.ReservacionCoordinadorSerializer(reservaciones, many=True)
         return Response(serializer.data)
+
+
+class MisReservacionesView(APIView):
+    """API para listar las reservaciones del cliente logueado"""
+    def get(self, request):
+        email = request.query_params.get('email')
+        
+        if not email:
+            return Response({'error': 'Email requerido'}, status=400)
+        
+        try:
+            cuenta = models.Cuenta.objects.get(correo_electronico=email)
+            datos_cliente = models.DatosCliente.objects.get(cuenta=cuenta)
+        except models.Cuenta.DoesNotExist:
+            return Response({'error': 'Cuenta no encontrada'}, status=404)
+        except models.DatosCliente.DoesNotExist:
+            return Response({'reservaciones': []})
+        
+        reservaciones = models.Reservacion.objects.filter(
+            cliente=datos_cliente
+        ).select_related(
+            'cliente', 'montaje__salon', 'montaje__tipo_montaje',
+            'estado_reserva', 'tipo_evento'
+        ).order_by('-fechaEvento')
+        
+        resultado = []
+        for r in reservaciones:
+            resultado.append({
+                'id': r.id,
+                'nombre': r.nombreEvento,
+                'descripcion': r.descripEvento,
+                'fecha': r.fechaEvento.isoformat() if r.fechaEvento else None,
+                'hora_inicio': r.horaInicio.isoformat() if r.horaInicio else None,
+                'hora_fin': r.horaFin.isoformat() if r.horaFin else None,
+                'asistentes': r.estimaAsistentes,
+                'estado_codigo': r.estado_reserva.codigo,
+                'estado_nombre': r.estado_reserva.nombre,
+                'salon_nombre': r.montaje.salon.nombre if r.montaje else None,
+                'montaje_nombre': r.montaje.tipo_montaje.nombre if r.montaje and r.montaje.tipo_montaje else None,
+                'total': float(r.total) if r.total else 0,
+            })
+        
+        return Response({'reservaciones': resultado})
+
+
+class ReservacionProximaView(APIView):
+    """API para obtener la reservación más próxima del cliente"""
+    def get(self, request):
+        email = request.query_params.get('email')
+        
+        if not email:
+            return Response({'error': 'Email requerido'}, status=400)
+        
+        try:
+            cuenta = models.Cuenta.objects.get(correo_electronico=email)
+            datos_cliente = models.DatosCliente.objects.get(cuenta=cuenta)
+        except models.Cuenta.DoesNotExist:
+            return Response({'error': 'Cuenta no encontrada'}, status=404)
+        except models.DatosCliente.DoesNotExist:
+            return Response({'reservacion': None})
+        
+        from django.utils import timezone
+        from datetime import date
+        
+        reservacion = models.Reservacion.objects.filter(
+            cliente=datos_cliente,
+            fechaEvento__gte=date.today()
+        ).select_related(
+            'cliente__cuenta', 'cliente__tipo_cliente',
+            'montaje__salon', 'montaje__tipo_montaje',
+            'estado_reserva', 'tipo_evento'
+        ).prefetch_related(
+            'reservaservicio_set__servicio', 
+            'reservaequipa_set__equipamiento',
+            'montaje__montajemobiliario_set__mobiliario'
+        ).order_by('fechaEvento').first()
+        
+        if not reservacion:
+            return Response({'reservacion': None})
+        
+        serializer = serializers.ReservacionCoordinadorSerializer(reservacion)
+        return Response({'reservacion': serializer.data})
 
 
 class ListaPaquetesView(APIView):

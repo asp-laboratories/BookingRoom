@@ -24,6 +24,9 @@ router.register(r'salon', views.SalonViewSet)
 router.register(r'estado-salon', views.RegistrEstadSalonViewSet)
 router.register(r'montaje', views.MontajeViewSet)
 router.register(r'montaje-mobiliario', views.MontajeMobiliarioViewSet)
+router.register(r'tipo-montaje', views.TipoMontajeViewSet)
+router.register(r'tipo-mobil', views.TipoMobilViewSet)
+router.register(r'tipo-evento', views.TipoEventoViewSet)
 router.register(r'reservacion', views.ReservacionViewSet)
 router.register(r'reserva_servicio', views.ReservaServicioViewSet)
 
@@ -40,6 +43,8 @@ urlpatterns = router.urls + [
     path('reservacion/<int:pk>/formulario/', views.ReservacionFormularioView.as_view(), name='reservacion_formulario'),
     path('reservacion/<int:pk>/cambiar-estado/', views.CambiarEstadoReservacionView.as_view(), name='cambiar_estado_reservacion'),
     path('reservaciones-coordinador/', views.ListaReservacionesCoordinadorView.as_view(), name='reservaciones_coordinador'),
+    path('mis-reservaciones/', views.MisReservacionesView.as_view(), name='mis_reservaciones'),
+    path('reservacion-proxima/', views.ReservacionProximaView.as_view(), name='reservacion_proxima'),
     path('perfil/', views.PerfilView.as_view(), name='perfil'),
     path('tipo-equipa/', views.ListTipoEquipa.as_view(), name='tipo_equipa'),
     path('paquetes/', views.ListaPaquetesView.as_view(), name='lista_paquetes'),

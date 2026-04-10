@@ -198,24 +198,29 @@ ALTER SEQUENCE tipo_mobil_id_seq RESTART WITH 1;
 ALTER SEQUENCE caracter_mobi_id_seq RESTART WITH 1;
 
 INSERT INTO salon (nombre, costo, ubicacion, "dimenLargo", "dimenAncho", "dimenAlto", "metrosCuadrados", "maxCapacidad", estado_salon_id) VALUES 
-('Salon Diamante', 5000.00, 'Planta baja - Ala norte', 15.0, 10.0, 4.0, 150.0, 150, 'DIS'),
-('Salon Esmeralda', 4500.00, 'Planta baja - Ala sur', 12.0, 8.0, 3.5, 96.0, 100, 'DIS'),
-('Salon Rubi', 4000.00, 'Piso 1 - Ala este', 10.0, 8.0, 3.0, 80.0, 80, 'DIS'),
-('Salon Zafiro', 6000.00, 'Piso 1 - Ala oeste', 14.0, 12.0, 4.0, 168.0, 200, 'DIS'),
-('Salon Oro', 8000.00, 'Piso 2 - Centro', 20.0, 15.0, 5.0, 300.0, 350, 'DIS'),
-('Salon Platino', 10000.00, 'Piso 2 - Acceso principal', 25.0, 18.0, 6.0, 450.0, 500, 'DIS');
+('Vivaldi V', 1500.00, 'Planta Baja - Ala Norte', 9, 3.6, 3.6, 32.4, 40, 'DIS'),
+('Vivaldi I', 1800.00, 'Planta Baja - Ala Norte', 9, 3.6, 3.6, 32.4, 60, 'DIS'),
+('Vivaldi II', 1800.00, 'Planta Baja - Ala Norte', 9, 3.6, 3.6, 32.4, 70, 'DIS'),
+('Vivaldi III', 1800.00, 'Planta Baja - Ala Norte', 9, 3.6, 3.6, 32.4, 70, 'DIS'),
+('Vivaldi IV', 1800.00, 'Planta Baja - Ala Norte', 9, 3.6, 3.6, 32.4, 70, 'DIS'),
+('Shubert', 4500.00, 'Piso 1 - Centro', 17, 9, 6.1, 153, 180, 'DIS'),
+('Mozart', 4500.00, 'Piso 1 - Centro', 17, 9, 3.8, 153, 180, 'DIS'),
+('Beethoven', 5000.00, 'Piso 1 - Este', 17, 10, 7.9, 170, 180, 'DIS'),
+('Gran Vivaldi', 6000.00, 'Planta Baja - Gran Salon', 9, 24, 5.3, 216, 60, 'DIS'),
+('Chopin', 7500.00, 'Piso 2 - Oeste', 9, 25, 3.6, 225, 250, 'DIS'),
+('Gran Mozart', 12000.00, 'Planta Baja - Acceso Principal', 28, 17, 6.1, 476, 700, 'DIS');
 
 -- ==========================================
 -- 4. CONFIGURACIONES DE MONTAJE POR SALON
 -- ==========================================
 
 INSERT INTO montaje (salon_id, tipo_montaje_id, costo) VALUES 
-(1, 1, 500.00), (1, 2, 400.00), (1, 3, 600.00),
-(2, 1, 450.00), (2, 4, 350.00),
-(3, 5, 300.00), (3, 6, 350.00),
-(4, 1, 600.00), (4, 2, 500.00), (4, 3, 700.00),
-(5, 1, 800.00), (5, 2, 700.00), (5, 3, 900.00), (5, 4, 600.00),
-(6, 1, 1000.00), (6, 2, 900.00), (6, 3, 1200.00), (6, 4, 800.00), (6, 5, 500.00)
+(11, 1, 1000.00),  -- Gran Mozart / Teatro
+(11, 3, 1200.00),  -- Gran Mozart / Banquete
+(10, 4, 800.00),   -- Chopin / Recepcion
+(8, 6, 700.00),    -- Beethoven / Herradura
+(1, 5, 500.00),    -- Vivaldi V / Imperial
+(7, 2, 600.00)     -- Mozart / Escuela
 ON CONFLICT DO NOTHING;
 
 -- ==========================================
@@ -247,40 +252,15 @@ INSERT INTO inventario_mobil (mobiliario_id, estado_mobil_id, cantidad) VALUES
 (10, 'DISP', 10);
 
 -- Montaje de mobiliario por configuracion de salon
--- Salon Diamante - Teatro (id_montaje=1)
-INSERT INTO montaje_mobiliario (cantidad, montaje_id, mobiliario_id) VALUES 
-(150, 1, 1),
-(15, 1, 4);
-
--- Salon Diamante - Escuela (id_montaje=2)
-INSERT INTO montaje_mobiliario (cantidad, montaje_id, mobiliario_id) VALUES 
-(60, 2, 1),
-(10, 2, 6);
-
--- Salon Diamante - Banquete (id_montaje=3)
-INSERT INTO montaje_mobiliario (cantidad, montaje_id, mobiliario_id) VALUES 
-(80, 3, 4),
-(10, 3, 5);
-
--- Salon Zafiro - Teatro (id_montaje=6)
-INSERT INTO montaje_mobiliario (cantidad, montaje_id, mobiliario_id) VALUES 
-(200, 6, 2),
-(25, 6, 7);
-
--- Salon Zafiro - Banquete (id_montaje=8)
-INSERT INTO montaje_mobiliario (cantidad, montaje_id, mobiliario_id) VALUES 
-(200, 8, 2),
-(25, 8, 5);
-
--- Salon Platino - Teatro (id_montaje=11)
-INSERT INTO montaje_mobiliario (cantidad, montaje_id, mobiliario_id) VALUES 
-(500, 11, 2),
-(50, 11, 7);
-
--- Salon Platino - Banquete (id_montaje=13)
-INSERT INTO montaje_mobiliario (cantidad, montaje_id, mobiliario_id) VALUES 
-(500, 13, 2),
-(60, 13, 5);
+-- (Comentar porque los montage_ids cambiaron con los nuevos salones)
+-- INSERT INTO montaje_mobiliario (cantidad, montaje_id, mobiliario_id) VALUES 
+-- (150, 1, 1), (15, 1, 4),
+-- (60, 2, 1), (10, 2, 6),
+-- (80, 3, 4), (10, 3, 5),
+-- (200, 6, 2), (25, 6, 7),
+-- (200, 8, 2), (25, 8, 5),
+-- (500, 11, 2), (50, 11, 7),
+-- (500, 13, 2), (60, 13, 5);
 
 -- ==========================================
 -- 6. EQUIPAMIENTO
@@ -496,11 +476,10 @@ INSERT INTO reserva_equipa (cantidad, extra, completado, reservacion_id, equipam
 -- ==========================================
 
 INSERT INTO registr_esta_salon (salon_id, estado_salon_id, fecha) VALUES 
-(1, 'DIS', '2026-04-01'),
-(2, 'DIS', '2026-04-01'),
-(3, 'DIS', '2026-04-01'),
-(4, 'DIS', '2026-04-01'),
-(5, 'DIS', '2026-04-01'),
-(6, 'DIS', '2026-04-01');
+(11, 'DIS', '2026-04-01 08:00:00'),
+(10, 'DIS', '2026-04-01 08:00:00'),
+(8, 'DIS', '2026-04-01 08:00:00'),
+(7, 'OCUP', '2026-04-10 19:00:00'),
+(1, 'MANTE', '2026-04-02 10:00:00');
 
 COMMIT;
