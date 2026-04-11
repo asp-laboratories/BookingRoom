@@ -35,11 +35,13 @@ def get_cuenta_and_rol(request):
         return None, None
     try:
         cuenta = models.Cuenta.objects.get(id=cuenta_id)
+        cuenta.id_trabajador = None
         try:
             trabajador = models.Trabajador.objects.select_related("rol").get(
                 cuenta_id=cuenta_id
             )
             rol = trabajador.rol.codigo
+            cuenta.id_trabajador = trabajador.pk
         except models.Trabajador.DoesNotExist:
             rol = None
         return cuenta, rol

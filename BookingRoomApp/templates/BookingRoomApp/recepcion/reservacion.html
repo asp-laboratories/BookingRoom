@@ -191,7 +191,7 @@
               <option value="">-- Selecciona un salón --</option>
               {% for salon in salones %}
               <!-- de aca se obtiene montaje.salon -->
-              <option value="{{salon.id}}">{{salon.nombre}}</option>
+              <option value="{{salon.id}}" data-costo="{{salon.costo}}">{{salon.nombre}}</option>
               {% endfor %}
             </select>
           </div>
@@ -310,19 +310,19 @@
         <div>
           <div class="reservacion-fila">
             <span>Subtotal</span>
-            <span>$0.00</span>
+            <span id="resumen-subtotal">$0.00</span>
           </div>
           <div class="reservacion-fila">
             <span>IVA</span>
-            <span>$0.00</span>
+            <span id="resumen-iva">$0.00</span>
           </div>
           <div class="reservacion-fila reservacion-total">
             <span>Total</span>
-            <span>$0.00</span>
+            <span id="resumen-total">$0.00</span>
           </div>
           <div class="reservacion-fila">
             <span>Atendido por:</span>
-            <span>Usuario</span>
+            <span id="resumen-usuario">{{cuenta.nombre_usuario}}</span>
           </div>
         </div>
 

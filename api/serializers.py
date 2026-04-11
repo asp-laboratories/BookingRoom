@@ -537,7 +537,8 @@ class ReservacionLecturaSerializer(serializers.ModelSerializer):
                   'fechaEvento', 'horaInicio', 'horaFin', 
                   'subtotal', 'IVA', 'total', 'cliente', 
                   'montaje', 'estado_reserva', 'tipo_evento', 
-                  'trabajador', 'reserva_servicio', 'reserva_equipa']
+                  'trabajador', 'reserva_servicio', 'reserva_equipa',
+                  'es_paquete']
 
 
 class ReservacionCoordinadorSerializer(serializers.ModelSerializer):

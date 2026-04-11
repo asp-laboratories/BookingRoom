@@ -1,3 +1,6 @@
+from django.utils import timezone
+from itertools import chain
+
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -32,7 +35,12 @@ class Home(generic.View):
         if not cuenta:
             return HttpResponseRedirect(reverse("login"))
 
-        reservaciones = models.Reservacion.objects.all()[:10]
+        hoy = timezone.now().date()
+
+        recientes = models.Reservacion.objects.filter(fechaEvento__gte=hoy).exclude(estado_reserva__codigo__in=['PAQUE', 'SOLIC', 'FINAL']).order_by('fechaEvento').distinct()[:10]
+        solicitudes = models.Reservacion.objects.filter(estado_reserva__codigo='SOLIC', fechaEvento__gte=hoy).order_by('fechaEvento').distinct()[:10]
+
+        reservaciones = list(chain(recientes, solicitudes))
 
         return render(request, self.template_name, {
             "cuenta": cuenta,

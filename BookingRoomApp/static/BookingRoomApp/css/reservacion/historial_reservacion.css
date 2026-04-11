@@ -299,7 +299,13 @@ dialog.modal-editar::backdrop {
 .modal-editar-content details summary {
   cursor: pointer;
   font-weight: 600;
-  padding: 5px 0;
+  padding: 5px 10px;
+  list-style-position: inside;
+}
+
+.modal-editar-content details summary h4 {
+  display: inline;
+  margin: 0;
 }
 
 .modal-editar-content .modal-botones {

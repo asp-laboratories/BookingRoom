@@ -44,4 +44,6 @@ urlpatterns = router.urls + [
     path('perfil/', views.PerfilView.as_view(), name='perfil'),
     path('tipo-equipa/', views.ListTipoEquipa.as_view(), name='tipo_equipa'),
     path('lista-paquetes/', views.ListaPaquetesViewSet.as_view(), name="lista_paquetes"),
+    path('reservaciones-cliente/<str:rfc>/', views.ReservacionesClienteViewSet.as_view(), name='reservaciones_por_cliente'),
+    path('encuesta-realizada/<int:idReservacion>/', views.EncuestaReservacionViewSet.as_view(), name='comprobacion-encuesta-reservacion'),
 ]

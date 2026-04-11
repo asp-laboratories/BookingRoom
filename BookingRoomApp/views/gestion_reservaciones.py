@@ -22,7 +22,7 @@ class HistorialReservacionViw(generic.View):
         reservaciones = models.Reservacion.objects.select_related(
             "cliente", "estado_reserva", "montaje__salon",
         ).exclude(estado_reserva__codigo='PAQUE')
-        estados = models.EstadoReserva.objects.all()
+        estados = models.EstadoReserva.objects.exclude(codigo='PAQUE')
         reservacion_total = models.Reservacion.objects.count()
 
         nombre = request.GET.get('nombre', '')
@@ -65,6 +65,7 @@ class ReservacionView(generic.View):
             "tipos_servicio": models.TipoServicio.objects.filter(disposicion=True),
             "tipos_equipa": models.TipoEquipa.objects.filter(disposicion=True),
             "rol": rol,
+            "cuenta": cuenta
         })
 
 
@@ -217,6 +218,33 @@ def reservacion_detalle_json(request, pk):
             "rfc": reserva.cliente.rfc, "nombre_fiscal": reserva.cliente.nombre_fiscal,
         },
         "servicios": list(reserva.reservaservicio_set.values_list("servicio__nombre", flat=True)),
+        "equipamientos": list(reserva.reservaequipa_set.values_list("equipamiento__nombre", flat=True)),
+        "servicios_detalle": [
+            {
+                "id": s.servicio.id, 
+                "tipo_id": s.servicio.tipo_servicio.nombre, 
+                "nombre": s.servicio.nombre
+            }
+            for s in reserva.reservaservicio_set.all()
+        ],
+        "equipos_detalle": [
+            {
+                "id": e.equipamiento.id, 
+                "tipo_id": e.equipamiento.tipo_equipa.id, 
+                "nombre": e.equipamiento.nombre, 
+                "cantidad": e.cantidad
+            }
+            for e in reserva.reservaequipa_set.all()
+        ],
+        "mobiliarios_detalle": [
+            {
+                "id": m.mobiliario.id, 
+                "tipo_id": m.mobiliario.tipo_movil.id, 
+                "nombre": m.mobiliario.nombre, 
+                "cantidad": m.cantidad
+            }
+            for m in reserva.montaje.montajemobiliario_set.all()
+        ] if reserva.montaje else []
     })
 
 

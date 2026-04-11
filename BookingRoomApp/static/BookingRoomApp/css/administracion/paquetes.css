@@ -1,178 +1,244 @@
-.paquetes-container {
-    padding: 20px;
-    max-width: 900px;
-    margin: 0 auto;
+.administrador-registro-contenido {
+  margin: 2%;
 }
 
-.paquetes-titulo {
-    margin: 50px 0px 20px 20px;
-    color: #333;
+.administrador-contenido {
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .paquetes-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
-.paquetes-seccion {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+.titulo-seccion {
+  margin: 0% 0% 2% 0%;
 }
 
-.paquetes-titulo-seccion {
-    margin-bottom: 20px;
-    color: #333;
-    font-size: 1.1rem;
+.administrador-tituloSeccion {
+  margin-bottom: 2%;
+  font-size: 1.2em;
 }
 
-.paquetes-campos-row {
-    display: flex;
-    gap: 15px;
+.indicador {
+  background-color: #9b582b;
+  width: 350px;
+  height: 170px;
+  border-radius: 10px;
+  font-weight: bold;
+  color: white;
+  padding: 10px;
+  font-size: 1.5em;
+  margin-bottom: 1%;
+  box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 3.2px;
 }
 
-.paquetes-campo {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+.cantidad {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 2em;
 }
 
-.paquetes-label {
-    font-weight: 500;
-    color: #555;
+.administrador-formularios {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  background-color: var(--color-fondo, transparent);
+  box-shadow: rgb(155, 88, 43, 0.5) 1.95px 1.95px 2.6px;
+  margin-bottom: 15px;
+  margin-right: 10px;
+  border-radius: 5px;
+  padding: 10px;
 }
 
-.paquetes-input {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px;
+.administrador-seccionFlex {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: start;
+  gap: 15px;
 }
 
-.paquetes-input:focus {
-    outline: none;
-    border-color: var(--color-primario);
+.administrador-inputGrid {
+  padding-left: 5px;
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  justify-items: start;
+  width: 100%;
+  gap: 20px;
 }
 
-.paquetes-servicios-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+@media (width <= 850px) {
+  .administrador-inputGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.paquetes-servicios-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.administrador-label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+  max-width: 100% !important;
+  width: 100%;
 }
 
-.paquetes-servicio-pair {
-    display: flex;
-    gap: 15px;
-    align-items: flex-end;
+.administrador-seccionFlex label {
+  width: 100%;
 }
 
-.paquetes-servicio-pair .paquetes-campo {
-    flex: 1;
+.administrador-input,
+.administrador-select {
+  border: none;
+  border-radius: 5px;
+  padding: 15px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.paquetes-servicios-botones {
-    display: flex;
-    gap: 10px;
+.administrador-input {
+  border-bottom: 2px solid var(--color-primario);
+  margin-top: 10px;
 }
 
-.paquetes-btn-quitar,
-.paquetes-btn-anadir {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 500;
+.administrador-input:focus {
+  border: none;
+  outline: 2px solid var(--color-primario);
 }
 
-.paquetes-btn-quitar {
-    background-color: #dc3545;
-    color: white;
+.administrador-select {
+  cursor: pointer;
+  border: 1px solid var(--color-primario);
+  font-size: 14px;
+  background-color: white;
+  color: #333;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239c5c31' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 35px;
 }
 
-.paquetes-btn-quitar:hover {
-    background-color: #bb2d3b;
+.administrador-select:focus {
+  border: none;
+  outline: 1px solid var(--color-primario);
 }
 
-.paquetes-btn-anadir {
-    background-color: #0d6efd;
-    color: white;
+.administrador-select option {
+  padding: 10px;
+  background-color: white;
 }
 
-.paquetes-btn-anadir:hover {
-    background-color: #084298;
+.administrador-select:invalid {
+  color: grey;
 }
 
-.paquetes-precios-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
+.administrador-seccionFlex .administrador-input,
+.administrador-seccionFlex .administrador-select {
+  height: 40px;
+  padding: 8px 12px;
+  font-size: 14px;
 }
 
-.paquetes-detalles-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.administrador-paGuarar {
+  background-color: #2b9b32;
+  color: white;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 10px 50px;
+  margin-left: auto;
+  align-self: flex-end;
 }
 
-.span-2 {
-    grid-column: span 2;
+.paquetes-servicios-container .administrador-seccionFlex {
+  justify-content: flex-end !important;
+  gap: 15px;
+  margin-top: 20px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 15px;
 }
 
-.paquetes-textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-family: inherit;
-    resize: vertical;
-    box-sizing: border-box;
+.administrador-tablita {
+  width: 100%;
+  max-height: 400px;
+  overflow-y: auto;
+  border-radius: 5px;
+  background-color: transparent;
 }
 
-#paquete-total {
-    background-color: #e0e0e0;
-    font-weight: bold;
+.administrador-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
 
-.paquetes-botones {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    padding: 20px 0;
+.administrador-tbody {
+  background-color: transparent;
 }
 
-.paquetes-btn-confirmar,
-.paquetes-btn-cancelar {
-    padding: 12px 30px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
+.administrador-thead th {
+  position: sticky;
+  top: 0;
+  background-color: var(--color-primario);
+  color: #fff;
+  border: 1px solid var(--color-primario) !important;
+  box-shadow: none;
 }
 
-.paquetes-btn-confirmar {
-    background-color: #198754;
-    color: white;
+.administrador-thead,
+.administrador-thead tr {
+  border: none;
 }
 
-.paquetes-btn-confirmar:hover {
-    background-color: #157347;
+.administrador-thead th + th {
+  border-left: none;
 }
 
-.paquetes-btn-cancelar {
-    background-color: #dc3545;
-    color: white;
+.administrador-td,
+.administrador-th {
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1px solid rgba(155, 88, 43, 0.3);
+  padding: 10px;
 }
 
-.paquetes-btn-cancelar:hover {
-    background-color: #bb2d3b;
+.btn-editar, .btn-cancelar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.btn-editar { background-color: #0d6efd; }
+.btn-editar:hover { background-color: #084298; }
+
+.btn-cancelar { background-color: #dc3545; }
+.btn-cancelar:hover { background-color: #ca301b; }
+
+.icono { width: 16px; height: 16px; }
+
+@media (max-width: 768px) {
+  .administrador-tablita {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .administrador-tabla {
+    min-width: 600px;
+  }
 }

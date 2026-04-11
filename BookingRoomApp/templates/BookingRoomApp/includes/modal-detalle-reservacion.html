@@ -1,10 +1,13 @@
 {% load static %}
 
+<script src="{% static 'BookingRoomApp/js/utils.js' %}"></script>
+<script src="{% static 'BookingRoomApp/js/recepcion/acciones_solicitudes.js' %}"></script>
 <dialog id="{{ modal_id|default:'miModal' }}" class="modal-beo">
   <div class="cabecera-modal">
-    <span class="titulo-modal"
-      >SOLICITUD DE: <span id="{{ id_prefix|default:'' }}titulo-evento">Orden de banquete de evento (BEO)</span></span
-    >
+    <span class="titulo-modal">
+      <span id="{{ id_prefix|default:'' }}tipo-documento">RESERVACIÓN: </span> 
+      <span id="{{ id_prefix|default:'' }}titulo-evento">Orden de banquete de evento (BEO)</span>
+    </span>
     <button onclick="window.{{ modal_id|default:'miModal' }}.close()" class="cerrar-modal">X</button>
   </div>
 
@@ -109,11 +112,64 @@
   </div>
 
   {% if mostrar_botones|default:True %}
-  <div class="modal-botones">
-    <button class="btn-modal btn-aceptar">Aceptar</button>
-    <button class="btn-modal btn-denegar" onclick="window.{{ modal_id|default:'miModal' }}.close()">
-      Denegar
-    </button>
+  <div class="modal-botones" id="botones-modal">
+    <button class="btn-modal btn-aceptar js-btn-aceptar">Aceptar</button>
+    <button class="btn-modal btn-denegar js-btn-denegar">Denegar</button>
   </div>
   {% endif %}
 </dialog>
+
+<script>
+document.addEventListener("click", function (event) {
+  const btnAceptar = event.target.closest(".js-btn-aceptar");
+  const btnDenegar = event.target.closest(".js-btn-denegar");
+
+  if (!btnAceptar && !btnDenegar) return;
+
+  const modalPadre = event.target.closest("dialog");
+  if (!modalPadre) return;
+
+  const pk = modalPadre.dataset.pk || (btnAceptar ? btnAceptar.dataset.pk : btnDenegar.dataset.pk);
+  
+  const idTrabajador = modalPadre.dataset.trabajador;
+
+  const nuevoEstado = btnAceptar ? "PENDI" : "CANCE";
+
+  if (pk) {
+    cambiarEstadoRapido(pk, nuevoEstado, idTrabajador);
+  } else {
+    alert("Error Técnico: El modal no recibió el ID de la reservación.");
+  }
+});
+
+async function cambiarEstadoRapido(pk, nuevoEstado, idTrabajador) {
+  try {
+    const cuerpoPeticion = { estado_reserva: nuevoEstado };
+    
+    if (idTrabajador) {
+        cuerpoPeticion.trabajador = idTrabajador;
+    }
+
+    const response = await fetch(`/api/reservacion/${pk}/`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify(cuerpoPeticion),
+    });
+
+    if (response.ok) {
+      mostrarToastExito(`La solicitud fue ${nuevoEstado === 'PENDI' ? 'Aceptada' : 'Denegada'}`, "success");
+      document.querySelectorAll("dialog[open]").forEach(dialog => dialog.close());
+      setTimeout(() => { window.location.reload(); }, 1000);
+    } else {
+      console.error("Error del backend:", await response.json());
+      mostrarToastExito("Error al cambiar el estado", "error");
+    }
+  } catch (error) {
+    console.error("Error de conexión:", error);
+    mostrarToastExito("No se pudo conectar con el servidor", "error");
+  }
+}
+</script>

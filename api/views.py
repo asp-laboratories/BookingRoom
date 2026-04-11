@@ -1,6 +1,7 @@
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Sum
 from rest_framework import viewsets, generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -261,12 +262,19 @@ class ReservacionViewSet(viewsets.ModelViewSet):
         cambio_reservacion = serializer.validated_data
         original = serializer.instance
         
+        nuevo_estado = None
         if 'estado_reserva' in cambio_reservacion:
             nuevo_estado = cambio_reservacion.pop('estado_reserva')
-            if nuevo_estado != original.estado_reserva:
-                reservacionesService.cambio_estado_reservacion(original, nuevo_estado)
+            
+        if cambio_reservacion:
+            reservacionesService.modificacion_aditamentos(original=original, nuevos_datos=cambio_reservacion)
 
-        reservacionesService.modificacion_aditamentos(original=original, nuevos_datos=cambio_reservacion)
+        if nuevo_estado:
+            estado_entrante = nuevo_estado.codigo if hasattr(nuevo_estado, 'codigo') else str(nuevo_estado)
+            estado_actual = original.estado_reserva.codigo if hasattr(original.estado_reserva, 'codigo') else str(original.estado_reserva)
+            
+            if estado_entrante != estado_actual:
+                reservacionesService.cambio_estado_reservacion(original, nuevo_estado)
 
     def create(self, request, *args, **kwargs):
         validador = self.get_serializer(data=request.data)
@@ -279,8 +287,13 @@ class ReservacionViewSet(viewsets.ModelViewSet):
         
         except Exception as e:
             return Response({"error":str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
+        
+    def perform_destroy(self, instance):
+        try:
+            reservacionesService.eliminar_reservacion(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except models.Reservacion.DoesNotExist:
+            return Response({"error": "Paquete no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
 
 class EncuestaViewSet(viewsets.ModelViewSet):
@@ -317,6 +330,20 @@ class PagoViewSet(viewsets.ModelViewSet):
     queryset = models.Pago.objects.select_related('metodo_pago', 'concepto_pago', 'reservacion').all()
     serializer_class = serializers.PagoSerializer
 
+    def perform_create(self, serializer):
+        # logica para cambio de estado de reservaciones
+        pago = serializer.save()
+        reservacion = pago.reservacion
+        cantidad_pagada = models.Pago.objects.filter(reservacion=reservacion).aggregate(total=Sum('monto'))['total'] or 0
+        estado_actual = reservacion.estado_reserva.codigo
+        nuevo_estado = None
+        if cantidad_pagada >= reservacion.total:
+            nuevo_estado = 'LIQUI'
+        elif estado_actual in ['SOLIC', 'PENDI']:
+            nuevo_estado = 'PAGAD'
+        
+        if nuevo_estado and nuevo_estado != estado_actual:
+            reservacionesService.cambio_estado_reservacion(reservacion, nuevo_estado)
 
 class BuscarReservacionView(APIView):
     def get(self, request):
@@ -361,7 +388,7 @@ class ListarReservacionesView(APIView):
 class LlenarCalendarioReservaciones(APIView):
     def get(self, request):
         from datetime import datetime, date
-        reservaciones = models.Reservacion.objects.all()
+        reservaciones = models.Reservacion.objects.exclude(estado_reserva__codigo='PAQUE')
         
         eventos = []
         for reservacion in reservaciones:
@@ -800,7 +827,44 @@ class ListaPaquetesViewSet(APIView):
         reservaciones = models.Reservacion.objects.filter(estado_reserva__codigo="PAQUE"
                                                           ).select_related('tipo_evento', 'montaje', 'montaje__salon', 'montaje__tipo_montaje'
                                                           ).prefetch_related('reservaservicio_set__servicio', 'reservaequipa_set__equipamiento', 'montaje__montajemobiliario_set', 
-                                                                             'montaje__montajemobiliario_set__mobiliario')
+                                                                             'montaje__montajemobiliario_set__mobiliario').distinct()
         serializer = serializers.ReservacionLecturaSerializer(reservaciones, many=True)
         return Response(serializer.data)
-    
+
+class ReservacionesClienteViewSet(APIView):
+
+    def get(self, request, rfc):
+        estado = request.query_params.get('estado')
+        reservaciones = models.Reservacion.objects.filter(
+            cliente__rfc=rfc
+        ).select_related(
+            'cliente', 
+            'montaje', 
+            'montaje__salon', 
+            'montaje__tipo_montaje', 
+            'estado_reserva', 
+            'tipo_evento'
+        ).prefetch_related(
+            'reservaservicio_set__servicio', 
+            'reservaequipa_set__equipamiento',
+            'montaje__montajemobiliario_set__mobiliario'
+        ).order_by('-fechaEvento')
+
+        estados = {
+            'ACEPT' : ['PAGAD', 'PENDI', 'LIQUI'],
+            'ENPRO' : ['ENPRO'],
+            'FINAL' : ['FINAL'],
+            'CANCE' : ['CANCE'],
+            'SOLIC' : ['SOLIC'],
+        }
+
+        if estado in estados:
+            reservaciones = reservaciones.filter(estado_reserva__codigo__in=estados[estado])
+
+        serializer = serializers.ReservacionLecturaSerializer(reservaciones, many=True)
+        return Response(serializer.data)
+
+class EncuestaReservacionViewSet(APIView):
+    def get(self, request, idReservacion):
+        encuesta = models.Encuesta.objects.filter(reservacion_id=idReservacion).exists()
+        return Response({'realizada': encuesta})

@@ -3,8 +3,9 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("click", async function (e) {
     const btn = e.target.closest(".ver-detalles");
     if (!btn) return;
-    
+
     const pk = btn.dataset.pk;
+    const idTrabajador = btn.dataset.trabajador;
     const prefix = "modal-";
 
     try {
@@ -22,7 +23,8 @@ document.addEventListener("DOMContentLoaded", function () {
         data.cliente.correo;
       document.getElementById(prefix + "cliente-telefono").textContent =
         data.cliente.telefono;
-      document.getElementById(prefix + "cliente-rfc").textContent = data.cliente.rfc;
+      document.getElementById(prefix + "cliente-rfc").textContent =
+        data.cliente.rfc;
       document.getElementById(prefix + "cliente-nombre-fiscal").textContent =
         data.cliente.nombre_fiscal;
 
@@ -33,12 +35,14 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById(prefix + "evento-fecha").textContent = data.fecha;
       document.getElementById(prefix + "evento-horario").textContent =
         `${data.hora_inicio} - ${data.hora_fin}`;
-      document.getElementById(prefix + "evento-estado").textContent = data.estado;
+      document.getElementById(prefix + "evento-estado").textContent =
+        data.estado;
       document.getElementById(prefix + "evento-asistentes").textContent =
         data.asistentes;
 
       document.getElementById(prefix + "salon-nombre").textContent = data.salon;
-      document.getElementById(prefix + "salon-montaje").textContent = data.montaje;
+      document.getElementById(prefix + "salon-montaje").textContent =
+        data.montaje;
 
       const serviciosSpan = document.getElementById(prefix + "servicios-lista");
       if (data.servicios && data.servicios.length > 0) {
@@ -47,12 +51,28 @@ document.addEventListener("DOMContentLoaded", function () {
         serviciosSpan.textContent = "No hay servicios";
       }
 
-      document.getElementById(prefix + "total-iva").textContent = `$${data.iva}`;
+      document.getElementById(prefix + "total-iva").textContent =
+        `$${data.iva}`;
       document.getElementById(prefix + "total-subtotal").textContent =
         `$${data.subtotal}`;
-      document.getElementById(prefix + "total-total").textContent = `$${data.total}`;
+      document.getElementById(prefix + "total-total").textContent =
+        `$${data.total}`;
+      const botones = document.getElementById("botones-modal");
 
-      window.miModal.showModal();
+        if (botones) {
+          if (data.estado === "SOLIC" || data.estado === "Solicitud") {
+            botones.style.display = "flex";
+          } else {
+            botones.style.display = "none";
+          }
+        }
+
+        const modalElement = document.getElementById("miModal");
+        if (modalElement) {
+          modalElement.dataset.pk = pk;
+          modalElement.dataset.trabajador = idTrabajador;
+          window.miModal.showModal();
+        }
     } catch (error) {
       console.error("Error:", error);
       alert("No se pudo cargar los detalles de la reservación");
@@ -60,34 +80,40 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-// funcion para hacer filtrado chido por fecha
-function filtrarRecientes() {
-  const contenedor = document.getElementById('contenedor-eventos');
-  const items = Array.from(contenedor.querySelectorAll('.contenedor-solicitud'));
+// funcion para hacer el filtrado de las reservaciones de acuerdo a si se quieren solicitudes o por mas proximas
+function filtrarReservaciones(evento, buscado, titulo) {
+  document
+    .querySelectorAll(".tab-btn")
+    .forEach((boton) => boton.classList.remove("active"));
+  evento.currentTarget.classList.add("active");
 
-  items.forEach(item => item.style.display = '');
+  document.getElementById("titulo-tab").textContent = titulo;
 
-  items.sort((a, b) => {
-    const fecha_1 = new Date(a.dataset.fecha || 0);
-    const fecha_2 = new Date(b.dataset.fecha || 0);
-    return fecha_2 - fecha_1;
-  });
+  const contenedro = document.getElementById("contenedor-eventos");
+  const items = contenedro.querySelectorAll(".contenedor-solicitud");
 
-  items.forEach(item => contenedor.appendChild(item));
+  items.forEach((item) => {
+    const estado = item.dataset.estado;
 
-}
-
-// funcion para hacer filtrado chido po estado
-function filtrarSolicitudes() {
-  const contenedor = document.getElementById('contenedor-eventos');
-  const items = contenedor.querySelectorAll('.contenedor-solicitud');
-
-  items.forEach(item => {
-    if (!estado || item.dataset.estado === 'SOLIC') {
-      item.style.display = '';
+    if (buscado === null) {
+      if (estado !== 'SOLIC') {
+        item.style.display = '';
+      } else {
+        item.style.display = 'none';
+      }
     } else {
-      item.style.display = 'none';
+      if (estado === buscado) {
+        item.style.display = '';
+      } else {
+        item.style.display = 'none';
+      }
     }
   });
-
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+  const btnConfirmados = document.querySelector(".tab-confirm");
+  if (btnConfirmados) {
+    btnConfirmados.click();
+  }
+});

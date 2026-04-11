@@ -49,9 +49,7 @@ function añadirEquipamiento() {
   contadorEquipamientos++;
 
   const contenedor = document.getElementById("equipamientos-selects");
-  const primerSelectTipo = document.querySelector(
-    "#equipamiento select",
-  );
+  const primerSelectTipo = document.querySelector("#equipamiento select");
   const opcionesTipo = primerSelectTipo ? primerSelectTipo.innerHTML : "";
 
   // Crear nuevo par de selects con cantidad
@@ -473,4 +471,66 @@ document.addEventListener("DOMContentLoaded", function () {
       actualizarOpcionesSelect("mobiliario-select");
     });
   });
+});
+
+function calcularTotales() {
+  let subtotal = 0;
+
+  const salones = document.getElementById("select-salon");
+  const salon = salones.options[salones.selectedIndex];
+  if (salon && salon.dataset.costo) {
+    subtotal += parseFloat(salon.dataset.costo);
+  }
+  document.querySelectorAll(".servicio-select").forEach((select) => {
+    const option = select.options[select.selectedIndex];
+    if (option && option.dataset.costo) {
+      subtotal += parseFloat(option.dataset.costo);
+    }
+  });
+  document.querySelectorAll(".equipo-pair").forEach((pair) => {
+    const select = pair.querySelector(".equipamiento-select");
+    const inputCant = pair.querySelector('input[type="number"]');
+    const option = select ? select.options[select.selectedIndex] : null;
+
+    if (option && option.dataset.costo && inputCant && inputCant.value) {
+      subtotal += parseFloat(option.dataset.costo) * parseInt(inputCant.value);
+    }
+  });
+  document.querySelectorAll(".mobil-pair").forEach((pair) => {
+    const select = pair.querySelector(".mobiliario-select");
+    const inputCant = pair.querySelector('input[type="number"]');
+    const option = select ? select.options[select.selectedIndex] : null;
+
+    if (option && option.dataset.costo && inputCant && inputCant.value) {
+      subtotal += parseFloat(option.dataset.costo) * parseInt(inputCant.value);
+    }
+  });
+  const iva = subtotal * 0.16;
+  const total = subtotal + iva;
+
+  const formatMoney = (num) => "$" + num.toFixed(2);
+  document.getElementById("resumen-subtotal").textContent =
+    formatMoney(subtotal);
+  document.getElementById("resumen-iva").textContent = formatMoney(iva);
+  document.getElementById("resumen-total").textContent = formatMoney(total);
+}
+
+document.addEventListener("change", function(e) {
+    const clasesChecar = ["servicio-select", "equipamiento-select", "mobiliario-select", "servicio-tipo", "equipamiento-tipo", "mobiliario-tipo"];
+    const cambiantes = clasesChecar.some(clase => e.target.classList.contains(clase));
+    if (cambiantes || e.target.id === "select-salon") {
+      setTimeout(calcularTotales, 100);
+    }
+});
+
+document.addEventListener("input", function(e) {
+    if (e.target.type === "number" && e.target.closest(".servicios-contenedor")) {
+        calcularTotales();
+    }
+});
+
+document.addEventListener("click", function(e) {
+    if (e.target.classList.contains("boton-quitar")) {
+        setTimeout(calcularTotales, 100); 
+    }
 });

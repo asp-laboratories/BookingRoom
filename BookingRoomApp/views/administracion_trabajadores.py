@@ -45,7 +45,9 @@ class Trabajadores(generic.ListView):
             "roles": roles,
             "trabajadores": trabajadores_list.order_by('-no_empleado').all(),
             "rol": rol,
-            "nombre": nombre, "no_empleado": no_empleado, "rol_filtro": rol_filtro,
+            "nombre": nombre, 
+            "no_empleado": no_empleado, 
+            "rol_filtro": rol_filtro,
             "trabajador_total": models.Trabajador.objects.count()
         })
 

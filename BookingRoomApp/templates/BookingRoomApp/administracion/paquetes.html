@@ -3,215 +3,280 @@
 
 {% block inicio %}
 
-<link rel="stylesheet"
-  href="{% static 'BookingRoomApp/css/recepcion/reservacion.css' %}">
+<link rel="stylesheet" href="{% static 'BookingRoomApp/css/administracion/paquetes.css' %}">
 
-<div class="paquetes-container">
-  <h1 class="paquetes-titulo">Crear Paquetes</h1>
+{% include "BookingRoomApp/includes/alert-confirmar.html" %}
+{% include "BookingRoomApp/includes/alert-cancelar.html" %}
+
+<div class="administrador-contenido administrador-registro-contenido">
+  <h1 class="titulo-seccion">Paquetes</h1>
+
+  <div class="indicador">
+      <div>Cantidad de paquetes:</div>
+      <div class="cantidad">{{ paquetes_total }}</div>
+  </div>
 
   <div class="paquetes-grid">
 
-    <section id="paquete-salon" class="paquetes-seccion">
-      <h2 class="paquetes-titulo-seccion">Salón y Montaje</h2>
-      <div class="paquetes-campos-row">
-        <div class="paquetes-campo">
-          <label class="paquetes-label">Seleccionar Salón</label>
-          <select class="paquetes-input" id="paquete-salon-select">
+    <div id="paquete-salon" class="administrador-formularios">
+      <h3 class="administrador-tituloSeccion">Salón y Montaje</h3>
+      <div class="administrador-inputGrid">
+        <label class="administrador-label">Seleccionar Salón:<br>
+          <select class="administrador-select" id="paquete-salon-select">
             <option value>-- Selecciona un salón --</option>
             {% for salon in salones %}
-            <option data-costo="{{ salon.costo }}"
-              data-capacidad="{{ salon.maxCapacidad }}"
-              value="{{ salon.id }}">{{ salon.nombre }}</option>
+            <option data-costo="{{ salon.costo }}" data-capacidad="{{ salon.maxCapacidad }}" value="{{ salon.id }}">{{ salon.nombre }}</option>
             {% endfor %}
           </select>
-        </div>
-        <div class="paquetes-campo">
-          <label class="paquetes-label">Seleccionar Montaje</label>
-          <select class="paquetes-input" id="paquete-montaje-select">
+        </label>
+        <label class="administrador-label">Seleccionar Montaje:<br>
+          <select class="administrador-select" id="paquete-montaje-select">
             <option value>-- Selecciona un montaje --</option>
             {% for montaje in tipos_montaje %}
             <option value="{{ montaje.id }}">{{ montaje.nombre }}</option>
             {% endfor %}
           </select>
-        </div>
+        </label>
       </div>
-      <!-- aca va lo de los mobiliarios -->
+
+      <br>
+      <h3 class="administrador-tituloSeccion">Mobiliarios</h3>
       <div class="paquetes-servicios-container">
         <div class="paquetes-servicios-list" id="paquete-mobiliario-list">
-          <div class="paquetes-mobiliario-pair" data-index="1">
-            <div class="paquetes-campo">
-              <label class="paquetes-label">Tipo de mobiliario</label>
-              <select class="paquetes-input paquete-mobiliario-tipo"
-                name="mobiliario_tipo_1">
+          <div class="administrador-inputGrid paquetes-mobiliario-pair" data-index="1">
+            <label class="administrador-label">Tipo de mobiliario:<br>
+              <select class="administrador-select paquete-mobiliario-tipo" name="mobiliario_tipo_1">
                 <option value>-- Elige un tipo --</option>
                 {% for tipo in tipos_mobiliario %}
                 <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
                 {% endfor %}
               </select>
-            </div>
-            <div class="paquetes-campo">
-              <label class="paquetes-label">Seleccionar mobiliario</label>
-              <select class="paquetes-input paquete-mobiliario-select"
-                name="mobiliario_1" disabled>
+            </label>
+            <label class="administrador-label">Seleccionar mobiliario:<br>
+              <select class="administrador-select paquete-mobiliario-select" name="mobiliario_1" disabled>
                 <option value>-- Selecciona un tipo primero --</option>
               </select>
-            </div>
-            <div class="paquetes-campo">
-              <label class="paquetes-label">Cantidad</label>
-              <input type="number" class="paquetes-input"
-                name="mobiliario_cantidad_1" value="1" min="1" />
-            </div>
+            </label>
+            <label class="administrador-label">Cantidad:<br>
+              <input type="number" class="administrador-input" name="mobiliario_cantidad_1" value="1" min="1" />
+            </label>
           </div>
         </div>
-        <div class="paquetes-servicios-botones">
-          <button type="button" class="paquetes-btn-quitar"
-            onclick="quitarPaqueteItem('mobiliario')">- Quitar</button>
-          <button type="button" class="paquetes-btn-anadir"
-            onclick="anadirPaqueteMobiliarios()">+ Añadir Mobiliario</button>
+        <div class="administrador-seccionFlex" style="margin-top: 15px;">
+          <button type="button" class="administrador-paGuarar" style="background-color: #dc3545;" onclick="quitarPaqueteItem('mobiliario')">- Quitar</button>
+          <button type="button" class="administrador-paGuarar" style="background-color: #0d6efd;" onclick="anadirPaqueteMobiliarios()">+ Añadir Mobiliario</button>
         </div>
       </div>
-    </section>
+    </div>
 
-    <section id="paquete-servicios" class="paquetes-seccion">
-      <h3 class="paquetes-titulo-seccion">Servicios Incluidos</h3>
+    <div id="paquete-servicios" class="administrador-formularios">
+      <h3 class="administrador-tituloSeccion">Servicios Incluidos</h3>
       <div class="paquetes-servicios-container">
         <div class="paquetes-servicios-list" id="paquete-servicios-list">
-          <div class="paquetes-servicio-pair" data-index="1">
-            <div class="paquetes-campo">
-              <label class="paquetes-label">Tipo de servicio</label>
-              <select class="paquetes-input paquete-servicio-tipo"
-                name="servicio_tipo_1">
+          <div class="administrador-inputGrid paquetes-servicio-pair" data-index="1">
+            <label class="administrador-label">Tipo de servicio:<br>
+              <select class="administrador-select paquete-servicio-tipo" name="servicio_tipo_1">
                 <option value>-- Elige un tipo --</option>
                 {% for tipo in tipos_servicio %}
                 <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
                 {% endfor %}
               </select>
-            </div>
-            <div class="paquetes-campo">
-              <label class="paquetes-label">Seleccionar Servicio</label>
-              <select class="paquetes-input paquete-servicio-select"
-                name="servicio_1" disabled>
+            </label>
+            <label class="administrador-label">Seleccionar Servicio:<br>
+              <select class="administrador-select paquete-servicio-select" name="servicio_1" disabled>
                 <option value>-- Selecciona un tipo primero --</option>
               </select>
-            </div>
+            </label>
           </div>
         </div>
-        <div class="paquetes-servicios-botones">
-          <button type="button" class="paquetes-btn-quitar"
-            onclick="quitarPaqueteItem('servicios')">- Quitar</button>
-          <button type="button" class="paquetes-btn-anadir"
-            onclick="anadirPaqueteServicio()">+ Añadir Servicio</button>
+        <div class="administrador-seccionFlex" style="margin-top: 15px;">
+          <button type="button" class="administrador-paGuarar" style="background-color: #dc3545;" onclick="quitarPaqueteItem('servicios')">- Quitar</button>
+          <button type="button" class="administrador-paGuarar" style="background-color: #0d6efd;" onclick="anadirPaqueteServicio()">+ Añadir Servicio</button>
         </div>
       </div>
-    </section>
+    </div>
 
-    <section id="paquete-equipamiento" class="paquetes-seccion">
-      <h3 class="paquetes-titulo-seccion">Equipamiento Incluido</h3>
+    <div id="paquete-equipamiento" class="administrador-formularios">
+      <h3 class="administrador-tituloSeccion">Equipamiento Incluido</h3>
       <div class="paquetes-servicios-container">
         <div class="paquetes-servicios-list" id="paquete-equipamientos-list">
-          <div class="paquetes-equipamiento-pair" data-index="1">
-            <div class="paquetes-campo">
-              <label class="paquetes-label">Tipo de equipamiento</label>
-              <select class="paquetes-input paquete-equipamiento-tipo"
-                name="equipamiento_tipo_1">
+          <div class="administrador-inputGrid paquetes-equipamiento-pair" data-index="1">
+            <label class="administrador-label">Tipo de equipamiento:<br>
+              <select class="administrador-select paquete-equipamiento-tipo" name="equipamiento_tipo_1">
                 <option value>-- Elige un tipo --</option>
                 {% for tipo in tipos_equipamiento %}
                 <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
                 {% endfor %}
               </select>
-            </div>
-            <div class="paquetes-campo">
-              <label class="paquetes-label">Seleccionar Equipo</label>
-              <select class="paquetes-input paquete-equipamiento-select"
-                name="equipamiento_1" disabled>
+            </label>
+            <label class="administrador-label">Seleccionar Equipo:<br>
+              <select class="administrador-select paquete-equipamiento-select" name="equipamiento_1" disabled>
                 <option value>-- Selecciona un tipo primero --</option>
               </select>
-            </div>
-            <div class="paquetes-campo">
-              <label class="paquetes-label">Cantidad</label>
-              <input type="number" class="paquetes-input"
-                name="equipamiento_cantidad_1" value="1" min="1" />
-            </div>
+            </label>
+            <label class="administrador-label">Cantidad:<br>
+              <input type="number" class="administrador-input" name="equipamiento_cantidad_1" value="1" min="1" />
+            </label>
           </div>
         </div>
-        <div class="paquetes-servicios-botones">
-          <button type="button" class="paquetes-btn-quitar"
-            onclick="quitarPaqueteItem('equipamientos')">- Quitar</button>
-          <button type="button" class="paquetes-btn-anadir"
-            onclick="anadirPaqueteEquipamiento()">+ Añadir Equipamiento</button>
+        <div class="administrador-seccionFlex" style="margin-top: 15px;">
+          <button type="button" class="administrador-paGuarar" style="background-color: #dc3545;" onclick="quitarPaqueteItem('equipamientos')">- Quitar</button>
+          <button type="button" class="administrador-paGuarar" style="background-color: #0d6efd;" onclick="anadirPaqueteEquipamiento()">+ Añadir Equipamiento</button>
         </div>
       </div>
-    </section>
+    </div>
 
-    <section id="paquete-precios" class="paquetes-seccion">
-      <h3 class="paquetes-titulo-seccion">Precio del Paquete</h3>
-      <div class="paquetes-precios-grid">
-        <div class="paquetes-campo">
-          <label class="paquetes-label">Subtotal</label>
-          <input type="number" class="paquetes-input" id="paquete-subtotal"
-            placeholder="0.00" step="0.01" />
-        </div>
-        <div class="paquetes-campo">
-          <label class="paquetes-label">IVA (%)</label>
-          <input type="number" class="paquetes-input" id="paquete-iva"
-            placeholder="16" value="16" />
-        </div>
-        <div class="paquetes-campo">
-          <label class="paquetes-label">Total</label>
-          <input type="number" class="paquetes-input" id="paquete-total"
-            placeholder="0.00" step="0.01" readonly />
-        </div>
+    <div id="paquete-precios" class="administrador-formularios">
+      <h3 class="administrador-tituloSeccion">Precio del Paquete</h3>
+      <div class="administrador-inputGrid">
+        <label class="administrador-label">Subtotal:<br>
+          <input type="number" class="administrador-input" id="paquete-subtotal" placeholder="0.00" step="0.01" />
+        </label>
+        <label class="administrador-label">IVA (%):<br>
+          <input type="number" class="administrador-input" id="paquete-iva" placeholder="16" value="16" />
+        </label>
+        <label class="administrador-label">Total:<br>
+          <input type="number" class="administrador-input" id="paquete-total" placeholder="0.00" step="0.01" readonly style="background-color: #e0e0e0; font-weight: bold; border-bottom: none; border-radius: 5px;" />
+        </label>
       </div>
-    </section>
+    </div>
 
-    <section id="paquete-detalles" class="paquetes-seccion">
-      <h3 class="paquetes-titulo-seccion">Información del Paquete</h3>
-      <div class="paquetes-detalles-grid">
-        <div class="paquetes-campo span-2">
-          <label class="paquetes-label">Nombre del Paquete</label>
-          <input type="text" class="paquetes-input" id="paquete-nombre"
-            placeholder="Ej: Paquete Básico, Paquete Premium" />
-        </div>
-        <div class="paquetes-campo span-2">
-          <label class="paquetes-label">Asistentes recomendados</label>
-          <input type="number" class="paquetes-input" id="paquete-asistentes"
-            placeholder="Ej: 50, 75, 100" />
-        </div>
-        <div class="paquetes-campo span-2">
-          <label class="paquetes-label">Tipo de evento</label>
-          <select class="paquetes-input" id="paquete-tipo-evento"
-            name="tipo-evento">
+    <div id="paquete-detalles" class="administrador-formularios">
+      <h3 class="administrador-tituloSeccion">Información del Paquete</h3>
+      <div class="administrador-seccionFlex" style="gap: 20px;">
+        <label class="administrador-label" style="min-width: 100%;">Nombre del Paquete:<br>
+          <input type="text" class="administrador-input" id="paquete-nombre" placeholder="Ej: Paquete Básico, Paquete Premium" style="width: 100%;" />
+        </label>
+        <label class="administrador-label">Asistentes recomendados:<br>
+          <input type="number" class="administrador-input" id="paquete-asistentes" placeholder="Ej: 50, 75, 100" />
+        </label>
+        <label class="administrador-label">Tipo de evento:<br>
+          <select class="administrador-select" id="paquete-tipo-evento" name="tipo-evento">
             <option value>-- Elige un tipo --</option>
             {% for tipo in tipos_eventos %}
             <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
             {% endfor %}
           </select>
-        </div>
-        <div class="paquetes-campo span-2">
-          <label class="paquetes-label">Descripción</label>
-          <textarea rows="3" class="paquetes-textarea" id="paquete-descripcion"
-            placeholder="Detalles adicionales del paquete..."></textarea>
-        </div>
+        </label>
+        <label class="administrador-label" style="min-width: 100%;">Descripción:<br>
+          <textarea rows="3" class="administrador-input" id="paquete-descripEvento" placeholder="Detalles adicionales del paquete..." style="width: 100%; resize: vertical; border: 1px solid var(--color-primario); border-radius: 5px; padding: 15px;"></textarea>
+        </label>
       </div>
-    </section>
-
-    <div class="paquetes-botones">
-      <button class="paquetes-btn-confirmar" onclick="guardarPaquete()">
-        Guardar Paquete
-      </button>
-      <button class="paquetes-btn-cancelar" onclick="location.reload()">
-        Cancelar
-      </button>
     </div>
 
+    <div class="administrador-seccionFlex" style="justify-content: center; margin-top: 20px; margin-bottom: 40px; gap: 20px;">
+      <button class="administrador-paGuarar" style="margin-left: 0;" onclick="guardarPaquete()">Guardar Paquete</button>
+      <button class="administrador-paGuarar" style="background-color: #dc3545; margin-left: 0;" onclick="location.reload()">Cancelar</button>
+    </div>
+
+  </div> <h3 class="administrador-tituloSeccion" style="margin-top: 20px;">Paquetes Existentes</h3>
+  <div class="administrador-tablita">
+    <table class="administrador-tabla">
+        <thead class="administrador-thead">
+            <tr>
+                <th class="administrador-th">Nombre</th>
+                <th class="administrador-th">Tipo</th>
+                <th class="administrador-th">Asistentes</th>
+                <th class="administrador-th">Salón</th>
+                <th class="administrador-th">Montaje</th>
+                <th class="administrador-th">Subtotal</th>
+                <th class="administrador-th">IVA</th>
+                <th class="administrador-th">Total</th>
+                <th class="administrador-th">Acciones</th>
+            </tr>
+        </thead>
+        <tbody class="administrador-tbody">
+            {% for paquete in paquetes %}
+            <tr>
+                <td class="administrador-td">{{ paquete.nombreEvento }}</td>
+                <td class="administrador-td">{{ paquete.tipo_evento.nombre }}</td>
+                <td class="administrador-td">{{ paquete.estimaAsistentes }}</td>
+                <td class="administrador-td">{{ paquete.montaje.salon.nombre|default:"-" }}</td>
+                <td class="administrador-td">{{ paquete.montaje.tipo_montaje.nombre|default:"-" }}</td>
+                <td class="administrador-td">${{ paquete.subtotal|default:"0.00" }}</td>
+                <td class="administrador-td">${{ paquete.IVA|default:"0.00" }}</td>
+                <td class="administrador-td">${{ paquete.total|default:"0.00" }}</td>
+                <td class="administrador-td servicio-acciones">
+                    <button type="button" class="btn-editar" title="Editar" onclick="editarPaquete('{{ paquete.id }}')">
+                        <svg class="icono blanco">
+                            <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-edit"></use>
+                        </svg>
+                    </button>
+                    <button type="button" class="btn-cancelar" title="Eliminar" onclick="eliminarPaquete('{{ paquete.id }}')">
+                        <svg class="icono blanco">
+                            <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-cancel"></use>
+                        </svg>
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" class="administrador-td">No hay paquetes registrados</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
   </div>
-</div>
 
-<link rel="stylesheet"
-  href="{% static 'BookingRoomApp/css/administracion/paquetes.css' %}">
+</div> <script src="{% static 'BookingRoomApp/js/utils.js' %}"></script>
+<script src="{% static 'BookingRoomApp/js/administracion/paquetes.js' %}"></script>
 
-<script src="{% static 'BookingRoomApp/js/utils.js' %}"></script>
-<script
-  src="{% static 'BookingRoomApp/js/administracion/paquetes.js' %}"></script>
+<dialog id="modal-editar-paquete" class="modal-beo" style="width: 90%; max-width: 1000px; border: none; border-radius: 10px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
+        <h2 class="titulo-seccion" style="margin: 0; font-size: 24px;">Editar Paquete</h2>
+        <button onclick="document.getElementById('modal-editar-paquete').close()" style="background: transparent; border: none; font-size: 28px; cursor: pointer; color: #888;">&times;</button>
+    </div>
+
+    <input type="hidden" id="edit-paquete-id">
+
+    <div class="administrador-inputGrid">
+        <label class="administrador-label">Nombre del Paquete:<br>
+            <input type="text" class="administrador-input" id="edit-nombre">
+        </label>
+        <label class="administrador-label">Asistentes Recomendados:<br>
+            <input type="number" class="administrador-input" id="edit-asistentes">
+        </label>
+        <label class="administrador-label">Salón (Solo lectura):<br>
+            <input type="text" class="administrador-input" id="edit-salon" disabled style="background:#f5f5f5; cursor: not-allowed;">
+        </label>
+        <label class="administrador-label">Montaje (Solo lectura):<br>
+            <input type="text" class="administrador-input" id="edit-montaje" disabled style="background:#f5f5f5; cursor: not-allowed;">
+        </label>
+    </div>
+
+    <div class="administrador-inputGrid" style="margin-top: 15px;">
+        <label class="administrador-label" style="grid-column: span 2;">Descripción:<br>
+            <textarea rows="2" class="administrador-input" id="edit-descripEvento" style="width: 100%; resize: vertical;"></textarea>
+        </label>
+        <label class="administrador-label">Subtotal de Venta ($):<br>
+            <input type="number" class="administrador-input" id="edit-subtotal" step="0.01">
+        </label>
+    </div>
+
+    <hr style="margin: 25px 0; border: 0; border-top: 2px solid #eee;">
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+            <h3 class="administrador-tituloSeccion" style="font-size: 18px; margin-bottom: 15px;">Mobiliario</h3>
+            <div id="edit-mobiliario-list"></div>
+            <button type="button" class="administrador-paGuarar" style="background-color: #0d6efd; width: 100%; margin: 10px 0 0 0;" onclick="agregarFilaEdicion('mobiliario')">+ Añadir Silla/Mesa</button>
+        </div>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+            <h3 class="administrador-tituloSeccion" style="font-size: 18px; margin-bottom: 15px;">Servicios</h3>
+            <div id="edit-servicio-list"></div>
+            <button type="button" class="administrador-paGuarar" style="background-color: #0d6efd; width: 100%; margin: 10px 0 0 0;" onclick="agregarFilaEdicion('servicio')">+ Añadir Servicio</button>
+        </div>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+            <h3 class="administrador-tituloSeccion" style="font-size: 18px; margin-bottom: 15px;">Equipos</h3>
+            <div id="edit-equipamiento-list"></div>
+            <button type="button" class="administrador-paGuarar" style="background-color: #0d6efd; width: 100%; margin: 10px 0 0 0;" onclick="agregarFilaEdicion('equipamiento')">+ Añadir Equipo</button>
+        </div>
+    </div>
+
+    <div class="administrador-seccionFlex" style="justify-content: flex-end; margin-top: 30px; gap: 15px;">
+        <button class="administrador-paGuarar" style="background-color: #dc3545; margin:0;" onclick="document.getElementById('modal-editar-paquete').close()">Cancelar</button>
+        <button class="administrador-paGuarar" style="margin:0;" onclick="guardarEdicionPaquete()">Actualizar Paquete</button>
+    </div>
+</dialog>
 
 {% endblock inicio %}

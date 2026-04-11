@@ -1,83 +1,62 @@
-{% extends "BookingRoomApp/base/base.html" %} 
+{% extends "BookingRoomApp/base/base.html" %}
 {% load static %}
 
 {% block inicio %}
 
-<link rel="stylesheet" href="{% static 'BookingRoomApp/css/recepcion/home.css' %}">
+<link rel="stylesheet"
+  href="{% static 'BookingRoomApp/css/recepcion/home.css' %}">
 
-<script src="{% static "BookingRoomApp/js/recepcion/mostrar-detalles.js" %}"></script> 
-<script src="{% static "BookingRoomApp/js/recepcion/buscar-fecha-manual.js" %}"></script> 
-
+<script src="{% static 'BookingRoomApp/js/utils.js' %}"></script>
+<script src="{% static "BookingRoomApp/js/recepcion/mostrar-detalles.js"%}"></script>
+<script src="{% static "BookingRoomApp/js/recepcion/buscar-fecha-manual.js"%}"></script>
 
 <h1 class="titulo-seccion">
   Bienvenido {{ cuenta.nombre_usuario }} ¿Que vamos a hacer hoy?
 </h1>
 <div class="parent" style="margin-top: 20px">
   <div class="div1" id="calendar"></div>
-  <div class="div2">
-    <div class="tabs">
-      <button class="tab-btn active tab-confirm" onclick="openTab(event, 'tab1')">
+    <div class="div2">
+
+     <div class="tabs">
+      <button class="tab-btn active tab-confirm" onclick="filtrarReservaciones(event, null, 'Eventos confirmados')">
         Eventos confirmados
       </button>
-      <button class="tab-btn tab-soli" onclick="openTab(event, 'tab2')">
+      <button class="tab-btn tab-soli" onclick="filtrarReservaciones(event, 'SOLIC', 'Solicitudes')">
         Solicitudes
       </button>
     </div>
-    <div id="tab1" class="tab-content active">
-      <span class="titulo-solicitud" id="titulo-tab">Proximos eventos</span>
+
+    <div id="tab-maestra" class="tab-content active">
+      <span class="titulo-solicitud" id="titulo-tab">Eventos confirmados</span>
+      
       <div id="contenedor-eventos">
         {% for reservacion in reservaciones %}
-        <div class="contenedor-solicitud" data-estado="{{ reservacion.estado_reserva.id }}" data-fecha="{{ reservacion.fechaEvento }}">
+        <div class="contenedor-solicitud"
+          data-estado="{{ reservacion.estado_reserva.codigo }}"
+          data-fecha="{{ reservacion.fechaEvento }}">
           <span> {{reservacion.nombreEvento}} </span>
-          <button class="boton-accion boton-beo ver-detalles" data-pk="{{ reservacion.pk }}">
+          <button class="boton-accion boton-beo ver-detalles" data-pk="{{ reservacion.pk }}" data-trabajador="{{cuenta.id_trabajador}}">
             Ver detalles
           </button>
         </div>
         {% endfor %}
       </div>
+      <div id="contenedor-resumen" style="display: none;"></div>
     </div>
 
-    <div id="contenedor-resumen" style="display: none;"></div>
-
-     <script>
-    function openTab(evt, tabId) {
-      document
-        .querySelectorAll(".tab-content")
-        .forEach((c) => c.classList.remove("active"));
-      document
-        .querySelectorAll(".tab-btn")
-        .forEach((b) => b.classList.remove("active"));
-      document.getElementById(tabId).classList.add("active");
-      evt.currentTarget.classList.add("active");
-    }
-  </script>
-    <div id="tab2" class="tab-content">
-      <span class="titulo-solicitud">Solicitudes</span>
-      {% for reservacion in reservaciones %}
-      <div class="contenedor-solicitud" id="cerrar-contenedor">
-        <span> {{reservacion.nombreEvento}} </span>
-        <button
-          class="boton-accion boton-beo ver-detalles"
-          data-pk="{{ reservacion.pk }}"
-        >
-          Ver detalles
-        </button>
-      </div>
-      {% endfor %}
-    </div>
   </div>
   <div class="div3">
     <h2 class="label-buscar">Buscar</h2>
     <div class="buscar-row">
       <input class="buscar-fecha" type="date" />
-      <button class="boton-accion" id="buscar-manual-fechas" onclick="remover()">Buscar</button>
+      <button class="boton-accion" id="buscar-manual-fechas"
+        onclick="remover()">Buscar</button>
     </div>
   </div>
   <div class="div5">
     <div class="contenedor-hacer">
-      <a href="{% url 'reservacion' %}" class="btn-reservacion"
-        >Hacer reservacion</a
-      >
+      <a href="{% url 'reservacion' %}" class="btn-reservacion">Hacer
+        reservacion</a>
     </div>
   </div>
 </div>

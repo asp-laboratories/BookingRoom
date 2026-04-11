@@ -1,4 +1,4 @@
-let callbackConfirmar = null;
+let callbackConfirmar = window.callbackConfirmar || null;
 
 function abrirModalConfirmar(titulo, mensaje, callback) {
     document.getElementById('modal-confirmar-titulo').textContent = titulo || 'Confirmar acción';

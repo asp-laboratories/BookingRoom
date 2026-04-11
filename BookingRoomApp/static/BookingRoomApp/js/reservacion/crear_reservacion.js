@@ -44,6 +44,7 @@ function datosReservacion() {
   const tipo_montaje = document.getElementById("select-montaje")?.value;
 
   const mobiliarios = [];
+  let mobValido = true;
   document.querySelectorAll(".mobil-pair").forEach((pair) => {
     const mobiliarioSeleccionado = pair.querySelector(".mobiliario-select");
     const cantidad = pair.querySelector('input[type="number"]');
@@ -60,9 +61,11 @@ function datosReservacion() {
       });
     } else {
       mostrarToastExito("Datos de mobiliario incompletos", "error");
-      return null;
+      mobValid = false;
     }
   });
+
+  if (!mobValido) return null;
 
   if (!salon || !tipo_montaje) {
     mostrarToastExito(

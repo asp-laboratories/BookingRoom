@@ -87,19 +87,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const opcionesTipo = primerSelectTipo ? primerSelectTipo.innerHTML : "";
 
     const html = `
-      <div class="paquetes-servicio-pair" data-index="${paqueteServicioIndex}">
-        <div class="paquetes-campo">
-          <label class="paquetes-label">Tipo de servicio</label>
-          <select class="paquetes-input paquete-servicio-tipo" name="servicio_tipo_${paqueteServicioIndex}">
+      <div class="administrador-inputGrid paquetes-servicio-pair" data-index="${paqueteServicioIndex}">
+        <label class="administrador-label">Tipo de servicio:<br>
+          <select class="administrador-select paquete-servicio-tipo" name="servicio_tipo_${paqueteServicioIndex}">
             ${opcionesTipo}
           </select>
-        </div>
-        <div class="paquetes-campo">
-          <label class="paquetes-label">Seleccionar Servicio</label>
-          <select class="paquetes-input paquete-servicio-select" name="servicio_${paqueteServicioIndex}" disabled>
+        </label>
+        <label class="administrador-label">Seleccionar Servicio:<br>
+          <select class="administrador-select paquete-servicio-select" name="servicio_${paqueteServicioIndex}" disabled>
             <option value="">-- Selecciona un tipo primero --</option>
           </select>
-        </div>
+        </label>
       </div>
     `;
     container.insertAdjacentHTML("beforeend", html);
@@ -115,23 +113,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const opcionesTipo = primerSelectTipo ? primerSelectTipo.innerHTML : "";
 
     const html = `
-      <div class="paquetes-equipamiento-pair" data-index="${paqueteEquipamientoIndex}">
-        <div class="paquetes-campo">
-          <label class="paquetes-label">Tipo de equipamiento</label>
-          <select class="paquetes-input paquete-equipamiento-tipo" name="equipamiento_tipo_${paqueteEquipamientoIndex}">
+      <div class="administrador-inputGrid paquetes-equipamiento-pair" data-index="${paqueteEquipamientoIndex}">
+        <label class="administrador-label">Tipo de equipamiento:<br>
+          <select class="administrador-select paquete-equipamiento-tipo" name="equipamiento_tipo_${paqueteEquipamientoIndex}">
             ${opcionesTipo}
           </select>
-        </div>
-        <div class="paquetes-campo">
-          <label class="paquetes-label">Seleccionar Equipo</label>
-          <select class="paquetes-input paquete-equipamiento-select" name="equipamiento_${paqueteEquipamientoIndex}" disabled>
+        </label>
+        <label class="administrador-label">Seleccionar Equipo:<br>
+          <select class="administrador-select paquete-equipamiento-select" name="equipamiento_${paqueteEquipamientoIndex}" disabled>
             <option value="">-- Selecciona un tipo primero --</option>
           </select>
-        </div>
-        <div class="paquetes-campo">
-          <label class="paquetes-label">Cantidad</label>
-          <input type="number" class="paquetes-input" name="equipamiento_cantidad_${paqueteEquipamientoIndex}" value="1" min="1">
-        </div>
+        </label>
+        <label class="administrador-label">Cantidad:<br>
+          <input type="number" class="administrador-input" name="equipamiento_cantidad_${paqueteEquipamientoIndex}" value="1" min="1">
+        </label>
       </div>
     `;
     container.insertAdjacentHTML("beforeend", html);
@@ -147,23 +142,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const opcionesTipo = primerSelectTipo ? primerSelectTipo.innerHTML : "";
 
     const html = `
-      <div class="paquetes-mobiliario-pair" data-index="${paqueteMobiliarioIndex}">
-        <div class="paquetes-campo">
-          <label class="paquetes-label">Tipo de mobiliario</label>
-          <select class="paquetes-input paquete-mobiliario-tipo" name="mobiliario_tipo_${paqueteMobiliarioIndex}">
+      <div class="administrador-inputGrid paquetes-mobiliario-pair" data-index="${paqueteMobiliarioIndex}">
+        <label class="administrador-label">Tipo de mobiliario:<br>
+          <select class="administrador-select paquete-mobiliario-tipo" name="mobiliario_tipo_${paqueteMobiliarioIndex}">
             ${opcionesTipo}
           </select>
-        </div>
-        <div class="paquetes-campo">
-          <label class="paquetes-label">Seleccionar mobiliario</label>
-          <select class="paquetes-input paquete-mobiliario-select" name="mobiliario_${paqueteMobiliarioIndex}" disabled>
+        </label>
+        <label class="administrador-label">Seleccionar mobiliario:<br>
+          <select class="administrador-select paquete-mobiliario-select" name="mobiliario_${paqueteMobiliarioIndex}" disabled>
             <option value="">-- Selecciona un tipo primero --</option>
           </select>
-        </div>
-        <div class="paquetes-campo">
-          <label class="paquetes-label">Cantidad</label>
-          <input type="number" class="paquetes-input" name="mobilairio_cantidad_${paqueteMobiliarioIndex}" value="1" min="1">
-        </div>
+        </label>
+        <label class="administrador-label">Cantidad:<br>
+          <input type="number" class="administrador-input" name="mobiliario_cantidad_${paqueteMobiliarioIndex}" value="1" min="1">
+        </label>
       </div>
     `;
     container.insertAdjacentHTML("beforeend", html);
@@ -508,9 +500,9 @@ document.addEventListener("DOMContentLoaded", function () {
       return null;
     }
 
-    const descripcion = document.getElementById("paquete-descripcion");
-    if (!descripcion || !descripcion.value) {
-      alert("Por favor ingrese una descripcion para el paquete");
+    const descripEvento = document.getElementById("paquete-descripEvento");
+    if (!descripEvento || !descripEvento.value) {
+      alert("Por favor ingrese una descripEvento para el paquete");
       return null;
     }
 
@@ -521,8 +513,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const asistentes = document.getElementById("paquete-asistentes");
-    if (salon.dataset.capacidad <= asistentes) {
-      alert("El salon no soporta tantas personas");
+    const opcionSalon = salon.options[salon.selectedIndex];
+    const capacidadSalon = parseInt(opcionSalon.dataset.capacidad) || 0;
+    const numAsistentes = parseInt(asistentes.value) || 0;
+
+    if (capacidadSalon < numAsistentes) {
+      alert(
+        `El salón no soporta tantas personas. Capacidad máxima: ${capacidadSalon}`,
+      );
       return null;
     }
 
@@ -572,7 +570,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     return {
       nombre: nombre.value.trim(),
-      descripEvento: descripcion.value.trim(),
+      descripEvento: descripEvento.value.trim(),
       estimaAsistentes: parseInt(asistentes.value),
       estado_reserva: "PAQUE",
       reserva_servicio: reserva_servicio,
@@ -617,12 +615,42 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
-  // Inicializar eventos
+  window.eliminarPaquete = async function (id) {
+    if (
+      !confirm(
+        "Seguro de eliminar este paquete? Esta accion no se puede revertir",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const respeusta = await fetch(`/api/reservacion/${id}/`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+      });
+
+      if (respeusta.ok | (respeusta.status === 204)) {
+        alert("Paquete eliminado correctamente");
+        window.location.reload();
+      } else {
+        const error = await respeusta.json();
+        console.error("Error al eliminar: ", error);
+        alert("Surgio un probblema al eliminar el paquete.");
+      }
+    } catch (error) {
+      console.error("Error en la conexion con la red: ", error);
+      alert("No se pudo conectar al servidor para la eliminacion del paquete.");
+    }
+  };
+
   agregarEventosPaqueteServicios();
   agregarEventosPaqueteEquipamientos();
   agregarEventosPaqueteMobiliarios();
 
-  // Eventos para cálculo de total
   const salonSeleccionado = document.getElementById("paquete-salon-select");
   if (salonSeleccionado)
     salonSeleccionado.addEventListener("change", calcularTotalAutomatico);
@@ -632,3 +660,260 @@ document.addEventListener("DOMContentLoaded", function () {
     subtotalInput.addEventListener("input", calcularPaqueteTotal);
   if (ivaInput) ivaInput.addEventListener("input", calcularPaqueteTotal);
 });
+
+const catalogosEdit = { servicios: [], mobiliarios: [], equipamientos: [] };
+
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const [resS, resM, resE] = await Promise.all([
+      fetch("/api/servicio/"),
+      fetch("/api/mobiliario/"),
+      fetch("/api/equipamiento/"),
+    ]);
+    if (resS.ok) catalogosEdit.servicios = await resS.json();
+    if (resM.ok) catalogosEdit.mobiliarios = await resM.json();
+    if (resE.ok) catalogosEdit.equipamientos = await resE.json();
+  } catch (e) {
+    console.error("Error precargando catálogos para edición", e);
+  }
+});
+
+window.agregarFilaEdicion = function (tipoEntidad, valorId = "", cantidad = 1) {
+  const container = document.getElementById(`edit-${tipoEntidad}-list`);
+  const catalogoItems =
+    tipoEntidad === "mobiliario"
+      ? catalogosEdit.mobiliarios
+      : tipoEntidad === "servicio"
+        ? catalogosEdit.servicios
+        : catalogosEdit.equipamientos;
+
+  const claseOriginal =
+    tipoEntidad === "mobiliario"
+      ? ".paquete-mobiliario-tipo"
+      : tipoEntidad === "servicio"
+        ? ".paquete-servicio-tipo"
+        : ".paquete-equipamiento-tipo";
+  const selectOriginal = document.querySelector(claseOriginal);
+  const opcionesTipoHtml = selectOriginal
+    ? selectOriginal.innerHTML
+    : '<option value="">-- Tipo --</option>';
+
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = `<select>${opcionesTipoHtml}</select>`;
+  const mapaTipos = {};
+  const mapaTiposInverso = {};
+  tempDiv.querySelectorAll("option").forEach((opt) => {
+    if (opt.value) {
+      mapaTipos[String(opt.value).trim()] = opt.textContent.trim();
+      mapaTiposInverso[opt.textContent.trim().toLowerCase()] = String(
+        opt.value,
+      ).trim();
+    }
+  });
+
+  const obtenerIdTipo = (item) => {
+    let rawValue = null;
+    if (item.tipo_movil) rawValue = item.tipo_movil;
+    else if (item.tipo_servicio) rawValue = item.tipo_servicio;
+    else if (item.tipo_equipa) rawValue = item.tipo_equipa;
+    else {
+      for (let key in item) {
+        if (key.toLowerCase().includes("tipo") && item[key]) {
+          rawValue = item[key];
+          break;
+        }
+      }
+    }
+
+    if (!rawValue) return null;
+    if (typeof rawValue === "object" && rawValue.id) return String(rawValue.id);
+
+    const strVal = String(rawValue).trim().toLowerCase();
+    if (mapaTipos[strVal]) return strVal;
+    if (mapaTiposInverso[strVal]) return mapaTiposInverso[strVal];
+
+    return String(rawValue);
+  };
+
+  let tipoPreseleccionado = "";
+  if (valorId) {
+    const itemEncontrado = catalogoItems.find(
+      (i) => String(i.id) === String(valorId),
+    );
+    if (itemEncontrado) tipoPreseleccionado = obtenerIdTipo(itemEncontrado);
+  }
+
+  const divFila = document.createElement("div");
+  divFila.className = `edit-fila-${tipoEntidad}`;
+  divFila.style =
+    "display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; background: #fff; padding: 12px; border-radius: 8px; border: 1px solid #caced1; box-shadow: 0 2px 4px rgba(0,0,0,0.05);";
+
+  let html = `<select class="administrador-select edit-tipo-selector" style="width: 100%; padding: 8px;">
+                    ${opcionesTipoHtml}
+                </select>`;
+
+  html += `<select class="administrador-select edit-item-${tipoEntidad}" style="width: 100%; padding: 8px;" ${!tipoPreseleccionado ? "disabled" : ""}>
+                <option value="">-- Selecciona --</option>`;
+  if (tipoPreseleccionado) {
+    catalogoItems
+      .filter((i) => String(obtenerIdTipo(i)) === String(tipoPreseleccionado))
+      .forEach((item) => {
+        html += `<option value="${item.id}" ${String(item.id) === String(valorId) ? "selected" : ""}>${item.nombre}</option>`;
+      });
+  }
+  html += `</select>`;
+
+  html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">`;
+  if (tipoEntidad !== "servicio") {
+    html += `<div style="display:flex; align-items:center; gap:5px;">
+                    <label style="font-size: 12px; color: #555; font-weight: bold;">Cant:</label>
+                    <input type="number" class="administrador-input edit-cantidad-${tipoEntidad}" value="${cantidad}" min="1" style="width: 70px; padding: 5px; margin: 0;">
+                 </div>`;
+  } else {
+    html += `<div></div>`;
+  }
+  html += `<button type="button" onclick="this.closest('.edit-fila-${tipoEntidad}').remove()" style="background: #ff4d4d; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">Eliminar</button>`;
+  html += `</div>`;
+
+  divFila.innerHTML = html;
+  container.appendChild(divFila);
+
+  const tipoSelect = divFila.querySelector(".edit-tipo-selector");
+  const itemSelect = divFila.querySelector(`.edit-item-${tipoEntidad}`);
+
+  if (tipoPreseleccionado) {
+    tipoSelect.value = tipoPreseleccionado;
+  }
+
+  tipoSelect.addEventListener("change", () => {
+    const tId = tipoSelect.value.trim();
+    let opcionesHtml = '<option value="">-- Selecciona --</option>';
+
+    if (tId) {
+      const filtrados = catalogoItems.filter(
+        (i) => String(obtenerIdTipo(i)) === tId,
+      );
+      filtrados.forEach((item) => {
+        opcionesHtml += `<option value="${item.id}">${item.nombre}</option>`;
+      });
+      itemSelect.innerHTML = opcionesHtml;
+      itemSelect.disabled = false;
+    } else {
+      itemSelect.innerHTML = opcionesHtml;
+      itemSelect.disabled = true;
+    }
+  });
+};
+
+window.editarPaquete = async function (id) {
+  try {
+    const response = await fetch(`/api/reservacion/${id}/`);
+    if (!response.ok) throw new Error("Error fetching");
+    const data = await response.json();
+
+    document.getElementById("edit-paquete-id").value = data.id;
+    document.getElementById("edit-nombre").value = data.nombreEvento;
+    document.getElementById("edit-asistentes").value = data.estimaAsistentes;
+    document.getElementById("edit-subtotal").value = data.subtotal;
+    document.getElementById("edit-salon").value = data.montaje?.salon?.nombre || "-";
+    document.getElementById("edit-montaje").value = data.montaje?.tipo_montaje?.nombre || "-";
+    document.getElementById("edit-descripEvento").value = data.descripEvento || "";
+
+    ["mobiliario", "servicio", "equipamiento"].forEach(
+      (t) => (document.getElementById(`edit-${t}-list`).innerHTML = ""),
+    );
+
+    if (data.montaje?.montaje_mobiliario) {
+      data.montaje.montaje_mobiliario.forEach((m) => {
+        const idMob = m.mobiliario?.id || m.mobiliario;
+        agregarFilaEdicion("mobiliario", idMob, m.cantidad);
+      });
+    }
+    if (data.reserva_servicio) {
+      data.reserva_servicio.forEach((s) => {
+        const idServ = s.servicio?.id || s.servicio;
+        agregarFilaEdicion("servicio", idServ);
+      });
+    }
+    if (data.reserva_equipa) {
+      data.reserva_equipa.forEach((e) => {
+        const idEq = e.equipamiento?.id || e.equipamiento;
+        agregarFilaEdicion("equipamiento", idEq, e.cantidad);
+      });
+    }
+
+    document.getElementById("modal-editar-paquete").showModal();
+  } catch (e) {
+    console.error(e);
+    alert("No se pudo cargar el paquete. Revisa que el ID sea correcto.");
+  }
+};
+
+window.guardarEdicionPaquete = async function () {
+  const id = document.getElementById("edit-paquete-id").value;
+  const subtotal = parseFloat(document.getElementById("edit-subtotal").value) || 0;
+
+  const payload = {
+    nombreEvento: document.getElementById("edit-nombre").value.trim(),
+    descripEvento: document.getElementById("edit-descripEvento").value.trim(),
+    estimaAsistentes: parseInt(document.getElementById("edit-asistentes").value) || 0,
+    subtotal: subtotal,
+    mobiliarios: [],
+    reserva_servicio: [],
+    reserva_equipa: [],
+  };
+
+  document.querySelectorAll(".edit-fila-mobiliario").forEach((fila) => {
+    const nodoItem = fila.querySelector(".edit-item-mobiliario");
+    const nodoCant = fila.querySelector(".edit-cantidad-mobiliario");
+    if (nodoItem && nodoCant && nodoItem.value) {
+      payload.mobiliarios.push({ 
+          id: parseInt(nodoItem.value), 
+          cantidad: parseInt(nodoCant.value) || 1 
+      });
+    }
+  });
+
+  document.querySelectorAll(".edit-fila-servicio").forEach((fila) => {
+    const nodoItem = fila.querySelector(".edit-item-servicio");
+    if (nodoItem && nodoItem.value) {
+      payload.reserva_servicio.push({ 
+          id: parseInt(nodoItem.value) 
+      });
+    }
+  });
+
+  document.querySelectorAll(".edit-fila-equipamiento").forEach((fila) => {
+    const nodoItem = fila.querySelector(".edit-item-equipamiento");
+    const nodoCant = fila.querySelector(".edit-cantidad-equipamiento");
+    if (nodoItem && nodoCant && nodoItem.value) {
+      payload.reserva_equipa.push({ 
+          id: parseInt(nodoItem.value), 
+          cantidad: parseInt(nodoCant.value) || 1 
+      });
+    }
+  });
+
+  try {
+    const response = await fetch(`/api/reservacion/${id}/`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.ok) {
+      alert("Paquete actualizado correctamente.");
+      window.location.reload();
+    } else {
+      const err = await response.json();
+      console.error("Error del backend:", err);
+      alert("Error al actualizar. Verifica que los datos estén completos.");
+    }
+  } catch (e) {
+    console.error("Error de conexión:", e);
+    alert("Falló la conexión con el servidor.");
+  }
+};
