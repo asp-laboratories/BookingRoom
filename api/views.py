@@ -792,7 +792,7 @@ class DetalleReservacionView(APIView):
                 'montaje__montajemobiliario_set__mobiliario'
             ).get(pk=pk)
             
-            serializer = serializers.ReservacionDetalleSerializer(reservacion)
+            serializer = serializers.ReservacionCoordinadorSerializer(reservacion)
             return Response(serializer.data)
         except models.Reservacion.DoesNotExist:
             return Response({'error': 'Reservación no encontrada'}, status=404)
