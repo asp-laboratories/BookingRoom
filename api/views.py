@@ -1125,3 +1125,95 @@ class CompletarSolicitudExtraView(APIView):
             return Response({'error': 'Algunos items no se actualizaron', 'detalles': errores}, status=400)
         
         return Response({'mensaje': 'Items actualizados correctamente'})
+
+
+class MisSolicitudesExtraView(APIView):
+    """API para obtener las solicitudes extra de las reservaciones del cliente"""
+    def get(self, request):
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        email = request.query_params.get('email')
+        
+        if not email:
+            return Response({'error': 'Email requerido'}, status=400)
+        
+        try:
+            cuenta = models.Cuenta.objects.get(correo_electronico=email)
+            datos_cliente = models.DatosCliente.objects.get(cuenta=cuenta)
+            logger.info(f"Cliente encontrado: {datos_cliente.id}, cuenta: {cuenta.id}")
+        except models.Cuenta.DoesNotExist:
+            return Response({'error': 'Cuenta no encontrada'}, status=404)
+        except models.DatosCliente.DoesNotExist:
+            return Response({'solicitudes': []})
+        
+        # Obtener reservaciones del cliente
+        reservaciones = models.Reservacion.objects.filter(
+            cliente=datos_cliente,
+            estado_reserva__codigo__in=['SOLIC', 'PEN', 'CONF', 'CON', 'PROC']
+        ).select_related(
+            'montaje__salon', 'estado_reserva'
+        ).prefetch_related(
+            'montaje__montajemobiliario_set__mobiliario',
+            'reservaequipa_set__equipamiento',
+            'reservaservicio_set__servicio'
+        )
+        
+        logger.info(f"Reservaciones encontradas para cliente {datos_cliente.id}: {reservaciones.count()}")
+        
+        resultado = []
+        for r in reservaciones:
+            logger.info(f"Reservacion {r.id}: montaje={r.montaje}, cliente={r.cliente}")
+            
+            mobiliarios_extra = []
+            equipamentos_extra = []
+            servicios_extra = []
+            
+            if r.montaje:
+                logger.info(f"  Montaje {r.montaje.id}: mobiliarios={r.montaje.montajemobiliario_set.count()}")
+                for mm in r.montaje.montajemobiliario_set.all():
+                    logger.info(f"    Mobiliario {mm.id}: extra={mm.extra}, mobiliario={mm.mobiliario.id}")
+                    if mm.extra:
+                        mobiliarios_extra.append({
+                            'id': mm.id,
+                            'mobiliario_id': mm.mobiliario.id,
+                            'nombre': mm.mobiliario.nombre,
+                            'cantidad': mm.cantidad,
+                            'precio_unitario': float(mm.mobiliario.costo) if mm.mobiliario.costo else 0,
+                            'costo_total': float(mm.mobiliario.costo * mm.cantidad) if mm.mobiliario.costo else 0,
+                        })
+            
+            for re in r.reservaequipa_set.all():
+                if re.extra:
+                    equipamentos_extra.append({
+                        'id': re.id,
+                        'equipamiento_id': re.equipamiento.id,
+                        'nombre': re.equipamiento.nombre,
+                        'cantidad': re.cantidad,
+                        'precio_unitario': float(re.equipamiento.costo) if re.equipamiento.costo else 0,
+                        'costo_total': float(re.equipamiento.costo * re.cantidad) if re.equipamiento.costo else 0,
+                    })
+            
+            for rs in r.reservaservicio_set.all():
+                if rs.extra:
+                    servicios_extra.append({
+                        'id': rs.id,
+                        'servicio_id': rs.servicio.id,
+                        'nombre': rs.servicio.nombre,
+                        'precio': float(rs.servicio.costo) if rs.servicio.costo else 0,
+                    })
+            
+            # Solo incluir si hay extras
+            if mobiliarios_extra or equipamentos_extra or servicios_extra:
+                resultado.append({
+                    'reservacion_id': r.id,
+                    'reservacion_nombre': r.nombreEvento,
+                    'reservacion_fecha': r.fechaEvento.isoformat() if r.fechaEvento else None,
+                    'salon_nombre': r.montaje.salon.nombre if r.montaje and r.montaje.salon else None,
+                    'estado_codigo': r.estado_reserva.codigo,
+                    'mobiliarios_extra': mobiliarios_extra,
+                    'equipamiento_extra': equipamentos_extra,
+                    'servicios_extra': servicios_extra,
+                })
+        
+        return Response({'solicitudes': resultado})

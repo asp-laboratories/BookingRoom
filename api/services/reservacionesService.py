@@ -1,11 +1,12 @@
-
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from BookingRoomApp import models
 from .montajeService import crear_montaje
 from .herramientas import Precios
-
 from decimal import Decimal
+import logging
+
+logger = logging.getLogger(__name__)
 
 def crear_reseracion(datos):
     with transaction.atomic():
@@ -222,7 +223,7 @@ def cambio_estado_reservacion(original, estado_nuevo):
             
 # para los casos de abajo es obligatorio poner el total final al llamar a la api con estos campos, esto para determinar
 # cuanto se va a ocupar, se busca evitar a toda costa el tener q ingresar numeros negativos
-# ejemplo: la reservacion ya tenia 34 sillas, se modifico y ahora hay 30 sillas y 4 taburetes, lo que se envia es eso
+# ejemplo: la reservacion ya tinha 34 sillas, se modifico y ahora hay 30 sillas y 4 taburetes, lo que se envia es eso
 # 30 sillas y 4 taburetes, no -4 sillas y 4 taburetes
 def modificacion_aditamentos(original, nuevos_datos):
     with transaction.atomic():
@@ -246,6 +247,9 @@ def modificacion_aditamentos(original, nuevos_datos):
         
         # se guardan los cambios
         original.save()
+        
+        costo_extra_total = 0
+        
         # encaso de que se hayan agregado 
         if new_mobilairios:
 
@@ -279,6 +283,13 @@ def modificacion_aditamentos(original, nuevos_datos):
                         inventario_2.cantidad += new_mobil['cantidad']
                         inventario_2.save(update_fields=['cantidad'])
 
+                    # obtener costo del mobiliario
+                    try:
+                        mobil = models.Mobiliario.objects.get(id=new_mobil['id'])
+                        costo_extra_total += float(mobil.costo) * new_mobil['cantidad']
+                    except:
+                        pass
+                    
                     # se crean nuevos registro de asignacion de aditamentos extras
                     models.MontajeMobiliario.objects.create(montaje_id=montaje.id, mobiliario_id= new_mobil['id'], cantidad=new_mobil['cantidad'], extra=True)
 
@@ -287,23 +298,30 @@ def modificacion_aditamentos(original, nuevos_datos):
             elif reservacion.estado_reserva in ['CAN', 'PEN', 'SOLIC', 'CON']:
                 for new_mobil in new_mobilairios:
 
-                    # se intenta crear o obtener el registro de montaje mobiliario, en caso de que se cree se dara en cantidad en
-                    # cantidad el valor nuevo
+                    # se intenta crear o obtener el registro de montaje mobiliario
                     montaje_mobil, fue_creado = models.MontajeMobiliario.objects.get_or_create(
                         mobiliario_id=new_mobil['id'], 
                         montaje_id= reservacion.montaje.id,
                         defaults= {
                             'cantidad': new_mobil['cantidad'],
+                            'extra': True,  # Marcar como extra
                         })
                     
-                    # si fue obtenido (ya existia), se establece la nueva cantidad del mobiliario necesitado
                     total = 0
                     if not fue_creado:                
-                        total = montaje_mobil.cantidad
-                        montaje_mobil.cantidad = new_mobil['cantidad']
-                        montaje_mobil.completado = False
-                        montaje_mobil.save(update_fields=['cantidad', 'completado'])
+                        total = montagem_mobil.cantidad
+                        montagem_mobil.cantidad = new_mobil['cantidad']
+                        montagem_mobil.completado = False
+                        montaje_mobil.extra = True  # Asegurar que sea extra
+                        montagem_mobil.save(update_fields=['cantidad', 'completado', 'extra'])
                     
+                    # obtener costo del mobiliario
+                    try:
+                        mobil = models.Mobiliario.objects.get(id=new_mobil['id'])
+                        costo_extra_total += float(mobil.costo) * new_mobil['cantidad']
+                    except:
+                        pass
+
                     # se obtiene el mobiliario disponible del mobiliario en iteracion
                     inventario = models.InventarioMob.objects.get(mobiliario_id=new_mobil['id'], estado_mobil='DISP')
                     if new_mobil['cantidad'] > (inventario.cantidad + total):
@@ -315,20 +333,40 @@ def modificacion_aditamentos(original, nuevos_datos):
                 for new_mobil in new_mobilairios:
                     
                     # si se obtiene, si es old, sino es new
-                    old_mobil, creado = models.MontajeMobiliario.objects.get_or_create(montaje_id=reservacion.montaje.id, mobiliario_id=new_mobil['id'], defaults={'cantidad': new_mobil['cantidad']})
+                    old_mobil, creado = models.MontajeMobiliario.objects.get_or_create(
+                        montaje_id=reservacion.montaje.id, 
+                        mobiliario_id=new_mobil['id'], 
+                        defaults={
+                            'cantidad': new_mobil['cantidad'],
+                            'extra': True,  # Marcar como extra
+                        }
+                    )
 
                     # si si es old se manda a liberar espacio, si no lo es se salta al siguiente paso
                     if not creado:
                         _liberar_reservados_mobiliarios(old_mobil)
                         old_mobil.cantidad = new_mobil['cantidad']
                         old_mobil.completado = False
-                        old_mobil.save(update_fields=['cantidad', 'completado'])
+                        old_mobil.extra = True  # Asegurar que sea extra
+                        old_mobil.save(update_fields=['cantidad', 'completado', 'extra'])
 
-                    # obtenemos disponibles del mobiliario actual
+                    # obtener costo del mobiliario
+                    try:
+                        mobil = models.Mobiliario.objects.get(id=new_mobil['id'])
+                        costo_extra_total += float(mobil.costo) * new_mobil['cantidad']
+                    except:
+                        pass
+
+                    # obtenemos disponibles del mobiliario actual (crear si no existe)
                     try:
                         inventario_di = models.InventarioMob.objects.get(mobiliario_id=new_mobil['id'], estado_mobil_id='DISP')
                     except models.InventarioMob.DoesNotExist:
-                        raise Exception(f"No hay inventario disponible para mobiliario {new_mobil['id']}")
+                        # Crear inventario disponible si no existe
+                        inventario_di = models.InventarioMob.objects.create(
+                            mobiliario_id=new_mobil['id'],
+                            estado_mobil_id='DISP',
+                            cantidad=0
+                        )
                     
                     try:
                         inventario_re, _ = models.InventarioMob.objects.get_or_create(
@@ -368,6 +406,14 @@ def modificacion_aditamentos(original, nuevos_datos):
                     if not fue_creado:
                         inventario_2.cantidad += new_equipo['cantidad']
                         inventario_2.save(update_fields=['cantidad'])
+                    
+                    # obtener costo del equipamento
+                    try:
+                        equipo = models.Equipamiento.objects.get(id=new_equipo['id'])
+                        costo_extra_total += float(equipo.costo) * new_equipo['cantidad']
+                    except:
+                        pass
+                    
                     models.ReservaEquipa.objects.create(reservacion_id=reservacion.id, equipamiento_id=new_equipo['id'], cantidad= new_equipo['cantidad'], extra=True)
 
             elif reservacion.estado_reserva in ['CAN', 'PEN', 'SOLIC', 'PLANT', 'CON']:
@@ -377,13 +423,22 @@ def modificacion_aditamentos(original, nuevos_datos):
                         reservacion_id= reservacion.id,
                         defaults= {
                             'cantidad': new_equipo['cantidad'],
+                            'extra': True,  # Marcar como extra
                         })
                     total = 0
                     if not fue_creado:
                         total = equipos_reserva.cantidad
                         equipos_reserva.cantidad = new_equipo['cantidad']
                         equipos_reserva.completado = False
-                        equipos_reserva.save(update_fields=['cantidad', 'completado'])
+                        equipos_reserva.extra = True  # Asegurar que sea extra
+                        equipos_reserva.save(update_fields=['cantidad', 'completado', 'extra'])
+
+                    # obtener costo del equipamento
+                    try:
+                        equipo = models.Equipamiento.objects.get(id=new_equipo['id'])
+                        costo_extra_total += float(equipo.costo) * new_equipo['cantidad']
+                    except:
+                        pass
 
                     inventario = models.InventarioEquipa.objects.get(equipamiento_id=new_equipo['id'], estado_equipa='DISP')           
                     if new_equipo['cantidad'] > (inventario.cantidad + total):
@@ -392,20 +447,40 @@ def modificacion_aditamentos(original, nuevos_datos):
             else:
                 for new_equipo in new_equipamientos:
 
-                    old_equipo, creado = models.ReservaEquipa.objects.get_or_create(reservacion_id=reservacion.id, equipamiento_id=new_equipo['id'], defaults={'cantidad': new_equipo['cantidad']})
+                    old_equipo, creado = models.ReservaEquipa.objects.get_or_create(
+                        reservacion_id=reservacion.id, 
+                        equipamiento_id=new_equipo['id'], 
+                        defaults={
+                            'cantidad': new_equipo['cantidad'],
+                            'extra': True,  # Marcar como extra
+                        }
+                    )
 
                     # si si es old se manda a liberar espacio, si no lo es se salta al siguiente paso
                     if not creado:
                         _liberar_reservados_equipos(old_equipo)
                         old_equipo.cantidad = new_equipo['cantidad']
                         old_equipo.completado = False
-                        old_equipo.save(update_fields=['cantidad', 'completado'])
+                        old_equipo.extra = True  # Asegurar que sea extra
+                        old_equipo.save(update_fields=['cantidad', 'completado', 'extra'])
+
+                    # obtener costo del equipamento
+                    try:
+                        equipo = models.Equipamiento.objects.get(id=new_equipo['id'])
+                        costo_extra_total += float(equipo.costo) * new_equipo['cantidad']
+                    except:
+                        pass
 
                     # obtenemos disponibles del equipamento actual
                     try:
                         inventario_di = models.InventarioEquipa.objects.get(equipamiento_id=new_equipo['id'], estado_equipa_id='DISP')
                     except models.InventarioEquipa.DoesNotExist:
-                        raise Exception(f"No hay inventario disponible para equipamento {new_equipo['id']}")
+                        # Crear inventario disponible si no existe
+                        inventario_di = models.InventarioEquipa.objects.create(
+                            equipamiento_id=new_equipo['id'],
+                            estado_equipa_id='DISP',
+                            cantidad=0
+                        )
                     
                     try:
                         inventario_re, _ = models.InventarioEquipa.objects.get_or_create(
@@ -426,15 +501,29 @@ def modificacion_aditamentos(original, nuevos_datos):
                         inventario_re.cantidad += new_equipo['cantidad']
                         inventario_re.save(update_fields=['cantidad'])
 
-        # logica parecida para anadir servicios
+        # logica parecido para anadir servicios
         if new_servicios:
             for servicio in new_servicios:
-                # Siempre crear como servicio extra para solicitudes adicionales
+                # Obtener el costo del servicio
+                try:
+                    servicio_obj = models.Servicio.objects.get(id=servicio['id'])
+                    costo_extra_total += float(servicio_obj.costo)
+                except models.Servicio.DoesNotExist:
+                    pass
+                
                 models.ReservaServicio.objects.create(
                     servicio_id=servicio['id'], 
                     reservacion_id=reservacion.id,
                     extra=True
                 )
+        
+        # Actualizar precio total si hay costos extras
+        if costo_extra_total > 0:
+            reservacion.subtotal += Decimal(costo_extra_total)
+            reservacion.IVA = reservacion.subtotal * Decimal(0.16)
+            reservacion.total = reservacion.subtotal + reservacion.IVA
+            reservacion.save(update_fields=['subtotal', 'IVA', 'total'])
+            logger.info(f"Precio actualizado: reservacion {reservacion.id}, extra={costo_extra_total}, total={reservacion.total}")
 
 
 # funcion de apoyo para revertir cambios de estados en mobilairios
@@ -477,4 +566,3 @@ def _liberar_reservados_equipos(old_equipo):
     if inventario_re:
         inventario_re.cantidad -= old_equipo.cantidad
         inventario_re.save(update_fields=['cantidad'])
-

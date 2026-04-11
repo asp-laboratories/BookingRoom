@@ -52,4 +52,5 @@ urlpatterns = router.urls + [
     path('paquetes/<int:pk>/', views.DetallePaqueteView.as_view(), name='detalle_paquete'),
     path('solicitudes-extra/', views.SolicitudesExtraView.as_view(), name='solicitudes_extra'),
     path('solicitudes-extra/<int:reservacion_id>/completar/', views.CompletarSolicitudExtraView.as_view(), name='completar_solicitud_extra'),
+    path('mis-solicitudes-extra/', views.MisSolicitudesExtraView.as_view(), name='mis_solicitudes_extra'),
 ]
