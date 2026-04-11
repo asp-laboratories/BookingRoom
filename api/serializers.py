@@ -650,6 +650,11 @@ class ReservacionCoordinadorSerializer(serializers.ModelSerializer):
     servicios = serializers.SerializerMethodField()
     equipamentos = serializers.SerializerMethodField()
     mobiliarios = serializers.SerializerMethodField()
+    
+    # Campos de checklist explícitos
+    checklist_coordinador = serializers.JSONField(read_only=True)
+    checklist_almacenista = serializers.JSONField(read_only=True)
+    progreso_checklist = serializers.FloatField(read_only=True)
 
     class Meta:
         model = models.Reservacion
@@ -661,6 +666,7 @@ class ReservacionCoordinadorSerializer(serializers.ModelSerializer):
             'salon_nombre', 'montaje_tipo', 'montaje_datos',
             'estado_nombre', 'estado_codigo', 'tipo_evento_nombre', 'tipo_evento_datos', 'estado_reserva_datos',
             'servicios', 'equipamentos', 'mobiliarios',
+            'checklist_coordinador', 'checklist_almacenista', 'progreso_checklist',
             'cliente', 'montaje', 'tipo_evento', 'estado_reserva'
         ]
     
@@ -807,6 +813,23 @@ class ReservacionFormularioSerializer(serializers.ModelSerializer):
             {'id': mm.mobiliario_id, 'cantidad': mm.cantidad}
             for mm in obj.montaje.montajemobiliario_set.all()
         ]
+
+
+class ReservacionProgresoSerializer(serializers.Serializer):
+    """Serializer para devolver solo el progreso del checklist"""
+    id = serializers.IntegerField()
+    nombreEvento = serializers.CharField()
+    fechaEvento = serializers.DateField()
+    horaInicio = serializers.TimeField()
+    horaFin = serializers.TimeField()
+    progreso_checklist = serializers.FloatField()
+    checklist_coordinador = serializers.JSONField()
+    estado_reserva_datos = serializers.SerializerMethodField()
+    
+    def get_estado_reserva_datos(self, obj):
+        if not obj.estado_reserva:
+            return None
+        return {'nombre': obj.estado_reserva.nombre, 'codigo': obj.estado_reserva.codigo}
 
 
 class PaqueteSerializer(serializers.ModelSerializer):

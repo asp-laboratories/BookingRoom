@@ -352,6 +352,11 @@ class Reservacion(models.Model):
     trabajador = models.ForeignKey(Trabajador, on_delete=models.PROTECT, null=True, blank=True)
     es_paquete = models.BooleanField(default=False)
     nombre_paquete = models.CharField(max_length=100, blank=True, default="")
+    
+    # === Sistema de Checklists ===
+    checklist_coordinador = models.JSONField(default=dict, blank=True)
+    checklist_almacenista = models.JSONField(default=dict, blank=True)
+    progreso_checklist = models.FloatField(default=0.0)
 
     # === cliente-validar: Aceptar/Rechazar reservación ===
     # Al ACEPTAR una reservación desde web/admin:

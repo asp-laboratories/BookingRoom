@@ -798,6 +798,75 @@ class DetalleReservacionView(APIView):
             return Response({'error': 'Reservación no encontrada'}, status=404)
 
 
+class ChecklistUpdateView(APIView):
+    """API para actualizar el checklist de una reservación"""
+    def post(self, request, pk):
+        try:
+            reservacion = models.Reservacion.objects.get(pk=pk)
+        except models.Reservacion.DoesNotExist:
+            return Response({'error': 'Reservación no encontrada'}, status=404)
+        
+        tipo = request.data.get('tipo')  # 'coordinador' o 'almacenista'
+        checklist = request.data.get('checklist', {})
+        
+        if not tipo or tipo not in ['coordinador', 'almacenista']:
+            return Response({'error': 'Tipo de checklist inválido'}, status=400)
+        
+        # Actualizar el checklist correspondiente
+        if tipo == 'coordinador':
+            # Mantener todos los 14 items del checklist
+            current_checklist = dict(reservacion.checklist_coordinador) if reservacion.checklist_coordinador else {}
+            print(f"DEBUG Backend: current_checklist antes = {current_checklist}")
+            print(f"DEBUG Backend: checklist recibido = {checklist}")
+            current_checklist.update(checklist)
+            print(f"DEBUG Backend: current_checklist después = {current_checklist}")
+            reservacion.checklist_coordinador = current_checklist
+            
+            # Calcular progreso: solo contar valores booleanos (excluir el item_9 que es automático)
+            boolean_values = [v for k, v in current_checklist.items() if isinstance(v, bool)]
+            if boolean_values:
+                completed = sum(1 for v in boolean_values if v == True)
+                total = len(boolean_values)
+                reservacion.progreso_checklist = completed / total if total > 0 else 0
+        else:
+            reservacion.checklist_almacenista = checklist
+            
+            # Si es almacenista, también marcar automáticamente el item #9 del coordinador
+            coord_checklist = dict(reservacion.checklist_coordinador) if reservacion.checklist_coordinador else {}
+            coord_checklist['item_9'] = True
+            reservacion.checklist_coordinador = coord_checklist
+            
+            # Recalcular progreso del coordinador (solo booleanos)
+            boolean_values = [v for k, v in coord_checklist.items() if isinstance(v, bool)]
+            if boolean_values:
+                completed = sum(1 for v in boolean_values if v == True)
+                total = len(boolean_values)
+                reservacion.progreso_checklist = completed / total if total > 0 else 0
+        
+        reservacion.save()
+        
+        return Response({
+            'success': True,
+            'checklist_coordinador': reservacion.checklist_coordinador,
+            'checklist_almacenista': reservacion.checklist_almacenista,
+            'progreso_checklist': reservacion.progreso_checklist
+        })
+
+
+class ReservacionProgresoView(APIView):
+    """API para obtener el progreso del checklist de una reservación"""
+    def get(self, request, pk):
+        try:
+            reservacion = models.Reservacion.objects.select_related(
+                'estado_reserva'
+            ).get(pk=pk)
+        except models.Reservacion.DoesNotExist:
+            return Response({'error': 'Reservación no encontrada'}, status=404)
+        
+        serializer = serializers.ReservacionProgresoSerializer(reservacion)
+        return Response(serializer.data)
+
+
 class ReservacionFormularioView(APIView):
     """API para obtener datos de una reservación en formato de formulario"""
     def get(self, request, pk):
