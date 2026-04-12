@@ -135,11 +135,11 @@ class SalonViewSet(viewsets.ModelViewSet):
                 'DISP': 'DIS',
                 'LIM': 'LIM',
                 'NODISP': 'NODIS',
-                'RESV': 'RESV',
+                'RESER': 'RESER',
                 'LIMPIEZA': 'LIM',
                 'DISPONIBLE': 'DIS',
                 'NO_DISPONIBLE': 'NODIS',
-                'RESERVADO': 'RESV',
+                'RESERVADO': 'RESER',
             }
             
             codigo_buscar = codigo_map.get(nuevo_estado_input.upper(), nuevo_estado_input.upper())
@@ -296,6 +296,19 @@ class ReservacionViewSet(viewsets.ModelViewSet):
             return Response({"error": "Paquete no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
 
+class ProximaReservacionViewSet(APIView):
+    def get(self, request, rfcCliente):
+        try:
+            prosima = reservacionesService.obtener_reservacion_proxima(rfcCliente)
+            if prosima:
+                serilizer = serializers.ReservacionLecturaSerializer(prosima)
+                return Response(serilizer.data)
+            return Response({}, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({"error": e}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class EncuestaViewSet(viewsets.ModelViewSet):
     queryset = models.Encuesta.objects.select_related('reservacion').all()
     serializer_class = serializers.EncuestaSerializer
@@ -330,20 +343,6 @@ class PagoViewSet(viewsets.ModelViewSet):
     queryset = models.Pago.objects.select_related('metodo_pago', 'concepto_pago', 'reservacion').all()
     serializer_class = serializers.PagoSerializer
 
-    def perform_create(self, serializer):
-        # logica para cambio de estado de reservaciones
-        pago = serializer.save()
-        reservacion = pago.reservacion
-        cantidad_pagada = models.Pago.objects.filter(reservacion=reservacion).aggregate(total=Sum('monto'))['total'] or 0
-        estado_actual = reservacion.estado_reserva.codigo
-        nuevo_estado = None
-        if cantidad_pagada >= reservacion.total:
-            nuevo_estado = 'LIQUI'
-        elif estado_actual in ['SOLIC', 'PENDI']:
-            nuevo_estado = 'PAGAD'
-        
-        if nuevo_estado and nuevo_estado != estado_actual:
-            reservacionesService.cambio_estado_reservacion(reservacion, nuevo_estado)
 
 class BuscarReservacionView(APIView):
     def get(self, request):
@@ -868,3 +867,29 @@ class EncuestaReservacionViewSet(APIView):
     def get(self, request, idReservacion):
         encuesta = models.Encuesta.objects.filter(reservacion_id=idReservacion).exists()
         return Response({'realizada': encuesta})
+
+class ReservacionesFechaView(APIView):
+    """API para obtener las reservaciones de una fecha específica"""
+    def get(self, request):
+        from django.utils.dateparse import parse_date
+        
+        fecha_str = request.query_params.get('fecha')
+        
+        if not fecha_str:
+            return Response({'error': 'Fecha no proporcionada'}, status=400)
+        
+        fecha = parse_date(fecha_str)
+        if not fecha:
+            return Response({'error': 'Formato de fecha inválido'}, status=400)
+        
+        reservaciones = models.Reservacion.objects.filter(
+            fechaEvento=fecha
+        ).exclude(
+            estado_reserva__codigo='CANCEL'
+        ).select_related(
+            'montaje__salon', 'tipo_evento', 'cliente__cuenta'
+        )
+        
+        serialiazado = serializers.ReservacionLecturaSerializer(reservaciones, many=True)
+        
+        return Response(serialiazado.data)

@@ -46,4 +46,6 @@ urlpatterns = router.urls + [
     path('lista-paquetes/', views.ListaPaquetesViewSet.as_view(), name="lista_paquetes"),
     path('reservaciones-cliente/<str:rfc>/', views.ReservacionesClienteViewSet.as_view(), name='reservaciones_por_cliente'),
     path('encuesta-realizada/<int:idReservacion>/', views.EncuestaReservacionViewSet.as_view(), name='comprobacion-encuesta-reservacion'),
+    path('reservacion-proxima/<str:rfcCliente>/', views.ProximaReservacionViewSet.as_view(), name='reservacion_proxima_cliente'),
+    path('reservaciones-fecha/', views.ReservacionesFechaView.as_view(), name='reservaciones_fecha'),
 ]

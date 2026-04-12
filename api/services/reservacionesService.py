@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from BookingRoomApp import models
 from .montajeService import crear_montaje
 from .herramientas import Precios
+from django.utils import timezone
 
 from decimal import Decimal
 
@@ -88,6 +89,8 @@ def crear_reseracion(datos):
 def cambio_estado_reservacion(original, estado_nuevo):
     with transaction.atomic():
 
+        estado_anterior = original.estado_reserva_id
+
         # Se cambia el estado del salon
         texto_estado = estado_nuevo
         original.estado_reserva_id = texto_estado
@@ -97,16 +100,17 @@ def cambio_estado_reservacion(original, estado_nuevo):
         models.RegistrEstadReserva.objects.create(reservacion_id=original.pk, estado_reserva_id=texto_estado)
 
         # sei se trata de un pago, se registran los equipmaientos, mobiliarios y el salon guardanlos para la reservacion
-        if texto_estado in ['PAGAD', 'LIQUI']:
+        if texto_estado in ['PAGAD', 'LIQUI', 'ENPRO'] and estado_anterior not in ['PAGAD', 'LIQUI', 'ENPRO']:
 
             #se guarda el salon y el registro de estados del salon
             montaje = models.Montaje.objects.get(id=original.montaje.pk)
-
+            
             # para verficiar q el salon no este ocupado ese mismo dia
             control = models.RegistrEstadSalon.objects.filter(salon_id=montaje.salon_id, fecha=original.fechaEvento).exists()
 
             if control:
-                raise Exception("El salon ya se encuentra ocupado ese dia")
+                raise Exception(f"El salon ya se encuentra ocupado ese dia, control: {control}")
+            
             models.RegistrEstadSalon.objects.create(salon_id=montaje.salon_id, estado_salon_id='RESER', fecha=original.fechaEvento)
 
             # se cambian los estados de los mobiliarios (esto por medio de su inventario)
@@ -163,7 +167,7 @@ def cambio_estado_reservacion(original, estado_nuevo):
                     inventarioequipa.save(update_fields=['cantidad'])
 
         # si se cancela una reservacion, es necesario modificar estados de mobilairios, equipamientos (inventarios), posterior se tienen que eliminar el registro de estado del salon, y actualizar registro de reservacion
-        elif texto_estado == 'CANCE':
+        elif texto_estado == 'CANCE' and estado_anterior in ['ENPRO', 'PAGAD', 'LIQUI']:
             montaje = models.Montaje.objects.get(id=original.montaje.pk)
             models.RegistrEstadSalon.objects.filter(salon_id=montaje.salon_id, estado_salon_id='RESER', fecha=original.fechaEvento).delete()
 
@@ -207,6 +211,19 @@ def modificacion_aditamentos(original, nuevos_datos):
         new_equipamientos = nuevos_datos.pop('reserva_equipa', [])
         new_servicios = nuevos_datos.pop('reserva_servicio', [])
 
+        new_subtotal = nuevos_datos.pop('subtotal', None)
+
+        # calculamos el total actual
+        old_costo_elemtnso = Decimal('0.0')
+        if reservacion.es_paquete:
+            for mob in models.MontajeMobiliario.objects.filter(montaje_id=reservacion.montaje.id):
+                old_costo_elemtnso += (Decimal(mob.mobiliario.costo) * Decimal(mob.cantidad))
+            for equipo in models.ReservaEquipa.objects.filter(reservacion_id=reservacion.id):
+                old_costo_elemtnso += (Decimal(equipo.equipamiento.costo) * Decimal(equipo.cantidad))
+            for servicio in models.ReservaServicio.objects.filter(reservacion_id= reservacion.id):
+                old_costo_elemtnso += servicio.servicio.costo
+
+
         for campo, valor in nuevos_datos.items():
             if campo == 'fechaEvento':
                 montaje = models.Montaje.objects.get(id=reservacion.montaje.id)
@@ -233,6 +250,45 @@ def modificacion_aditamentos(original, nuevos_datos):
             _modificacion_inventarios(reservacion, new_mobilairios, new_equipamientos, new_servicios)
         else:
             _modificacion_registros(reservacion, new_mobilairios, new_equipamientos, new_servicios)
+
+        # si se envia el subtotal no se discute y se pone como subtotal
+        if new_subtotal is not None:
+            reservacion.subtotal = Decimal(new_subtotal)
+            reservacion.IVA = reservacion.subtotal * Decimal('0.16')
+            reservacion.total = reservacion.subtotal + reservacion.total
+            reservacion.save(update_fields=['subtotal', 'IVA', 'total'])
+
+        # si la reservacion no viene de un paquete, se recalcula todo
+        elif not reservacion.es_paquete:
+            new_subtotal_calculado = Decimal(reservacion.montaje.salon.costo)
+            for mob in models.MontajeMobiliario.objects.filter(montaje_id=reservacion.montaje.id):
+                new_subtotal_calculado += (Decimal(mob.mobiliario.costo) * Decimal(mob.cantidad))
+            for equipo in models.ReservaEquipa.objects.filter(reservacion_id=reservacion.id):
+                new_subtotal_calculado += (Decimal(equipo.equipamiento.costo) * Decimal(equipo.cantidad))
+            for servicio in models.ReservaServicio.objects.filter(reservacion_id= reservacion.id):
+                new_subtotal_calculado += servicio.servicio.costo
+            reservacion.subtotal = new_subtotal_calculado
+            reservacion.IVA = new_subtotal_calculado * Decimal('0.16')
+            reservacion.total = new_subtotal_calculado + reservacion.IVA
+            reservacion.save(update_fields=['subtotal', 'IVA', 'total'])
+        
+        # si la reservacion si es un paquete, solo se suman los nuevos anadidos, esto se hace restando el
+        # total anterior al generado por el nuevo total
+        else:
+            new_costo_elemtnso = Decimal('0.0')
+            for mob in models.MontajeMobiliario.objects.filter(montaje_id=reservacion.montaje.id):
+                new_costo_elemtnso += (Decimal(mob.mobiliario.costo) * Decimal(mob.cantidad))
+            for equipo in models.ReservaEquipa.objects.filter(reservacion_id=reservacion.id):
+                new_costo_elemtnso += (Decimal(equipo.equipamiento.costo) * Decimal(equipo.cantidad))
+            for servicio in models.ReservaServicio.objects.filter(reservacion_id= reservacion.id):
+                new_costo_elemtnso += servicio.servicio.costo
+            
+            diferencia_csotos = new_costo_elemtnso - old_costo_elemtnso
+            reservacion.subtotal = reservacion.subtotal + diferencia_csotos
+            reservacion.IVA = reservacion.subtotal * Decimal('0.16')
+            reservacion.total = reservacion.subtotal + reservacion.IVA
+            reservacion.save(update_fields=['subtotal', 'IVA', 'total'])
+
 
 # en este caso nada mas se hace modificacion de los registros intermedios, se ignoran inventarios
 def _modificacion_registros(reservacion, new_mobilairios, new_equipamientos, new_servicios):
@@ -407,3 +463,13 @@ def eliminar_reservacion(reserva):
         reservacion.delete()
         montaje.delete()
 
+def obtener_reservacion_proxima(cliente_rfc):
+    hoy = timezone.now().date()
+
+    prosima = models.Reservacion.objects.filter(cliente__rfc=cliente_rfc, fechaEvento__gte=hoy, estado_reserva__codigo__in=['PAGAD', 'LIQUI', 'ENPRO']
+                                                ).order_by('fechaEvento', 'horaInicio').first()
+    
+    if prosima:
+        return prosima
+    
+    return None
