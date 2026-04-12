@@ -46,6 +46,13 @@ async function abrirModalDetalleCompleto(pk) {
         
         document.getElementById('detalle-equipamientos-lista').textContent = 'Consultar en detalle';
         
+        const mobiliarioSpan = document.getElementById('detalle-mobiliario-lista');
+        if (data.mobiliario && data.mobiliario.length > 0) {
+            mobiliarioSpan.textContent = data.mobiliario.join(', ');
+        } else {
+            mobiliarioSpan.textContent = 'No hay mobiliario';
+        }
+        
         document.getElementById('detalle-total-iva').textContent = `$${data.iva || '0.00'}`;
         document.getElementById('detalle-total-subtotal').textContent = `$${data.subtotal || '0.00'}`;
         document.getElementById('detalle-total-total').textContent = `$${data.total || '0.00'}`;
@@ -154,5 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
 {% include "BookingRoomApp/includes/modal-detalle-reservacion.html" with modal_id="miModal" id_prefix="modal-" %}
 {% include "BookingRoomApp/includes/modal-solicitud-detalle.html" %}
 {% include "BookingRoomApp/includes/modal-detalle-completo.html" %}
+{% include "BookingRoomApp/includes/alert-confirmar.html" %}
+{% include "BookingRoomApp/includes/alert-cancelar.html" %}
 
 {% endblock inicio %}

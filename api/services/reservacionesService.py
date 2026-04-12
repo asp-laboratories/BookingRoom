@@ -8,7 +8,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def crear_reseracion(datos):
+def crear_reseracion(datos, confirmar_inventario=True):
     with transaction.atomic():
         equipos = datos.pop('reserva_equipa', [])
         servicios = datos.pop('reserva_servicio', [])
@@ -51,12 +51,39 @@ def crear_reseracion(datos):
         for servicio in servicios:
             models.ReservaServicio.objects.create(servicio_id=servicio['id'], reservacion_id=reservacion.id)
 
-        for equipo in equipos:
-            models.ReservaEquipa.objects.create(cantidad=equipo['cantidad'], reservacion_id=reservacion.pk, equipamiento_id=equipo['id'])
-            reservar_equipamiento(equipo['id'], equipo['cantidad'])
+        # Solo decrementar inventario si confirmar_inventario es True
+        if confirmar_inventario:
+            for equipo in equipos:
+                models.ReservaEquipa.objects.create(cantidad=equipo['cantidad'], reservacion_id=reservacion.pk, equipamiento_id=equipo['id'])
+                reservar_equipamiento(equipo['id'], equipo['cantidad'])
 
-        for mobiliario in mobiliarios:
-            reservar_mobiliario(mobiliario['id'], mobiliario['cantidad'])
+            for mobiliario in mobiliarios:
+                reservar_mobiliario(mobiliario['id'], mobiliario['cantidad'])
+        else:
+            # Ajustar automaticamente al stock disponible y decrementar
+            for equipo in equipos:
+                inventario_equipa = models.InventarioEquipa.objects.filter(
+                    equipamiento_id=equipo['id'], 
+                    estado_equipa_id='DISP'
+                ).first()
+                
+                cantidad_real = min(equipo['cantidad'], inventario_equipa.cantidad) if inventario_equipa else 0
+                
+                models.ReservaEquipa.objects.create(cantidad=cantidad_real, reservacion_id=reservacion.pk, equipamiento_id=equipo['id'])
+                
+                if cantidad_real > 0 and inventario_equipa:
+                    reservar_equipamiento(equipo['id'], cantidad_real)
+
+            for mobiliario in mobiliarios:
+                inventario_mob = models.InventarioMob.objects.filter(
+                    mobiliario_id=mobiliario['id'], 
+                    estado_mobil_id='DISP'
+                ).first()
+                
+                cantidad_real = min(mobiliario['cantidad'], inventario_mob.cantidad) if inventario_mob else 0
+                
+                if cantidad_real > 0 and inventario_mob:
+                    reservar_mobiliario(mobiliario['id'], cantidad_real)
 
         models.RegistrEstadReserva.objects.create(reservacion_id=reservacion.pk, estado_reserva_id="PEN")
 
@@ -69,9 +96,15 @@ def reservar_mobiliario(mobiliario_id, cantidad):
         estado_mobil_id='DISP'
     ).first()
     
+    mobiliario = models.Mobiliario.objects.get(id=mobiliario_id)
+    stock_disponible = inventario_disp.cantidad if inventario_disp else 0
+    
     if not inventario_disp or inventario_disp.cantidad < cantidad:
-        mobiliario = models.Mobiliario.objects.get(id=mobiliario_id)
-        raise ValidationError(f"No hay suficiente stock disponible de {mobiliario.nombre}")
+        raise ValidationError({
+            'producto': mobiliario.nombre,
+            'stock_disponible': stock_disponible,
+            'mensaje': f"No hay suficiente stock disponible de {mobiliario.nombre}. Stock actual: {stock_disponible}"
+        })
     
     inventario_disp.cantidad -= cantidad
     inventario_disp.save(update_fields=['cantidad'])
@@ -92,16 +125,22 @@ def reservar_equipamiento(equipamiento_id, cantidad):
         estado_equipa_id='DISP'
     ).first()
     
+    equipamiento = models.Equipamiento.objects.get(id=equipamiento_id)
+    stock_disponible = inventario_disp.cantidad if inventario_disp else 0
+    
     if not inventario_disp or inventario_disp.cantidad < cantidad:
-        equipamiento = models.Equipamiento.objects.get(id=equipamiento_id)
-        raise ValidationError(f"No hay suficiente stock disponible de {equipamiento.nombre}")
+        raise ValidationError({
+            'producto': equipamiento.nombre,
+            'stock_disponible': stock_disponible,
+            'mensaje': f"No hay suficiente stock disponible de {equipamiento.nombre}. Stock actual: {stock_disponible}"
+        })
     
     inventario_disp.cantidad -= cantidad
     inventario_disp.save(update_fields=['cantidad'])
     
     inventario_resv, created = models.InventarioEquipa.objects.get_or_create(
         equipamiento_id=equipamiento_id,
-        estado_equipa_id='OCUP',
+        estado_equipa_id='RESV',  # Usar RESV en lugar de OCUP
         defaults={'cantidad': cantidad}
     )
     if not created:

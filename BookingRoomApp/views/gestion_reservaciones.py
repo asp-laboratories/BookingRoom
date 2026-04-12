@@ -20,9 +20,9 @@ class HistorialReservacionViw(generic.View):
         
         reservaciones = models.Reservacion.objects.select_related(
             "cliente", "estado_reserva", "montaje__salon",
-        )
+        ).filter(es_paquete=False).exclude(estado_reserva__codigo='SOLIC')
         estados = models.EstadoReserva.objects.all()
-        reservacion_total = models.Reservacion.objects.count()
+        reservacion_total = models.Reservacion.objects.filter(es_paquete=False).count()
 
         nombre = request.GET.get('nombre', '')
         estado_filtro = request.GET.get('estado', '')
@@ -220,27 +220,39 @@ class DetallesReservacionView(generic.DetailView):
 def reservacion_detalle_json(request, pk):
     reserva = get_object_or_404(
         models.Reservacion.objects.select_related(
-            "cliente", "montaje__salon", "montaje__tipo_montaje", "estado_reserva", "tipo_evento",
+            "cliente", "montaje__salon", "montaje__tipo_montaje", "estado_reserva", "tipo_evento", "trabajador",
         ),
         pk=pk,
     )
+    
+    servicios = list(reserva.reservaservicio_set.values_list("servicio__nombre", flat=True))
+    equipamientos = list(reserva.reservaequipa_set.values_list("equipamiento__nombre", flat=True))
+    
+    mobiliario = []
+    if reserva.montaje:
+        mobiliario = list(models.MontajeMobiliario.objects.filter(montaje=reserva.montaje).values_list("mobiliario__nombre", flat=True))
+    
     return JsonResponse({
         "id": reserva.pk, "nombre_evento": reserva.nombreEvento,
-        "descripcion": reserva.descripEvento, "fecha": reserva.fechaEvento.isoformat(),
-        "hora_inicio": reserva.horaInicio.strftime("%H:%M"),
-        "hora_fin": reserva.horaFin.strftime("%H:%M"),
-        "estado": reserva.estado_reserva.nombre, "asistentes": reserva.estimaAsistentes,
+        "descripcion": reserva.descripEvento, "fecha": reserva.fechaEvento.isoformat() if reserva.fechaEvento else None,
+        "hora_inicio": reserva.horaInicio.strftime("%H:%M") if reserva.horaInicio else None,
+        "hora_fin": reserva.horaFin.strftime("%H:%M") if reserva.horaFin else None,
+        "estado": reserva.estado_reserva.nombre, "estado_codigo": reserva.estado_reserva.codigo,
+        "asistentes": reserva.estimaAsistentes,
         "salon": reserva.montaje.salon.nombre if reserva.montaje and reserva.montaje.salon else "N/A",
         "montaje": reserva.montaje.tipo_montaje.nombre if reserva.montaje and reserva.montaje.tipo_montaje else "N/A",
         "tipo_evento": reserva.tipo_evento.nombre if reserva.tipo_evento else "N/A",
         "subtotal": str(reserva.subtotal), "iva": str(reserva.IVA), "total": str(reserva.total),
+        "trabajador": reserva.trabajador.nombre if reserva.trabajador else None,
         "cliente": {
             "nombre": reserva.cliente.nombre, "apellido_paterno": reserva.cliente.apellidoPaterno,
             "apellido_materno": reserva.cliente.apelidoMaterno or "",
             "correo": reserva.cliente.correo_electronico, "telefono": reserva.cliente.telefono,
             "rfc": reserva.cliente.rfc, "nombre_fiscal": reserva.cliente.nombre_fiscal,
         },
-        "servicios": list(reserva.reservaservicio_set.values_list("servicio__nombre", flat=True)),
+        "servicios": servicios,
+        "equipamientos": equipamientos,
+        "mobiliario": mobiliario,
     })
 
 
@@ -263,6 +275,49 @@ def historial_detalle(request, pk):
         "iva": str(reservacion.IVA), "primer_pago": str(primer_pago),
         "segundo_pago": str(segundo_pago), "saldo": str(saldo),
     })
+
+
+@csrf_exempt
+def confirmar_reservacion(request, pk):
+    if request.method == 'POST':
+        try:
+            reserva = get_object_or_404(models.Reservacion, pk=pk)
+            
+            # Obtener el trabajador actual desde la sesión
+            cuenta, rol = get_cuenta_and_rol(request)
+            if not cuenta or not cuenta.trabajador:
+                return JsonResponse({'success': False, 'message': 'No hay trabajador logueado'}, status=400)
+            
+            # Actualizar descripción si se proporciona
+            descripcion = request.POST.get('descripcion', '')
+            if descripcion:
+                reserva.descripEvento = descripcion
+            
+            # Confirmar la reservación
+            reserva.estado_reserva = models.EstadoReserva.objects.get(codigo='CON')
+            reserva.trabajador = cuenta.trabajador
+            reserva.save()
+            
+            return JsonResponse({'success': True, 'message': 'Reservación confirmada'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+    return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
+
+
+@csrf_exempt
+def cancelar_reservacion(request, pk):
+    if request.method == 'POST':
+        try:
+            reserva = get_object_or_404(models.Reservacion, pk=pk)
+            
+            # Cancelar la reservación
+            reserva.estado_reserva = models.EstadoReserva.objects.get(codigo='CAN')
+            reserva.save()
+            
+            return JsonResponse({'success': True, 'message': 'Reservación cancelada'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+    return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
 
 
 

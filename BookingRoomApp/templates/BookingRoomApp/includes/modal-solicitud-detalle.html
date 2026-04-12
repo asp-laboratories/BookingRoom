@@ -1,5 +1,21 @@
 {% load static %}
 
+<style>
+  .descripcion-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+  }
+  .modal-div-8 {
+    grid-column: span 2;
+  }
+</style>
+
 <dialog id="modalSolicitud" class="modal-beo">
   <div class="cabecera-modal">
     <span class="titulo-modal">SOLICITUD: <span id="solicitud-titulo-evento">-</span></span>
@@ -11,16 +27,24 @@
       <h3 class="titulo-info-cliente">Información del cliente</h3>
       <div class="datos">
         <div class="fila-dato">
-          <label>Nombre:</label>
+          <label>Nombre completo:</label>
           <span id="solicitud-cliente-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Correo electrónico:</label>
+          <span id="solicitud-cliente-correo">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Teléfono:</label>
+          <span id="solicitud-cliente-telefono">-</span>
         </div>
         <div class="fila-dato">
           <label>RFC:</label>
           <span id="solicitud-cliente-rfc">-</span>
         </div>
         <div class="fila-dato">
-          <label>Teléfono:</label>
-          <span id="solicitud-cliente-telefono">-</span>
+          <label>Nombre fiscal:</label>
+          <span id="solicitud-cliente-nombre-fiscal">-</span>
         </div>
       </div>
     </div>
@@ -32,6 +56,10 @@
           <span id="solicitud-evento-nombre">-</span>
         </div>
         <div class="fila-dato">
+          <label>Descripción:</label>
+          <span id="solicitud-evento-descripcion">-</span>
+        </div>
+        <div class="fila-dato">
           <label>Fecha:</label>
           <span id="solicitud-evento-fecha">-</span>
         </div>
@@ -40,12 +68,12 @@
           <span id="solicitud-evento-horario">-</span>
         </div>
         <div class="fila-dato">
-          <label>Asistentes:</label>
-          <span id="solicitud-evento-asistentes">-</span>
-        </div>
-        <div class="fila-dato">
           <label>Estado:</label>
           <span id="solicitud-evento-estado">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Asistentes:</label>
+          <span id="solicitud-evento-asistentes">-</span>
         </div>
       </div>
     </div>
@@ -74,9 +102,15 @@
         <span id="solicitud-equipamientos-lista">No hay equipamientos</span>
       </div>
     </div>
-    <div class="modal-div modal-div-6">
-      <h3 class="titulo-seccion-modal">Totales</h3>
+    <div class="modal-div modal-div-8">
+      <h3 class="titulo-seccion-modal">Mobiliario</h3>
       <div class="datos">
+        <span id="solicitud-mobiliario-lista">No hay mobiliario</span>
+      </div>
+    </div>
+    <div class="modal-div modal-div-8">
+      <h3 class="titulo-seccion-modal">Totales</h3>
+      <div class="datos" style="background: transparent;">
         <div class="fila-dato">
           <label>Subtotal:</label>
           <span id="solicitud-total-subtotal">$0.00</span>
@@ -91,12 +125,18 @@
         </div>
       </div>
     </div>
+    <div class="modal-div modal-div-8">
+      <h3 class="titulo-seccion-modal">Descripción del Evento</h3>
+      <div class="datos" style="background: transparent;">
+        <textarea id="solicitud-descripcion-input" class="descripcion-textarea" placeholder="Ingresa la descripción del evento..."></textarea>
+      </div>
+    </div>
   </div>
 
   <div class="modal-botones">
-    <button class="btn-modal btn-aceptar" id="btn-confirmar-solicitud">Confirmar Solicitud</button>
-    <button class="btn-modal btn-denegar" onclick="document.getElementById('modalSolicitud').close()">
-      Cerrar
+    <button class="btn-modal btn-aceptar" id="solicitud-btn-confirmar" onclick="abrirConfirmarModalDesdeSolicitud()">Confirmar</button>
+    <button class="btn-modal btn-denegar" id="solicitud-btn-cancelar" onclick="abrirCancelarModalDesdeSolicitud()">
+      Cancelar
     </button>
   </div>
 </dialog>
@@ -118,36 +158,50 @@ async function cargarDetallesSolicitud(pk) {
         datosSolicitudCompleta = data;
         
         document.getElementById('solicitud-titulo-evento').textContent = data.nombreEvento || '-';
+        
+        // Cliente
         document.getElementById('solicitud-cliente-nombre').textContent = 
             `${data.cliente_nombre || ''} ${data.cliente_apellido || ''}`.trim() || '-';
+        document.getElementById('solicitud-cliente-correo').textContent = data.cliente_correo || data.cliente?.correo || '-';
+        document.getElementById('solicitud-cliente-telefono').textContent = data.cliente_telefono || data.cliente?.telefono || '-';
         document.getElementById('solicitud-cliente-rfc').textContent = data.cliente_rfc || '-';
-        document.getElementById('solicitud-cliente-telefono').textContent = data.cliente?.telefono || '-';
+        document.getElementById('solicitud-cliente-nombre-fiscal').textContent = data.cliente_nombre_fiscal || data.cliente?.nombre_fiscal || '-';
         
+        // Evento
         document.getElementById('solicitud-evento-nombre').textContent = data.nombreEvento || '-';
+        document.getElementById('solicitud-evento-descripcion').textContent = data.descripEvento || '-';
         document.getElementById('solicitud-evento-fecha').textContent = data.fechaEvento || '-';
         document.getElementById('solicitud-evento-horario').textContent = 
             `${data.horaInicio ? data.horaInicio.substring(0, 5) : '-'} - ${data.horaFin ? data.horaFin.substring(0, 5) : '-'}`;
-        document.getElementById('solicitud-evento-asistentes').textContent = data.estimaAsistentes || '-';
         document.getElementById('solicitud-evento-estado').textContent = data.estado_reserva?.nombre || '-';
+        document.getElementById('solicitud-evento-asistentes').textContent = data.estimaAsistentes || '-';
         
         document.getElementById('solicitud-salon-nombre').textContent = data.salon_nombre || '-';
         document.getElementById('solicitud-montaje-nombre').textContent = data.tipo_montaje_nombre || '-';
         
         // Cargar servicios
         if (data.servicios && data.servicios.length > 0) {
-            const serviciosNombres = data.servicios.map(s => `• Servicio ID: ${s}`).join('<br>');
-            document.getElementById('solicitud-servicios-lista').innerHTML = serviciosNombres;
+            document.getElementById('solicitud-servicios-lista').textContent = data.servicios;
         } else {
             document.getElementById('solicitud-servicios-lista').textContent = 'No hay servicios';
         }
         
         // Cargar equipamientos
         if (data.equipamentos && data.equipamentos.length > 0) {
-            const equipamentosNombres = data.equipamentos.map(e => `• Equipamiento ID: ${e.id} (Cant: ${e.cantidad})`).join('<br>');
-            document.getElementById('solicitud-equipamientos-lista').innerHTML = equipamentosNombres;
+            document.getElementById('solicitud-equipamientos-lista').textContent = data.equipamentos;
         } else {
             document.getElementById('solicitud-equipamientos-lista').textContent = 'No hay equipamientos';
         }
+        
+        // Cargar mobiliario
+        if (data.mobiliarios && data.mobiliarios.length > 0) {
+            document.getElementById('solicitud-mobiliario-lista').textContent = data.mobiliarios;
+        } else {
+            document.getElementById('solicitud-mobiliario-lista').textContent = 'No hay mobiliario';
+        }
+        
+        // Cargar descripción
+        document.getElementById('solicitud-descripcion-input').value = data.descripEvento || '';
         
         document.getElementById('solicitud-total-subtotal').textContent = `$${data.subtotal || '0.00'}`;
         document.getElementById('solicitud-total-iva').textContent = `$${data.IVA || '0.00'}`;
@@ -213,14 +267,89 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    document.getElementById('btn-confirmar-solicitud').addEventListener('click', function() {
+document.getElementById('solicitud-btn-confirmar').addEventListener('click', function() {
         if (solicitudIdActual) {
-            abrirModalConfirmar(
-                'Confirmar solicitud',
-                '¿Estás seguro de que deseas confirmar esta solicitud? El evento pasará a estado confirmado.',
-                confirmarSolicitud
-            );
+            abrirConfirmarModalDesdeSolicitud();
         }
     });
 });
+
+function abrirConfirmarModalDesdeSolicitud() {
+    const pk = solicitudIdActual;
+    const descripcion = document.getElementById('solicitud-descripcion-input').value;
+    if (pk) {
+        document.getElementById('modal-confirmar-titulo').textContent = 'Confirmar Reservación';
+        document.getElementById('modal-confirmar-mensaje').textContent = '¿Estás seguro de que quieres confirmar esta reservación? El trabajador actual será asignado como responsable.';
+        document.getElementById('modal-confirmar-btn').onclick = function() {
+            confirmarReservacionDesdeSolicitud(pk, descripcion);
+        };
+        document.getElementById('modal-confirmar').showModal();
+    }
+}
+
+function abrirCancelarModalDesdeSolicitud() {
+    const pk = solicitudIdActual;
+    if (pk) {
+        document.getElementById('modal-cancelar-titulo').textContent = 'Cancelar Reservación';
+        document.getElementById('modal-cancelar-mensaje').textContent = '¿Estás seguro de que quieres cancelar esta reservación? Esta acción no se puede deshacer.';
+        document.getElementById('modal-cancelar-btn').onclick = function() {
+            cancelarReservacionDesdeSolicitud(pk);
+        };
+        document.getElementById('modal-cancelar').showModal();
+    }
+}
+
+async function confirmarReservacionDesdeSolicitud(pk, descripcion) {
+    try {
+        const formData = new FormData();
+        formData.append('descripcion', descripcion);
+        
+        const response = await fetch(`/home/${pk}/confirmar/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Reservación confirmada correctamente');
+            document.getElementById('modal-confirmar').close();
+            document.getElementById('modalSolicitud').close();
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('No se pudo confirmar la reservación');
+    }
+}
+
+async function cancelarReservacionDesdeSolicitud(pk) {
+    try {
+        const response = await fetch(`/home/${pk}/cancelar/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Reservación cancelada correctamente');
+            document.getElementById('modal-cancelar').close();
+            document.getElementById('modalSolicitud').close();
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('No se pudo cancelar la reservación');
+    }
+}
 </script>

@@ -351,12 +351,23 @@ class ReservacionViewSet(viewsets.ModelViewSet):
         validador.is_valid(raise_exception=True)
 
         try:
-            new_reservacion = reservacionesService.crear_reseracion(validador.validated_data)
+            confirmar = request.data.get('confirmar_inventario', True)
+            new_reservacion = reservacionesService.crear_reseracion(validador.validated_data, confirmar_inventario=confirmar)
             respeusta = serializers.ReservacionLecturaSerializer(new_reservacion)
             return Response(respeusta.data, status=status.HTTP_201_CREATED)
         
         except Exception as e:
-            return Response({"error":str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            error_str = str(e)
+            # Intentar parsear el error como dict
+            if error_str.startswith('{') and error_str.endswith('}'):
+                try:
+                    import json
+                    error_data = eval(error_str)
+                    if isinstance(error_data, dict):
+                        return Response({'error': [error_data]}, status=status.HTTP_400_BAD_REQUEST)
+                except:
+                    pass
+            return Response({"error": [error_str]}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -993,16 +1004,18 @@ class ReservacionFormularioView(APIView):
     def get(self, request, pk):
         try:
             reservacion = models.Reservacion.objects.select_related(
-                'cliente', 'montaje__salon', 'montaje__tipo_montaje',
+                'cliente', 'cliente__cuenta', 'montaje__salon', 'montaje__tipo_montaje',
                 'tipo_evento'
             ).prefetch_related(
-                'reservaservicio_set', 'reservaequipa_set', 'montaje__montajemobiliario_set'
+                'reservaservicio_set__servicio', 'reservaequipa_set__equipamiento', 'montaje__montajemobiliario_set__mobiliario'
             ).get(pk=pk)
             
             serializer = serializers.ReservacionFormularioSerializer(reservacion)
             return Response(serializer.data)
         except models.Reservacion.DoesNotExist:
             return Response({'error': 'Reservación no encontrada'}, status=404)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
 
 
 class CambiarEstadoReservacionView(APIView):

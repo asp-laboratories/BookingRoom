@@ -1,5 +1,21 @@
 {% load static %}
 
+<style>
+  .descripcion-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+  }
+  .modal-div-8 {
+    grid-column: span 2;
+  }
+</style>
+
 <dialog id="{{ modal_id|default:'miModal' }}" class="modal-beo">
   <div class="cabecera-modal">
     <span class="titulo-modal"
@@ -90,6 +106,12 @@
       </div>
     </div>
     <div class="modal-div modal-div-6">
+      <h3 class="titulo-seccion-modal">Mobiliario</h3>
+      <div class="datos">
+        <span id="{{ id_prefix|default:'' }}mobiliario-lista">Consultar en detalle</span>
+      </div>
+    </div>
+    <div class="modal-div modal-div-7">
       <h3 class="titulo-seccion-modal">Totales</h3>
       <div class="datos">
         <div class="fila-dato">
@@ -106,13 +128,19 @@
         </div>
       </div>
     </div>
+    <div class="modal-div modal-div-8">
+      <h3 class="titulo-seccion-modal">Descripción del Evento</h3>
+      <div class="datos">
+        <textarea id="{{ id_prefix|default:'' }}evento-descripcion-input" class="descripcion-textarea" placeholder="Ingresa la descripción del evento..."></textarea>
+      </div>
+    </div>
   </div>
 
   {% if mostrar_botones|default:True %}
   <div class="modal-botones">
-    <button class="btn-modal btn-aceptar">Aceptar</button>
-    <button class="btn-modal btn-denegar" onclick="window.{{ modal_id|default:'miModal' }}.close()">
-      Denegar
+    <button class="btn-modal btn-aceptar" id="detalle-btn-confirmar" onclick="abrirConfirmarModalDesdeDetalle()">Confirmar</button>
+    <button class="btn-modal btn-denegar" id="detalle-btn-cancelar" onclick="abrirCancelarModalDesdeDetalle()">
+      Cancelar
     </button>
   </div>
   {% endif %}

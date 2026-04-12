@@ -48,7 +48,7 @@
           <h2>Bandeja de solicitudes</h2>
           <div class="reservacion-lista-notificaciones">
             {% for reservacion in reservaciones_solicitudes %}
-            <div class="contenedor-solicitud">
+            <div class="bandeja-item">
               <span>{{ reservacion.nombreEvento }}</span>
               <span class="estado-badge {{ reservacion.estado_reserva.codigo }}">{{ reservacion.estado_reserva.nombre }}</span>
               <button class="boton-accion boton-beo ver-detalles-solicitud" data-pk="{{ reservacion.pk }}">
@@ -56,7 +56,7 @@
               </button>
             </div>
             {% empty %}
-            <div class="contenedor-solicitud">
+            <div class="bandeja-item">
               <span>No hay solicitudes pendientes</span>
             </div>
             {% endfor %}
@@ -381,17 +381,29 @@
     max-height: 160px;
     overflow-y: auto;
   }
-  .reservacion-lista-notificaciones .contenedor-solicitud {
+  .reservacion-lista-notificaciones .bandeja-item {
+    display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
-    height: auto;
-    min-height: 50px;
+    min-height: 45px;
     padding: 6px 8px;
+    width: 100%;
+    margin: 0 0 8px 0;
+    border-left: 3px solid var(--color-primario);
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-radius: 4px;
   }
-  .reservacion-lista-notificaciones .contenedor-solicitud span:first-child {
-    flex: 1;
-    min-width: 150px;
+  .reservacion-lista-notificaciones .bandeja-item span:first-child {
+    flex: 1 1 calc(100% - 200px);
+    min-width: 120px;
+  }
+  .reservacion-lista-notificaciones .bandeja-item .estado-badge {
+    flex: 0 0 auto;
+  }
+  .reservacion-lista-notificaciones .bandeja-item .boton-accion {
+    flex: 0 0 auto;
   }
 </style>
 

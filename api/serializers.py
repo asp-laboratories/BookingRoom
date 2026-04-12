@@ -493,11 +493,26 @@ class MobiliariosMontajeSerializer(serializers.Serializer):
     cantidad = serializers.IntegerField()
 
 class ServiciosReservacionSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(required=False)
+    servicio = serializers.IntegerField(required=False)
+    cantidad = serializers.IntegerField(required=False, default=1)
+    
+    def validate(self, data):
+        # Aceptar tanto 'id' como 'servicio'
+        if 'servicio' in data and 'id' not in data:
+            data['id'] = data['servicio']
+        return data
 
 class EquipamientoReservacionSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    cantidad = serializers.IntegerField()
+    id = serializers.IntegerField(required=False)
+    equipamiento = serializers.IntegerField(required=False)
+    cantidad = serializers.IntegerField(required=False, default=1)
+    
+    def validate(self, data):
+        # Aceptar tanto 'id' como 'equipamiento'
+        if 'equipamiento' in data and 'id' not in data:
+            data['id'] = data['equipamiento']
+        return data
 
 class MontajeCreacionSerializer(serializers.Serializer):
     salon = serializers.IntegerField()
@@ -779,11 +794,15 @@ class ReservacionFormularioSerializer(serializers.ModelSerializer):
     cliente_rfc = serializers.CharField(source='cliente.rfc', read_only=True)
     cliente_nombre = serializers.CharField(source='cliente.nombre', read_only=True)
     cliente_apellido = serializers.CharField(source='cliente.apellidoPaterno', read_only=True)
+    cliente_correo = serializers.CharField(source='cliente.cuenta.correo_electronico', read_only=True)
+    cliente_telefono = serializers.CharField(source='cliente.telefono', read_only=True)
+    cliente_nombre_fiscal = serializers.CharField(source='cliente.nombre_fiscal', read_only=True)
     salon_id = serializers.IntegerField(source='montaje.salon.id', read_only=True)
     salon_nombre = serializers.CharField(source='montaje.salon.nombre', read_only=True)
     tipo_montaje_id = serializers.IntegerField(source='montaje.tipo_montaje.id', read_only=True)
     tipo_montaje_nombre = serializers.CharField(source='montaje.tipo_montaje.nombre', read_only=True)
     
+    cliente = serializers.SerializerMethodField()
     servicios = serializers.SerializerMethodField()
     equipamentos = serializers.SerializerMethodField()
     mobiliarios = serializers.SerializerMethodField()
@@ -793,25 +812,30 @@ class ReservacionFormularioSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'nombreEvento', 'descripEvento', 'fechaEvento', 'horaInicio', 'horaFin',
             'estimaAsistentes', 'subtotal', 'IVA', 'total',
-            'cliente_rfc', 'cliente_nombre', 'cliente_apellido',
+            'cliente_rfc', 'cliente_nombre', 'cliente_apellido', 'cliente_correo', 'cliente_telefono', 'cliente_nombre_fiscal',
             'salon_id', 'salon_nombre', 'tipo_montaje_id', 'tipo_montaje_nombre',
             'tipo_evento',
-            'servicios', 'equipamentos', 'mobiliarios'
+            'cliente', 'servicios', 'equipamentos', 'mobiliarios'
         ]
     
+    def get_cliente(self, obj):
+        return {
+            'correo': obj.cliente.cuenta.correo_electronico if obj.cliente.cuenta else None,
+            'telefono': obj.cliente.telefono,
+            'nombre_fiscal': obj.cliente.nombre_fiscal
+        }
+    
     def get_servicios(self, obj):
-        return list(obj.reservaservicio_set.values_list('servicio_id', flat=True))
+        return list(obj.reservaservicio_set.values_list('servicio__nombre', flat=True))
     
     def get_equipamentos(self, obj):
         return [
-            {'id': re.equipamiento_id, 'cantidad': re.cantidad}
-            for re in obj.reservaequipa_set.all()
+            re.equipamiento.nombre for re in obj.reservaequipa_set.all()
         ]
     
     def get_mobiliarios(self, obj):
         return [
-            {'id': mm.mobiliario_id, 'cantidad': mm.cantidad}
-            for mm in obj.montaje.montajemobiliario_set.all()
+            mm.mobiliario.nombre for mm in obj.montaje.montajemobiliario_set.all()
         ]
 
 
