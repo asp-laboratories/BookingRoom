@@ -812,7 +812,7 @@ class DisponibilidadSalonesView(APIView):
         # Obtener todos los salones
         salones = models.Salon.objects.all().select_related('estado_salon')
         
-        # Obtener los IDs de salones ocupados en esa fecha (reservaciones aceptadas o confirmadas)
+        # Obtener los IDs de salones ocupados/reservados en esa fecha
         salon_ids_ocupados = set(
             models.Reservacion.objects.filter(
                 fechaEvento=fecha
@@ -821,16 +821,42 @@ class DisponibilidadSalonesView(APIView):
             ).values_list('montaje__salon_id', flat=True).distinct()
         )
         
+        # Obtener estados de salon para esa fecha (desde RegistrEstadSalon)
+        estados_fecha = {}
+        registros = models.RegistrEstadSalon.objects.filter(
+            fecha=fecha
+        ).select_related('salon', 'estado_salon')
+        
+        for reg in registros:
+            estados_fecha[reg.salon_id] = reg.estado_salon.codigo
+        
         # Construir respuesta con disponibilidad
         resultado = []
         for salon in salones:
+            # Primero verificar si hay reservacion
             esta_ocupado = salon.id in salon_ids_ocupados
+            
+            # Si no hay reservacion, verificar estado del salon en esa fecha
+            estado_codigo = estados_fecha.get(salon.id)
+            if estado_codigo:
+                if estado_codigo in ('OCUP', 'RESV'):
+                    esta_ocupado = True
+                estado_nombre = {
+                    'OCUP': 'Ocupado',
+                    'RESV': 'Reservado',
+                    'LIMPI': 'En Limpieza',
+                    'MANTE': 'Mantenimiento',
+                    'DISP': 'Disponible',
+                }.get(estado_codigo, 'Disponible')
+            else:
+                estado_nombre = 'Ocupado' if esta_ocupado else 'Disponible'
+            
             resultado.append({
                 'id': salon.id,
                 'nombre': salon.nombre,
                 'capacidad': salon.maxCapacidad if salon.maxCapacidad else 0,
                 'precio': float(salon.costo) if salon.costo else 0,
-                'estado': 'Ocupado' if esta_ocupado else 'Disponible',
+                'estado': estado_nombre,
                 'reservado': esta_ocupado,
             })
         
