@@ -108,41 +108,125 @@ class SalonViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return models.Salon.objects.select_related('estado_salon').all()
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        
+        from django.utils import timezone
+        fecha_hoy = timezone.now().date()
+        
+        data = serializer.data
+        for i, salon_data in enumerate(data):
+            salon = queryset[i]
+            
+            # Obtener el registro de HOY
+            registro_hoy = models.RegistrEstadSalon.objects.filter(
+                salon=salon,
+                fecha=fecha_hoy
+            ).select_related('estado_salon').first()
+            
+            if registro_hoy:
+                salon_data['estado'] = registro_hoy.estado_salon.nombre
+                salon_data['estado_codigo'] = registro_hoy.estado_salon.codigo
+            else:
+                # Si no hay registro hoy, usar estado actual del salon
+                if salon.estado_salon:
+                    salon_data['estado'] = salon.estado_salon.nombre
+                    salon_data['estado_codigo'] = salon.estado_salon.codigo
+                else:
+                    salon_data['estado'] = 'Disponible'
+                    salon_data['estado_codigo'] = 'DIS'
+        
+        return Response(data)
+
     def update(self, request, *args, **kwargs):
         import logging
+        from django.utils import timezone
+        from datetime import datetime
+        
         logger = logging.getLogger(__name__)
         
         salon = self.get_object()
+        print(f"DEBUG UPDATE: salon={salon.nombre}, old estado={salon.estado_salon}")
         nuevo_estado_input = request.data.get('estado_salon')
+        fecha_input = request.data.get('fecha')
+        print(f"DEBUG UPDATE: nuevo_estado_input={nuevo_estado_input}")
+        print(f"DEBUG UPDATE: fecha_input={fecha_input}")
+        
+        # Procesar la fecha
+        if fecha_input:
+            try:
+                fecha_registro = datetime.fromisoformat(fecha_input.replace('Z', '+00:00')).date()
+            except:
+                fecha_registro = timezone.now().date()
+        else:
+            fecha_registro = timezone.now().date()
+        
+        fecha_hoy = timezone.now().date()
         
         if nuevo_estado_input:
             # Mapeo de códigos Flutter a códigos DB
             codigo_map = {
                 'DISP': 'DIS',
-                'LIM': 'LIM',
+                'LIM': 'LIMPI',
+                'LIMPIEZA': 'LIMPI',
                 'NODISP': 'NODIS',
                 'RESV': 'RESV',
-                'LIMPIEZA': 'LIM',
                 'DISPONIBLE': 'DIS',
                 'NO_DISPONIBLE': 'NODIS',
                 'RESERVADO': 'RESV',
+                'MANTE': 'MANTE',
+                'MANTENIMIENTO': 'MANTE',
+                'OCUP': 'OCUP',
+                'OCUPADO': 'OCUP',
             }
             
             codigo_buscar = codigo_map.get(nuevo_estado_input.upper(), nuevo_estado_input.upper())
+            print(f"DEBUG UPDATE: codigo_buscar={codigo_buscar}")
+            
+            # Verificar si se intenta cambiar a Limpieza y el salon está ocupado/reservado hoy
+            if codigo_buscar == 'LIMPI':
+                registro_hoy = models.RegistrEstadSalon.objects.filter(
+                    salon=salon,
+                    fecha=fecha_hoy
+                ).select_related('estado_salon').first()
+                
+                if registro_hoy and registro_hoy.estado_salon.codigo in ('RESV', 'OCUP'):
+                    return Response(
+                        {'error': 'No se puede cambiar a Limpieza: salon ocupado/reservado hoy'},
+                        status=400
+                    )
             
             try:
                 nuevo_estado = models.EstadoSalon.objects.get(codigo=codigo_buscar)
+                print(f"DEBUG UPDATE: nuevo_estado encontrado={nuevo_estado.nombre} (codigo={nuevo_estado.codigo})")
                 
                 salon.estado_salon = nuevo_estado
                 salon.save()
+                print(f"DEBUG UPDATE: salon.save() completado")
                 
-                models.RegistrEstadSalon.objects.create(
+                # Verificar estados existentes
+                todos_estados = models.EstadoSalon.objects.all()
+                print(f"DEBUG UPDATE: Todos los estados en DB: {[(e.nombre, e.codigo) for e in todos_estados]}")
+                
+                registro = models.RegistrEstadSalon.objects.create(
                     salon=salon,
-                    estado_salon=nuevo_estado
+                    estado_salon=nuevo_estado,
+                    fecha=fecha_registro
                 )
+                print(f"DEBUG UPDATE: registro creado id={registro.id}, fecha={fecha_registro}")
                 
-                serializer = serializers.SalonEstadoSerializer(salon)
-                return Response(serializer.data)
+                # Verificar que se creó
+                ultimos = models.RegistrEstadSalon.objects.filter(salon=salon).order_by('-id')[:3]
+                print(f"DEBUG UPDATE: Últimos registros para salon {salon.id}: {[(r.estado_salon.nombre, str(r.fecha)) for r in ultimos]}")
+                
+                # Devolver en formato consistente con list
+                return Response({
+                    'id': salon.id,
+                    'nombre': salon.nombre,
+                    'estado': nuevo_estado.nombre,
+                    'estado_codigo': nuevo_estado.codigo,
+                })
                     
             except models.EstadoSalon.DoesNotExist:
                 # Si no existe el código, buscar cualquier estado disponible
@@ -154,8 +238,12 @@ class SalonViewSet(viewsets.ModelViewSet):
                         salon=salon,
                         estado_salon=nuevo_estado
                     )
-                    serializer = serializers.SalonEstadoSerializer(salon)
-                    return Response(serializer.data)
+                    return Response({
+                        'id': salon.id,
+                        'nombre': salon.nombre,
+                        'estado': nuevo_estado.nombre,
+                        'estado_codigo': nuevo_estado.codigo,
+                    })
                 return Response({'error': 'No hay estados de salón configurados'}, status=400)
         
         return super().update(request, *args, **kwargs)
@@ -798,6 +886,33 @@ class DetalleReservacionView(APIView):
             return Response({'error': 'Reservación no encontrada'}, status=404)
 
 
+class ChecklistAlmacenistaView(APIView):
+    """API para obtener el checklist del almacenista"""
+    def get(self, request, pk):
+        try:
+            reservacion = models.Reservacion.objects.get(pk=pk)
+        except models.Reservacion.DoesNotExist:
+            return Response({'error': 'Reservación no encontrada'}, status=404)
+        
+        return Response({
+            'checklist_almacenista': reservacion.checklist_almacenista or {}
+        })
+
+
+class ChecklistCoordinadorView(APIView):
+    """API para obtener el checklist del coordinador"""
+    def get(self, request, pk):
+        try:
+            reservacion = models.Reservacion.objects.get(pk=pk)
+        except models.Reservacion.DoesNotExist:
+            return Response({'error': 'Reservación no encontrada'}, status=404)
+        
+        return Response({
+            'checklist_coordinador': reservacion.checklist_coordinador or {},
+            'progreso_checklist': reservacion.progreso_checklist or 0.0
+        })
+
+
 class ChecklistUpdateView(APIView):
     """API para actualizar el checklist de una reservación"""
     def post(self, request, pk):
@@ -829,7 +944,13 @@ class ChecklistUpdateView(APIView):
                 total = len(boolean_values)
                 reservacion.progreso_checklist = completed / total if total > 0 else 0
         else:
-            reservacion.checklist_almacenista = checklist
+            # Mantener el checklist existente y actualizar
+            current_checklist = dict(reservacion.checklist_almacenista) if reservacion.checklist_almacenista else {}
+            print(f"DEBUG Backend: checklist_almacenista actual = {current_checklist}")
+            print(f"DEBUG Backend: checklist recibido almacenista = {checklist}")
+            current_checklist.update(checklist)
+            print(f"DEBUG Backend: checklist_almacenista nuevo = {current_checklist}")
+            reservacion.checklist_almacenista = current_checklist
             
             # Si es almacenista, también marcar automáticamente el item #9 del coordinador
             coord_checklist = dict(reservacion.checklist_coordinador) if reservacion.checklist_coordinador else {}
