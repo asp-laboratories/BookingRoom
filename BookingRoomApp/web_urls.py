@@ -45,4 +45,12 @@ urlpatterns = [
     path('reservacion/mobiliarios-tipo/', views.mobiliarios_por_tipo, name='mobiliarios_por_tipo'),
     path('home/<int:pk>/confirmar/', views.confirmar_reservacion, name='confirmar_reservacion'),
     path('home/<int:pk>/cancelar/', views.cancelar_reservacion, name='cancelar_reservacion'),
+    path('almacen/resumen-estados/<int:inventario_id>/', views.obtener_resumen_estados, name='resumen_estados'),
+    path('almacen/resumen-estados-mob/<int:inventario_id>/', views.obtener_resumen_estados_mob, name='resumen_estados_mob'),
+    path('api/inventario/mobiliario/lista/', views.api_lista_mobiliario, name='api_lista_mobiliario'),
+    path('api/inventario/mobiliario/mover/', views.api_mover_mobiliario, name='api_mover_mobiliario'),
+    path('api/inventario/equipamiento/lista/', views.api_lista_equipamiento, name='api_lista_equipamiento'),
+    path('api/inventario/equipamiento/mover/', views.api_mover_equipamiento, name='api_mover_equipamiento'),
+    path('api/estados/mobiliario/', views.api_estados_mobiliario, name='api_estados_mobiliario'),
+    path('api/estados/equipamiento/', views.api_estados_equipamiento, name='api_estados_equipamiento'),
 ]
