@@ -74,20 +74,16 @@
                     <td class="mobiliario-td">{{ item.estado_mobil.nombre }}</td>
 
                     <td class="mobiliario-td">
-                        <button 
-                            type="button"
-                            class="mobiliario-btn-verde"
-                            onclick="abrirModal({{ item.id }})">
-                            ↑↓
-                        </button>
-                    </td>
-                </tr>
-
-                {% empty %}
-                <tr>
-                    <td colspan="8" style="text-align:center; padding: 20px; color: #888;">
-                         No hay mobiliario disponible
-                    </td>
+                            <button type="button" class="mobiliario-btn-verde" onclick="abrirModalMob({{ item.id }})">
+                                ↑↓
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" style="text-align:center; padding: 20px; color: #888;">
+                            No hay mobiliario disponible
+                        </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -97,45 +93,40 @@
     
 </div>
 
-<div id="modalEstado" class="mobiliario-modal">
+<div id="modalEstadoMob" class="mobiliario-modal">
     <div class="mobiliario-modal-content">
-        <span class="mobiliario-close" onclick="cerrarModal()">×</span>
+        <span class="mobiliario-close" onclick="cerrarModalMob()">×</span>
+        <h3 style="text-align:center; margin-bottom: 20px;">Gestión de Estado de Mobiliario</h3>
 
-        <h3 style="text-align:center;">
-            Cambiar estado del mobiliario
-        </h3>
+        <div class="resumen-container" style="background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <p style="margin-top: 0; color: #555; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                Resumen del mobiliario: <span id="nombre-mob-modal" style="color:#2c3e50;">Cargando...</span>
+            </p>
+            <ul id="lista-resumen-mob" style="list-style: none; padding: 0; margin: 0; color: #333;">
+                <li>Cargando existencias...</li>
+            </ul>
+        </div>
 
         <form method="POST" action="{% url 'actualizar_estado_mobiliario' %}">
             {% csrf_token %}
-
-            <input type="hidden" name="inventario_id" id="inventario_id">
+            <input type="hidden" name="inventario_id" id="inventario_mob_id">
 
             <div class="mobiliario-form-grid">
+                <label>Cantidad a mover</label>
+                <input type="number" name="cantidad" class="mobiliario-input" required min="1">
 
-                <label>Cantidad</label>
-                <input 
-                    type="number"
-                    name="cantidad"
-                    class="mobiliario-input"
-                    required
-                    min="1"
-                >
-
-                <label>Cambiar estado</label>
-                <select name="estado" class="mobiliario-select">
+                <label>Nuevo estado</label>
+                <select name="estado" class="mobiliario-select" required>
+                    <option value="">Seleccione un estado...</option>
                     {% for estado in estados %}
-                        <option value="{{ estado.codigo }}">
-                            {{ estado.nombre }}
-                        </option>
+                        <option value="{{ estado.codigo }}">{{ estado.nombre }}</option>
                     {% endfor %}
                 </select>
 
             </div>
 
-            <div class="mobiliario-guardar">
-                <button type="submit" class="mobiliario-btn-guardar">
-                    Guardar
-                </button>
+            <div class="mobiliario-guardar" style="margin-top: 20px;">
+                <button type="submit" class="mobiliario-btn-guardar">Actualizar Estado</button>
             </div>
 
         </form>

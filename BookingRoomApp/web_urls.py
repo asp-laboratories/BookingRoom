@@ -38,4 +38,12 @@ urlpatterns = [
     path("almacen/actualizar-estado-mobiliario/", views.actualizar_estado_mobiliario, name="actualizar_estado_mobiliario"),
     path('reservacion/montajes-salon/', views.montaje_por_salon, name='montaje_salon'),
     path('reservacion/mobiliarios-tipo/', views.mobiliarios_por_tipo, name='mobiliarios_por_tipo'),
+    path('almacen/resumen-estados/<int:inventario_id>/', views.obtener_resumen_estados, name='resumen_estados'),
+    path('almacen/resumen-estados-mob/<int:inventario_id>/', views.obtener_resumen_estados_mob, name='resumen_estados_mob'),
+    path('api/inventario/mobiliario/lista/', views.api_lista_mobiliario, name='api_lista_mobiliario'),
+    path('api/inventario/mobiliario/mover/', views.api_mover_mobiliario, name='api_mover_mobiliario'),
+    path('api/inventario/equipamiento/lista/', views.api_lista_equipamiento, name='api_lista_equipamiento'),
+    path('api/inventario/equipamiento/mover/', views.api_mover_equipamiento, name='api_mover_equipamiento'),
+    path('api/estados/mobiliario/', views.api_estados_mobiliario, name='api_estados_mobiliario'),
+    path('api/estados/equipamiento/', views.api_estados_equipamiento, name='api_estados_equipamiento'),
 ]

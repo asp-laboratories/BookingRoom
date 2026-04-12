@@ -86,30 +86,40 @@
 <div id="modalEstado" class="equipamiento-modal">
     <div class="equipamiento-modal-content">
         <span class="equipamiento-close" onclick="cerrarModal()">×</span>
-        <h3 style="text-align:center;">Cambiar estado del equipamiento</h3>
+        <h3 style="text-align:center; margin-bottom: 20px;">Gestión de Estado</h3>
+
+        <div class="resumen-container" style="background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <p style="margin-top: 0; color: #555; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                Resumen del equipo: <span id="nombre-equipo-modal" style="color:#2c3e50;">Cargando...</span>
+            </p>
+            <ul id="lista-resumen" style="list-style: none; padding: 0; margin: 0; color: #333;">
+                <li>Cargando existencias...</li>
+            </ul>
+        </div>
 
         <form method="POST" action="{% url 'actualizar_estado_equipamiento' %}">
             {% csrf_token %}
             <input type="hidden" name="inventario_id" id="inventario_id">
 
             <div class="equipamiento-form-grid">
-                <label>Cantidad</label>
+                <label>Cantidad a mover</label>
                 <input type="number" name="cantidad" class="equipamiento-input" required min="1">
 
-                <label>Cambiar estado</label>
-                <select name="estado" class="equipamiento-select">
+                <label>Nuevo estado</label>
+                <select name="estado" class="equipamiento-select" required>
+                    <option value="">Seleccione un estado...</option>
                     {% for estado in estados %}
                         <option value="{{ estado.codigo }}">{{ estado.nombre }}</option>
                     {% endfor %}
                 </select>
             </div>
 
-            <div class="equipamiento-guardar">
-                <button type="submit" class="equipamiento-btn-guardar">Guardar</button>
+            <div class="equipamiento-guardar" style="margin-top: 20px;">
+                <button type="submit" class="equipamiento-btn-guardar">Actualizar Estado</button>
             </div>
         </form>
     </div>
-
+    
 </div>
 
 <script src="{% static 'BookingRoomApp/js/almacen/inventario_equipamiento.js' %}"></script>
