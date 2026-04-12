@@ -242,6 +242,7 @@ def api_mover_equipamiento(request):
             
     return JsonResponse({"error": "Método no permitido"}, status=405)
 
+
 def api_estados_equipamiento(request):
     try:
         estados = models.EstadoEquipa.objects.values('codigo', 'nombre')
