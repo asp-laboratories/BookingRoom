@@ -189,6 +189,7 @@ function datosReservacion() {
         horaFin: horaFin,
         cliente: cliente,
         trabajador: trabajador,
+        estado_reserva: 'CON',  // Reservaciones desde recepcion siempre son CONFIRMADAS
         reserva_servicio: reserva_servicio,
         reserva_equipa: reserva_equipa,
         montaje: montaje,

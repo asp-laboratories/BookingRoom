@@ -83,8 +83,8 @@ function limpiarCampos() {
 async function registrarPago() {
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
     const reservaId = document.querySelector('[data-field="reservacion_id"]')?.value;
-    const monto = document.querySelector('[data-field="monto"]')?.value;
-    const saldo = document.querySelector('[data-field="saldo"]')?.value;
+    const montoInput = document.querySelector('[data-field="monto"]');
+    const saldoField = document.querySelector('[data-field="saldo"]');
     const nota = document.querySelector('[data-field="nota"]')?.value;
     const estado = document.querySelector('[data-field="estado"]')?.value;
 
@@ -99,14 +99,29 @@ async function registrarPago() {
         return;
     }
 
-    if(monto > saldo){
-        alert('No puedes pagar mas');
-        return
+    // Convertir a números para comparación correcta
+    const monto = parseFloat(montoInput?.value) || 0;
+    const saldoTexto = saldoField?.value || '';
+    // Extraer número del saldo (puede ser "El pago esta compleado" o un número)
+    let saldo = 0;
+    const match = saldoTexto.match(/([0-9]+\.?[0-9]*)/);
+    if (match) {
+        saldo = parseFloat(match[1]);
     }
 
-    if(saldo == 0){
-        alert('El pago se ha compleado, no hay saldo');
-        return
+    if (saldo === 0) {
+        alert('El pago se ha completado, no hay saldo pendiente');
+        return;
+    }
+
+    if (monto > saldo) {
+        alert(`No puedes pagar más del saldo pendiente. Saldo actual: $${saldo.toFixed(2)}`);
+        return;
+    }
+
+    if (monto <= 0) {
+        alert('El monto debe ser mayor a 0');
+        return;
     }
 
     let concepto = '';
@@ -129,7 +144,7 @@ async function registrarPago() {
 
     abrirModalConfirmar(
         'Confirmar pago',
-        `¿Confirmar el registro de un pago de $${parseFloat(monto).toFixed(2)}?`,
+        `¿Confirmar el registro de un pago de $${monto.toFixed(2)}?`,
         () => ejecutarPago(data, csrfToken)
     );
 }
