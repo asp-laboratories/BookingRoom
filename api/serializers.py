@@ -343,10 +343,25 @@ class EquipamientoSerializer(serializers.ModelSerializer):
         fields = ['id', 'nombre', 'descripcion', 'costo', 'stock', 'tipo_equipa']
 
 
+# class InventarioEquipaSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = models.InventarioEquipa
+#         fields = '__all__'
+#         depth = 1
+
 class InventarioEquipaSerializer(serializers.ModelSerializer):
+    # Esta función se activa automáticamente en los GET (Lectura)
+    def to_representation(self, instance):
+        # Inyectamos los serializers base para que Flutter reciba 
+        # el objeto completo (nombre, imagen, descripción, etc.)
+        self.fields['equipamiento'] = EquipamientoSerializer(read_only=True)
+        self.fields['estado_equipa'] = EstadoEquipaSerializer(read_only=True)
+        return super(InventarioEquipaSerializer, self).to_representation(instance)
     class Meta:
         model = models.InventarioEquipa
         fields = '__all__'
+           # NO uses depth=1 aquí, to_representation es más flexible
+
 
 
 class EstadoEquipaSerializer(serializers.ModelSerializer):
@@ -443,10 +458,24 @@ class MontajeMobiliarioSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+# class InventarioMobSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = models.InventarioMob
+#         fields = '__all__'
+#         depth = 1
+
 class InventarioMobSerializer(serializers.ModelSerializer):
+    # Esto permite que al enviar datos (POST/PATCH) uses IDs, 
+    # pero al recibir datos (GET) veas todo el objeto.
+    def to_representation(self, instance):
+        self.fields['mobiliario'] = MobiliarioSerializer(read_only=True)
+        self.fields['estado_mobil'] = EstadoMobilSerializer(read_only=True)
+        return super(InventarioMobSerializer, self).to_representation(instance)
     class Meta:
-        model = models.InventarioMob
-        fields = '__all__'
+           model = models.InventarioMob
+           fields = '__all__'
+           # Quita el 'depth = 1' si usas to_representation, es más estable.
+
 
 
 class EstadoMobilSerializer(serializers.ModelSerializer):
