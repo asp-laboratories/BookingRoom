@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 const salonId = opcion.value;
                 if (!salonId) return; // Skip the default option
 
-                const salonInfo = data.salones.find(s => s.id == salonId);
+                const salonInfo = data.salones.find(s => s.nombre == salonId);
                 
                 if (salonInfo) {
                     const estaBloqueado = salonInfo.reservado || 

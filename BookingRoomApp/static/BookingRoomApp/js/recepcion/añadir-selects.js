@@ -310,7 +310,7 @@ async function cargarMontajesSalon(salon) {
     if (datos.montajes && datos.montajes.length > 0) {
       datos.montajes.forEach((montaje) => {
         const option = document.createElement("option");
-        option.value = montaje.tipo_montaje_id;  // Usar tipo_montaje_id, no montaje.id
+        option.value = montaje.id;  // Usar tipo_montaje_id, no montaje.id
         option.textContent = `${montaje.nombre} (Capacidad: ${montaje.capacidadIdeal || 'N/A'})`;
         option.dataset.costo = montaje.costo || 0; // Guardar costo para calculo dinamico
         option.dataset.montajeId = montaje.id; // Guardar ID del montaje existente para referencia
