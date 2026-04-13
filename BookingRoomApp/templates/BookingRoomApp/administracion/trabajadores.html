@@ -69,6 +69,14 @@
             <button class="administrador-paGuarar"
                 type="submit">Siguiente</button>
         </form>
+
+        <script>
+        // Auto-trim email field on form submission
+        document.querySelector('form[action="{% url "registrar_trabajador" %}"] input[name="email"]')
+            ?.addEventListener('blur', function() {
+                this.value = this.value.trim();
+            });
+        </script>
     </div>
 
     <div class="administrador-formularios">
@@ -150,6 +158,71 @@
             <input type="hidden" name="no_empleado" id="hidden-no-empleado">
             <input type="hidden" name="rol_id" id="hidden-rol">
         </form>
+
+        <script>
+        // Validaciones para el formulario de Datos del Trabajador
+        (function() {
+            const formTrabajador = document.querySelector('form[action="{% url "registrar_trabajador" %}"] input[name="form_tipo"][value="trabajador"]')?.closest('form');
+            if (!formTrabajador) return;
+
+            const inputTelefono = formTrabajador.querySelector('input[name="telefono"]');
+            const inputRFC = formTrabajador.querySelector('input[name="rfc"]');
+
+            // Validar teléfono: solo permite números, máximo 10 dígitos
+            if (inputTelefono) {
+                inputTelefono.addEventListener('input', function() {
+                    // Eliminar cualquier carácter que no sea número
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    // Limitar a 10 dígitos
+                    if (this.value.length > 10) {
+                        this.value = this.value.slice(0, 10);
+                    }
+                });
+            }
+
+            // Validar RFC: formato mexicano
+            if (inputRFC) {
+                inputRFC.addEventListener('input', function() {
+                    // Convertir a mayúsculas
+                    this.value = this.value.toUpperCase();
+                    // Limitar a 13 caracteres
+                    if (this.value.length > 13) {
+                        this.value = this.value.slice(0, 13);
+                    }
+                });
+            }
+
+            // Validación antes de enviar el formulario
+            formTrabajador.addEventListener('submit', function(e) {
+                let errores = [];
+
+                // Validar teléfono (10 dígitos)
+                const telefono = inputTelefono?.value || '';
+                if (!/^\d{10}$/.test(telefono)) {
+                    errores.push('El teléfono debe tener exactamente 10 dígitos numéricos');
+                }
+
+                // Validar RFC (formato completo mexicano)
+                const rfc = inputRFC?.value || '';
+                // Validación simplificada: solo mínimo y máximo de caracteres
+                if (rfc.length < 10 || rfc.length > 13) {
+                    errores.push('El RFC debe tener entre 10 y 13 caracteres');
+                }
+
+                // Validación completa comentada para uso futuro:
+                // const rfc = inputRFC?.value || '';
+                // if (!/^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/.test(rfc)) {
+                //     errores.push('El RFC no tiene un formato válido (ejemplo: ABCD123456XYZ)');
+                // }
+
+                if (errores.length > 0) {
+                    e.preventDefault();
+                    alert('Errores en el formulario:\n\n• ' + errores.join('\n• '));
+                    return false;
+                }
+            });
+        })();
+        </script>
     </div>
 
     <form class="administrador-seccionBusq" method="GET">
@@ -212,7 +285,7 @@
                     <td class="administrador-td celda-nombre">{{ trabajador.nombre }}</td>
                     <td class="administrador-td celda-apellido-paterno">{{ trabajador.apellidoPaterno }}</td>
                     <td class="administrador-td celda-apellido-materno">{{ trabajador.apelidoMaterno|default:'-' }}</td>
-                    <td class="administrador-td">{{ trabajador.rfc }}</td>
+                    <td class="administrador-td celda-rfc">{{ trabajador.rfc }}</td>
                     <td class="administrador-td celda-telefono">{{ trabajador.telefono }}</td>
                     <td class="administrador-td">{{ trabajador.correo_electronico }}</td>
                     <td class="administrador-td celda-rol">{{ trabajador.rol.nombre }}</td>
@@ -251,11 +324,13 @@
 
 <script src="{% static 'BookingRoomApp/js/inline-edit.js' %}"></script>
 <script>
-const roles = [
+window.roles = [
     {% for rol in roles %}
         { codigo: "{{ rol.codigo }}", nombre: "{{ rol.nombre }}" },
     {% endfor %}
 ];
+
+console.log('roles cargados:', window.roles);
 
 configurarInlineEdit({
     nombreSingular: 'trabajador',
@@ -266,8 +341,9 @@ configurarInlineEdit({
         { nombre: 'nombre', clase: 'celda-nombre', tipo: 'texto' },
         { nombre: 'apellidoPaterno', clase: 'celda-apellido-paterno', tipo: 'texto' },
         { nombre: 'apellidoMaterno', clase: 'celda-apellido-materno', tipo: 'texto' },
+        { nombre: 'rfc', clase: 'celda-rfc', tipo: 'texto' },
         { nombre: 'telefono', clase: 'celda-telefono', tipo: 'texto' },
-        { nombre: 'rol', clase: 'celda-rol', tipo: 'select-db', opcionesVar: 'roles', dataAttr: 'rolCodigo' }
+        { nombre: 'rol', clase: 'celda-rol', tipo: 'select-db', opcionesVar: 'roles', dataAttr: 'rol-codigo' }
     ]
 });
 </script>

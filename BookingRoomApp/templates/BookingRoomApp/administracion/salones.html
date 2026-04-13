@@ -144,7 +144,6 @@
                     <th class="administrador-th">Ubicacion</th>
                     <th class="administrador-th">Dimensiones</th>
                     <th class="administrador-th">m2</th>
-                    <th class="administrador-th">Estado</th>
                     <th class="administrador-th">Editar</th>
                 </tr>
             </thead>
@@ -167,7 +166,6 @@
                     <td class="administrador-td celda-ubicacion">{{ salon.ubicacion }}</td>
                     <td class="administrador-td celda-dimensiones">{{ salon.dimenLargo }}x{{ salon.dimenAncho }}x{{ salon.dimenAlto }}</td>
                     <td class="administrador-td">{{ salon.metrosCuadrados }}</td>
-                    <td class="administrador-td celda-estado">{{ salon.estado_salon.nombre }}</td>
                     <td class="administrador-td servicio-acciones">
                         <button type="button" class="btn-editar" onclick="editarRegistro({{ salon.id }})" title="Editar">
                             <svg class="icono blanco">
@@ -188,7 +186,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="administrador-td">No hay salones registrados</td>
+                    <td colspan="7" class="administrador-td">No hay salones registrados</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -230,8 +228,7 @@ configurarInlineEdit({
     campos: [
         { nombre: 'nombre', clase: 'celda-nombre', tipo: 'texto' },
         { nombre: 'costo', clase: 'celda-costo', tipo: 'numero' },
-        { nombre: 'ubicacion', clase: 'celda-ubicacion', tipo: 'texto' },
-        { nombre: 'estado_salon', clase: 'celda-estado', tipo: 'select-db', opcionesVar: 'estadosSalon', dataAttr: 'estadoCodigo' }
+        { nombre: 'ubicacion', clase: 'celda-ubicacion', tipo: 'texto' }
     ]
 });
 </script>

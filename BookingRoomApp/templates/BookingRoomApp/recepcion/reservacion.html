@@ -13,6 +13,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="{% static "BookingRoomApp/js/recepcion/pagos.js" %}" defer></script>
 <script src="{% static "BookingRoomApp/js/recepcion/añadir-selects.js" %}"></script>
+<script src="{% static "BookingRoomApp/js/recepcion/validar-salones.js" %}"></script>
+<script src="{% static "BookingRoomApp/js/recepcion/calcular-costo.js" %}"></script>
+<script src="{% static "BookingRoomApp/js/recepcion/validar-cliente.js" %}"></script>
+<script src="{% static "BookingRoomApp/js/recepcion/validar-reservacion.js" %}"></script>
 <script src="{% static "BookingRoomApp/js/reservacion/crear_reservacion.js" %}"></script>
 
 
@@ -199,12 +203,17 @@
       </section>
 
       <section id="salon" class="reservacion-seccion">
-        <h3 class="reservacion-titulo-seccion">Salón y Montaje</h3>
+        <h3 class="reservacion-titulo-seccion">
+          Salón y Montaje
+          <span class="reservacion-hint" style="font-size: 12px; color: #666; font-weight: normal; margin-left: 10px;">
+            ⚠️ Primero selecciona la fecha del evento
+          </span>
+        </h3>
         <div class="reservacion-campo-contenedor reservacion-flex-row">
           <div class="reservacion-columna">
             <label class="reservacion-label">Seleccionar Salón</label>
-            <select class="reservacion-input" id="select-salon">
-              <option value="">-- Selecciona un salón --</option>
+            <select class="reservacion-input" id="select-salon" disabled>
+              <option value="">-- Selecciona una fecha primero --</option>
               {% for salon in salones %}
               <!-- de aca se obtiene montaje.salon -->
               <option value="{{salon.id}}">{{salon.nombre}}</option>

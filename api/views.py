@@ -352,7 +352,7 @@ class ReservacionViewSet(viewsets.ModelViewSet):
 
         try:
             confirmar = request.data.get('confirmar_inventario', True)
-            new_reservacion = reservacionesService.crear_reseracion(validador.validated_data, confirmar_inventario=confirmar)
+            new_reservacion = reservacionesService.crear_reservacion(validador.validated_data, confirmar_inventario=confirmar)
             respeusta = serializers.ReservacionLecturaSerializer(new_reservacion)
             return Response(respeusta.data, status=status.HTTP_201_CREATED)
         

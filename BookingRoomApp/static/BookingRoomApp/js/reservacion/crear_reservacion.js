@@ -120,6 +120,11 @@ function datosReservacion() {
         return null;
     }
 
+    console.log('=== Datos de Montaje para Reservación ===');
+    console.log('Salón ID:', salon);
+    console.log('Tipo Montaje ID:', tipo_montaje);
+    console.log('Montaje select value:', document.getElementById('select-montaje')?.value);
+
     // Validar mobiliarios (al menos uno)
     const mobiliarios = [];
     let hayMobiliarioValido = false;
@@ -146,9 +151,11 @@ function datosReservacion() {
 
     const montaje = {
         salon: parseInt(salon),
-        tipo_montaje: parseInt(tipo_montaje),
+        tipo_montaje: parseInt(tipo_montaje),  // Esto ahora es el tipo_montaje_id correcto
         mobiliarios
     };
+
+    console.log('Montaje object being sent:', montaje);
 
     // Servicios (OPCIONAL)
     const reserva_servicio = [];
@@ -231,19 +238,57 @@ async function crearReservacion() {
 }
 
 let reservacionCreadaId = null;
+let reservacionEnProceso = false;
 
 async function confirmarReservacion() {
-    const resultado = await crearReservacion();
+    // Prevenir doble envío
+    if (reservacionEnProceso) {
+        console.log('Reservación ya en proceso, ignorando clic adicional');
+        return;
+    }
+
+    reservacionEnProceso = true;
     
-    if (resultado && resultado.success) {
-        reservacionCreadaId = resultado.id;
-        abrirModalConfirmar(
-            'Reservación creada',
-            `La reservación #${resultado.id} se creó exitosamente. ¿Deseas realizar un pago ahora?`,
-            function() {
-                abrirModalPagosConReservacion(reservacionCreadaId);
+    // Deshabilitar botón para evitar múltiples clics
+    const botonConfirmar = document.querySelector('.reservacion-btn-confirmar');
+    if (botonConfirmar) {
+        botonConfirmar.disabled = true;
+        botonConfirmar.style.opacity = '0.5';
+        botonConfirmar.style.cursor = 'not-allowed';
+        botonConfirmar.textContent = 'Creando reservación...';
+    }
+
+    try {
+        const resultado = await crearReservacion();
+
+        if (resultado && resultado.success) {
+            reservacionCreadaId = resultado.id;
+            
+            // Mostrar mensaje de éxito
+            mostrarToastExito(`¡Reservación #${resultado.id} creada exitosamente!`, 'success');
+            
+            // Preguntar si desea realizar pago
+            setTimeout(() => {
+                abrirModalConfirmar(
+                    'Reservación creada',
+                    `La reservación #${resultado.id} se creó exitosamente. ¿Deseas realizar un pago ahora?`,
+                    function() {
+                        abrirModalPagosConReservacion(reservacionCreadaId);
+                    }
+                );
+            }, 500);
+            
+        } else {
+            // Si falló, re-habilitar el botón
+            if (botonConfirmar) {
+                botonConfirmar.disabled = false;
+                botonConfirmar.style.opacity = '';
+                botonConfirmar.style.cursor = '';
+                botonConfirmar.textContent = 'Confirmar';
             }
-        );
+        }
+    } finally {
+        reservacionEnProceso = false;
     }
 }
 
@@ -252,10 +297,10 @@ function abrirModalPagosConReservacion(reservacionId) {
     if (modal) {
         const inputReservacion = modal.querySelector('[data-field="reservacion"]');
         const inputReservacionId = modal.querySelector('[data-field="reservacion_id"]');
-        
+
         if (inputReservacion) inputReservacion.value = reservacionId;
         if (inputReservacionId) inputReservacionId.value = reservacionId;
-        
+
         modal.showModal();
     }
 }

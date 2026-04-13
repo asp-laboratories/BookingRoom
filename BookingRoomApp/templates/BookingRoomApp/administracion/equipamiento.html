@@ -171,11 +171,13 @@
 
 <script src="{% static 'BookingRoomApp/js/inline-edit.js' %}"></script>
 <script>
-const tiposEquipa = [
+window.tiposEquipa = [
     {% for tipo in tipos_equipa %}
         { id: {{ tipo.id }}, nombre: "{{ tipo.nombre }}" },
     {% endfor %}
 ];
+
+console.log('tiposEquipa cargados:', window.tiposEquipa);
 
 configurarInlineEdit({
     nombreSingular: 'equipamiento',
@@ -184,7 +186,7 @@ configurarInlineEdit({
     campoNombre: 'nombre',
     campos: [
         { nombre: 'nombre', clase: 'celda-nombre', tipo: 'texto' },
-        { nombre: 'tipo_equipa', clase: 'celda-tipo', tipo: 'select-db', opcionesVar: 'tiposEquipa', dataAttr: 'tipoId' },
+        { nombre: 'tipo_equipa', clase: 'celda-tipo', tipo: 'select-db', opcionesVar: 'tiposEquipa', dataAttr: 'tipo-id' },
         { nombre: 'descripcion', clase: 'celda-descripcion', tipo: 'texto' },
         { nombre: 'costo', clase: 'celda-costo', tipo: 'numero' },
         { nombre: 'stock', clase: 'celda-stock', tipo: 'entero' }

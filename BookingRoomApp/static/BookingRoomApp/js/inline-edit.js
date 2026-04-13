@@ -59,11 +59,43 @@ function editarRegistro(id) {
             `;
         } else if (campo.tipo === 'select-db') {
             // Para selects que cargan opciones desde Django
+            const opciones = window[campo.opcionesVar] || [];
+            const dataAttr = campo.dataAttr || campo.nombre;
+            
+            // Intentar obtener el valor del dataset (kebab-case se convierte a camelCase en JS)
+            let valorActual = row.dataset[dataAttr];
+            // Si no se encuentra, intentar con camelCase
+            if (!valorActual) {
+                const camelCaseAttr = dataAttr.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase());
+                valorActual = row.dataset[camelCaseAttr];
+            }
+            // Si aún no se encuentra, usar el texto de la celda
+            if (!valorActual) {
+                valorActual = celda.textContent.trim();
+            }
+            
+            console.log(`=== DEBUG ${campo.nombre} ===`);
+            console.log('dataAttr (kebab):', dataAttr);
+            console.log('camelCaseAttr:', dataAttr.replace(/-([a-z])/g, (m, l) => l.toUpperCase()));
+            console.log('row.dataset:', row.dataset);
+            console.log('valorActual:', valorActual);
+            console.log('opciones:', opciones);
+            
+            let opcionesHTML = '';
+            if (opciones.length > 0) {
+                opcionesHTML = opciones.map(op => {
+                    const opValue = op.id || op.codigo;
+                    const isSelected = valorActual == opValue;
+                    console.log(`Op: id=${opValue}, nombre="${op.nombre}", isSelected=${isSelected}`);
+                    return `<option value="${opValue}" ${isSelected ? 'selected' : ''}>${op.nombre}</option>`;
+                }).join('');
+            } else {
+                opcionesHTML = '<option value="">No hay opciones disponibles</option>';
+            }
+            
             celda.innerHTML = `
                 <select class="inline-input" data-campo="${campo.nombre}">
-                    ${window[`${campo.opcionesVar}`]?.map(op => 
-                        `<option value="${op.id || op.codigo}" ${valor == (op.id || op.codigo) ? 'selected' : ''}>${op.nombre}</option>`
-                    ).join('') || ''}
+                    ${opcionesHTML}
                 </select>
             `;
         }

@@ -195,12 +195,14 @@
 
 <script src="{% static 'BookingRoomApp/js/inline-edit.js' %}"></script>
 <script>
- const tiposServicio = [
+ window.tiposServicio = [
     {% for tipo in tipo_servicio %}
       { id: {{ tipo.id }}, nombre: "{{ tipo.nombre }}" },
     {% endfor %}
   ];
-  
+
+  console.log('tiposServicio cargados:', window.tiposServicio);
+
   configurarInlineEdit({
     nombreSingular: 'servicio',
     urlActualizar: '/administracion/servicios/0/actualizar/',
@@ -208,7 +210,7 @@
     campoNombre: 'nombre',
     campos: [
       { nombre: 'nombre', clase: 'celda-nombre', tipo: 'texto' },
-      { nombre: 'tipo_servicio', clase: 'celda-tipo', tipo: 'select-db', opcionesVar: 'tiposServicio', dataAttr: 'tipoId' },
+      { nombre: 'tipo_servicio', clase: 'celda-tipo', tipo: 'select-db', opcionesVar: 'tiposServicio', dataAttr: 'tipo-id' },
       { nombre: 'descripcion', clase: 'celda-descripcion', tipo: 'texto' },
       { nombre: 'costo', clase: 'celda-costo', tipo: 'numero' },
       { nombre: 'disposicion', clase: 'celda-disposicion', tipo: 'booleano' }

@@ -190,6 +190,7 @@ def montaje_por_salon(request):
         for m in montajes:
             lista.append({
                 'id': m.id,
+                'tipo_montaje_id': m.tipo_montaje.id,  # Agregar ID del tipo de montaje
                 'nombre': m.tipo_montaje.nombre,
                 'capacidadIdeal': m.tipo_montaje.capacidadIdeal,
                 'costo': str(m.costo)

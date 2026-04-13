@@ -8,16 +8,44 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def crear_reseracion(datos, confirmar_inventario=True):
+def crear_reservacion(datos, confirmar_inventario=True):
     with transaction.atomic():
         equipos = datos.pop('reserva_equipa', [])
         servicios = datos.pop('reserva_servicio', [])
         mobiliarios = datos['montaje']['mobiliarios']
+        salon_id = datos['montaje']['salon']
+        fecha_evento = datos['fechaEvento']
 
-        localizador_precio = Precios(servicios=servicios, 
-                                     salon=datos['montaje']['salon'], 
+        # ==========================================
+        # VALIDAR DISPONIBILIDAD DEL SALÓN
+        # ==========================================
+        # Verificar que el salón no esté reservado en esa fecha
+        salon_reservado = models.RegistrEstadSalon.objects.filter(
+            salon_id=salon_id,
+            fecha=fecha_evento,
+            estado_salon__in=['RESV', 'OCUP']  # Reservado u Ocupado
+        ).exists()
+
+        if salon_reservado:
+            salon = models.Salon.objects.get(id=salon_id)
+            raise ValidationError(
+                f"El salón '{salon.nombre}' no está disponible para la fecha {fecha_evento}. "
+                "Ya existe una reservación confirmada para esa fecha."
+            )
+
+        # Verificar el estado actual del salón
+        salon_actual = models.Salon.objects.select_related('estado_salon').get(id=salon_id)
+        estados_bloqueados = ['Ocupado', 'Reservado', 'En Limpieza', 'Mantenimiento']
+        if salon_actual.estado_salon.nombre in estados_bloqueados:
+            raise ValidationError(
+                f"El salón '{salon_actual.nombre}' está en estado '{salon_actual.estado_salon.nombre}' "
+                "y no puede ser reservado."
+            )
+
+        localizador_precio = Precios(servicios=servicios,
+                                     salon=datos['montaje']['salon'],
                                      mobiliarios=mobiliarios, equipamientos=equipos)
-        
+
         montaje = crear_montaje(datos['montaje'])
         
         subtotal = localizador_precio.sumar_todo()

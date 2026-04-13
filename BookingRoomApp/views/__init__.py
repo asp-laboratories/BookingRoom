@@ -67,3 +67,4 @@ from BookingRoomApp.views.administracion_pagos import *
 from BookingRoomApp.views.gestion_mobiliario import mobiliario_caracteristicas
 from BookingRoomApp.views.gestion_servicios import crear_tipo
 from BookingRoomApp.views.gestion_paquetes import paquetes, crear_paquete, editar_paquete, eliminar_paquete, duplicar_paquete, obtener_detalle_paquete
+from BookingRoomApp.views.validacion_salon import verificar_salon_disponible

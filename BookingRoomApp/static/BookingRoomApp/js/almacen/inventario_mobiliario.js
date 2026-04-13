@@ -1,21 +1,41 @@
 function abrirModalMob(id) {
-    document.getElementById('inventario_mob_id').value = id;
+    console.log('=== abrirModalMob llamado ===');
+    console.log('ID:', id);
     
+    const modal = document.getElementById('modalEstadoMob');
+    console.log('Modal element:', modal);
+    
+    if (!modal) {
+        console.error('Modal no encontrado!');
+        alert('Error: Modal no encontrado');
+        return;
+    }
+    
+    document.getElementById('inventario_mob_id').value = id;
+
     const lista = document.getElementById('lista-resumen-mob');
     const nombreMob = document.getElementById('nombre-mob-modal');
-    
+
     lista.innerHTML = '<li>Cargando existencias...</li>';
     nombreMob.textContent = 'Cargando...';
-    
-    document.getElementById('modalEstadoMob').style.display = 'block';
 
-    fetch(`/almacen/resumen-estados-mob/${id}/`) 
-        .then(response => response.json())
+    modal.style.display = 'block';
+    console.log('Modal abierto');
+
+    const url = `/almacen/resumen-estados-mob/${id}/`;
+    console.log('Fetching:', url);
+    
+    fetch(url)
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
         .then(data => {
+            console.log('Data received:', data);
             if (data.status === 'success') {
                 nombreMob.textContent = data.nombre_mob;
-                lista.innerHTML = ''; 
-                
+                lista.innerHTML = '';
+
                 let total = 0;
                 data.data.forEach(item => {
                     const li = document.createElement('li');
@@ -46,9 +66,14 @@ function cerrarModalMob() {
     document.getElementById('modalEstadoMob').style.display = 'none';
 }
 
-window.onclick = function(event) {
+// Cerrar modal al hacer clic fuera de él
+document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('modalEstadoMob');
-    if (event.target == modal) {
-        cerrarModalMob();
+    if (modal) {
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                cerrarModalMob();
+            }
+        });
     }
-}
+});

@@ -27,7 +27,14 @@ async function buscarReservacion() {
 
         if (respuesta.ok) {
             const datos = await respuesta.json();
-            
+
+            // Validar que la reservación no esté en estado "Solicitada"
+            if (datos.estado && datos.estado.toLowerCase().includes('solicitada')) {
+                alert('La reservación está en estado "Solicitada". Debe ser aceptada primero antes de realizar pagos.');
+                limpiarCampos();
+                return;
+            }
+
             document.querySelector('[data-field="cliente"]').value = datos.cliente || '';
             document.querySelector('[data-field="nombre_evento"]').value = datos.nombre_evento || '';
             document.querySelector('[data-field="descripcion"]').value = datos.descripcion || '';
@@ -79,9 +86,16 @@ async function registrarPago() {
     const monto = document.querySelector('[data-field="monto"]')?.value;
     const saldo = document.querySelector('[data-field="saldo"]')?.value;
     const nota = document.querySelector('[data-field="nota"]')?.value;
+    const estado = document.querySelector('[data-field="estado"]')?.value;
 
     if (!reservaId) {
         alert('Primero busque una reservación válida');
+        return;
+    }
+
+    // Validar que la reservación no esté en estado "Solicitada"
+    if (estado && estado.toLowerCase().includes('solicitada')) {
+        alert('No se puede realizar el pago porque la reservación está en estado "Solicitada". La reservación debe ser aceptada primero.');
         return;
     }
 

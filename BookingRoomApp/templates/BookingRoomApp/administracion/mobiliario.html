@@ -304,11 +304,13 @@ function guardarCaracteristicas() {
 <script src="{% static 'BookingRoomApp/js/administracion/crear-input.js' %}"></script>
 <script src="{% static 'BookingRoomApp/js/inline-edit.js' %}"></script>
 <script>
-const tiposMobil = [
+window.tiposMobil = [
     {% for tipo in tipos_mobil %}
         { id: {{ tipo.id }}, nombre: "{{ tipo.nombre }}" },
     {% endfor %}
 ];
+
+console.log('tiposMobil cargados:', window.tiposMobil);
 
 configurarInlineEdit({
     nombreSingular: 'mobiliario',
@@ -317,7 +319,7 @@ configurarInlineEdit({
     campoNombre: 'nombre',
     campos: [
         { nombre: 'nombre', clase: 'celda-nombre', tipo: 'texto' },
-        { nombre: 'tipo_movil', clase: 'celda-tipo', tipo: 'select-db', opcionesVar: 'tiposMobil', dataAttr: 'tipoId' },
+        { nombre: 'tipo_movil', clase: 'celda-tipo', tipo: 'select-db', opcionesVar: 'tiposMobil', dataAttr: 'tipo-id' },
         { nombre: 'descripcion', clase: 'celda-descripcion', tipo: 'texto' },
         { nombre: 'costo', clase: 'celda-costo', tipo: 'numero' },
         { nombre: 'stock', clase: 'celda-stock', tipo: 'entero' }
