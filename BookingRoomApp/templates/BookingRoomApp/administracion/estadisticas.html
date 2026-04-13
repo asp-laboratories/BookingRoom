@@ -10,96 +10,132 @@
 <div class="estadisticas-contenedor-navegacion">
   <h1  style="margin: 10px 0px 10px 20px;">Estadisticas</h1>
   <div class="estadisticas-tabs">
-    <button class="estadisticas-tab-btn active" onclick="mostrarTab('eventos', this)">Equipamiento</button>
-    <button class="estadisticas-tab-btn" onclick="mostrarTab('reservas', this)">Reservaciones</button>
-    <button class="estadisticas-tab-btn" onclick="mostrarTab('ingresos', this)">Ingresos</button>
-    <button class="estadisticas-tab-btn" onclick="mostrarTab('estado', this)">Estado</button>
+    <button class="estadisticas-tab-btn active" onclick="mostrarTab('equipamiento', this)">Equipamiento</button>
+    <button class="estadisticas-tab-btn" onclick="mostrarTab('servicios', this)">Servicios</button>
+    <button class="estadisticas-tab-btn" onclick="mostrarTab('mobiliario', this)">Mobiliario</button>
+    <button class="estadisticas-tab-btn" onclick="mostrarTab('salones', this)">Salones</button>
+    <button class="estadisticas-tab-btn" onclick="mostrarTab('montajes', this)">Montajes</button>
   </div>
 </div>
 
-<!-- Tab: Tipo de Eventos -->
-<div id="tab-eventos" class="estadisticas-tab-content active">
+<!-- Tab: Equipamiento -->
+<div id="tab-equipamiento" class="estadisticas-tab-content active">
   <div class="estadisticas-grid">
     <div class="estadisticas-card">
       <h3>Equipamiento mas requerido</h3>
       <div class="estadisticas-canvas-container">
-        <canvas id="chart-tipo-evento"></canvas>
+        <canvas id="chart-equipamiento-requerido"></canvas>
       </div>
     </div>
 
     <div class="estadisticas-card">
-      <h3>Dinero generado por Equipamiento </h3>
+      <h3>Dinero generado por Equipamiento</h3>
       <div class="estadisticas-canvas-container">
-        <canvas id="chart-tipo-frecuente"></canvas>
+        <canvas id="chart-equipamiento-dinero"></canvas>
       </div>
     </div>
 
-        <div class="estadisticas-card">
-      <h3>Equipamiento mas usado en tipo de evento</h3>
-      <div class="estadisticas-canvas-container">
-        <canvas id="prueba"></canvas>
-      </div>
-    </div>
-
-            <div class="estadisticas-card">
-      <h3>Otra opcion</h3>
-      <div class="estadisticas-canvas-container">
-        <canvas id="prueba2"></canvas>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- Tab: Reservaciones -->
-<div id="tab-reservas" class="estadisticas-tab-content">
-  <div class="estadisticas-grid">
     <div class="estadisticas-card">
-      <h3>Reservaciones por Mes</h3>
+      <h3>Equipamiento mas usado por tipo de evento</h3>
       <div class="estadisticas-canvas-container">
-        <canvas id="chart-reservaciones-mes"></canvas>
-      </div>
-    </div>
-    <div class="estadisticas-card">
-      <h3>Reservaciones por Día</h3>
-      <div class="estadisticas-canvas-container">
-        <canvas id="chart-reservaciones-dia"></canvas>
+        <canvas id="chart-equipamiento-evento"></canvas>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Tab: Ingresos -->
-<div id="tab-ingresos" class="estadisticas-tab-content">
+<!-- Tab: Servicios -->
+<div id="tab-servicios" class="estadisticas-tab-content">
   <div class="estadisticas-grid">
     <div class="estadisticas-card">
-      <h3>Ingresos por Servicios</h3>
+      <h3>Servicios mas requeridos</h3>
       <div class="estadisticas-canvas-container">
-        <canvas id="chart-ingresos-servicios"></canvas>
+        <canvas id="chart-servicios-requeridos"></canvas>
       </div>
     </div>
+
     <div class="estadisticas-card">
-      <h3>Ingresos Totales</h3>
+      <h3>Dinero generado por Servicios</h3>
       <div class="estadisticas-canvas-container">
-        <canvas id="chart-ingresos-totales"></canvas>
+        <canvas id="chart-servicios-dinero"></canvas>
+      </div>
+    </div>
+
+    <div class="estadisticas-card">
+      <h3>Servicios mas usados por tipo de evento</h3>
+      <div class="estadisticas-canvas-container">
+        <canvas id="chart-servicios-evento"></canvas>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Tab: Estado -->
-<div id="tab-estado" class="estadisticas-tab-content">
+<!-- Tab: Mobiliario -->
+<div id="tab-mobiliario" class="estadisticas-tab-content">
   <div class="estadisticas-grid">
     <div class="estadisticas-card">
-      <h3>Estado de Reservaciones</h3>
+      <h3>Mobiliario mas requerido</h3>
       <div class="estadisticas-canvas-container">
-        <canvas id="chart-estado-reservaciones"></canvas>
+        <canvas id="chart-mobiliario-requerido"></canvas>
       </div>
     </div>
+
     <div class="estadisticas-card">
-      <h3>Salones más Utilizados</h3>
+      <h3>Dinero generado por Mobiliario</h3>
+      <div class="estadisticas-canvas-container">
+        <canvas id="chart-mobiliario-dinero"></canvas>
+      </div>
+    </div>
+
+    <div class="estadisticas-card">
+      <h3>Mobiliario mas usado por tipo de evento</h3>
+      <div class="estadisticas-canvas-container">
+        <canvas id="chart-mobiliario-evento"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab: Salones -->
+<div id="tab-salones" class="estadisticas-tab-content">
+  <div class="estadisticas-grid">
+    <div class="estadisticas-card">
+      <h3>Salones mas utilizados</h3>
       <div class="estadisticas-canvas-container">
         <canvas id="chart-salones-utilizados"></canvas>
+      </div>
+    </div>
+
+    <div class="estadisticas-card">
+      <h3>Dinero generado por Salones</h3>
+      <div class="estadisticas-canvas-container">
+        <canvas id="chart-salones-dinero"></canvas>
+      </div>
+    </div>
+
+    <div class="estadisticas-card">
+      <h3>Salones mas usados por tipo de evento</h3>
+      <div class="estadisticas-canvas-container">
+        <canvas id="chart-salones-evento"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab: Montajes -->
+<div id="tab-montajes" class="estadisticas-tab-content">
+  <div class="estadisticas-grid">
+    <div class="estadisticas-card">
+      <h3>Tipos de montaje mas usados</h3>
+      <div class="estadisticas-canvas-container">
+        <canvas id="chart-montajes-usados"></canvas>
+      </div>
+    </div>
+
+    <div class="estadisticas-card">
+      <h3>Tipos de montaje mas usados por tipo de evento</h3>
+      <div class="estadisticas-canvas-container">
+        <canvas id="chart-montajes-evento"></canvas>
       </div>
     </div>
   </div>
@@ -111,16 +147,44 @@ function mostrarTab(tabId, btn) {
   document.querySelectorAll('.estadisticas-tab-content').forEach(content => {
     content.classList.remove('active');
   });
-  
+
   // Quitar active de todos los botones
   document.querySelectorAll('.estadisticas-tab-btn').forEach(button => {
     button.classList.remove('active');
   });
-  
+
   // Mostrar el tab seleccionado
   document.getElementById('tab-' + tabId).classList.add('active');
   btn.classList.add('active');
 }
+
+// Datos para las graficas desde Django
+window.estadisticasData = {
+  // Equipamiento
+  equipamiento_requerido: {{ equipamiento_mas_requerido|safe|default:"[]" }},
+  equipamiento_dinero: {{ dinero_por_equipamiento|safe|default:"[]" }},
+  equipamiento_evento: {{ equipamiento_por_tipo_evento|safe|default:"[]" }},
+  
+  // Servicios
+  servicios_requeridos: {{ servicios_mas_requeridos|safe|default:"[]" }},
+  servicios_dinero: {{ dinero_por_servicios|safe|default:"[]" }},
+  servicios_evento: {{ servicios_por_tipo_evento|safe|default:"[]" }},
+  
+  // Mobiliario
+  mobiliario_requerido: {{ mobiliario_mas_requerido|safe|default:"[]" }},
+  mobiliario_dinero: {{ dinero_por_mobiliario|safe|default:"[]" }},
+  mobiliario_evento: {{ mobiliario_por_tipo_evento|safe|default:"[]" }},
+  
+  // Salones
+  salones_utilizados: {{ salones_mas_utilizados|safe|default:"[]" }},
+  salones_dinero: {{ dinero_por_salones|safe|default:"[]" }},
+  salones_evento: {{ salones_por_tipo_evento|safe|default:"[]" }},
+  
+  // Montajes
+  montajes_usados: {{ tipos_montaje_mas_usados|safe|default:"[]" }},
+  montajes_evento: {{ montajes_por_tipo_evento|safe|default:"[]" }},
+};
 </script>
 
+<script src="{% static "BookingRoomApp/js/administracion/chart.js" %}" defer></script>
 {% endblock inicio %}

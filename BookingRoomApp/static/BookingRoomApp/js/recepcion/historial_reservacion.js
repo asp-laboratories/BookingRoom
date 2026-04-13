@@ -77,8 +77,22 @@ function cerrarDetalleCompleto() {
             } else {
                 serviciosSpan.textContent = 'No hay servicios';
             }
-            
-            document.getElementById('detalle-equipamientos-lista').textContent = 'Consultar en detalle';
+
+            // Mobiliarios
+            const mobiliariosSpan = document.getElementById('detalle-mobiliario-lista');
+            if (mobiliariosSpan && data.mobiliarios && data.mobiliarios.length > 0) {
+                mobiliariosSpan.innerHTML = data.mobiliarios.map(m => `<span class="item-lista">• ${m.nombre} (x${m.cantidad})</span>`).join('');
+            } else if (mobiliariosSpan) {
+                mobiliariosSpan.textContent = 'No hay mobiliarios';
+            }
+
+            // Equipamientos
+            const equipamientosSpan = document.getElementById('detalle-equipamientos-lista');
+            if (equipamientosSpan && data.equipamientos && data.equipamientos.length > 0) {
+                equipamientosSpan.innerHTML = data.equipamientos.map(e => `<span class="item-lista">• ${e.nombre} (x${e.cantidad})</span>`).join('');
+            } else if (equipamientosSpan) {
+                equipamientosSpan.textContent = 'No hay equipamientos';
+            }
             
             document.getElementById('detalle-total-iva').textContent = `$${data.iva || '0.00'}`;
             document.getElementById('detalle-total-subtotal').textContent = `$${data.subtotal || '0.00'}`;

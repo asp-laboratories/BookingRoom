@@ -225,14 +225,31 @@ def reservacion_detalle_json(request, pk):
         ),
         pk=pk,
     )
-    
+
+    # Servicios: lista de nombres
     servicios = list(reserva.reservaservicio_set.values_list("servicio__nombre", flat=True))
-    equipamientos = list(reserva.reservaequipa_set.values_list("equipamiento__nombre", flat=True))
     
+    # Equipamientos: lista con nombre y cantidad
+    equipamientos = list(reserva.reservaequipa_set.select_related('equipamiento').values(
+        'equipamiento__nombre', 'cantidad'
+    ))
+    # Formatear equipamientos para el frontend
+    equipamientos_formatted = [
+        {'nombre': eq['equipamiento__nombre'], 'cantidad': eq['cantidad']}
+        for eq in equipamientos
+    ]
+
+    # Mobiliarios: lista con nombre y cantidad
     mobiliario = []
     if reserva.montaje:
-        mobiliario = list(models.MontajeMobiliario.objects.filter(montaje=reserva.montaje).values_list("mobiliario__nombre", flat=True))
-    
+        mobiliario_qs = models.MontajeMobiliario.objects.filter(
+            montaje=reserva.montaje
+        ).select_related('mobiliario').values('mobiliario__nombre', 'cantidad')
+        mobiliario = [
+            {'nombre': mob['mobiliario__nombre'], 'cantidad': mob['cantidad']}
+            for mob in mobiliario_qs
+        ]
+
     return JsonResponse({
         "id": reserva.pk, "nombre_evento": reserva.nombreEvento,
         "descripcion": reserva.descripEvento, "fecha": reserva.fechaEvento.isoformat() if reserva.fechaEvento else None,
@@ -252,8 +269,8 @@ def reservacion_detalle_json(request, pk):
             "rfc": reserva.cliente.rfc, "nombre_fiscal": reserva.cliente.nombre_fiscal,
         },
         "servicios": servicios,
-        "equipamientos": equipamientos,
-        "mobiliario": mobiliario,
+        "equipamientos": equipamientos_formatted,
+        "mobiliarios": mobiliario,
     })
 
 
@@ -283,22 +300,28 @@ def confirmar_reservacion(request, pk):
     if request.method == 'POST':
         try:
             reserva = get_object_or_404(models.Reservacion, pk=pk)
-            
+
             # Obtener el trabajador actual desde la sesión
             cuenta, rol = get_cuenta_and_rol(request)
-            if not cuenta or not cuenta.trabajador:
-                return JsonResponse({'success': False, 'message': 'No hay trabajador logueado'}, status=400)
+            if not cuenta:
+                return JsonResponse({'success': False, 'message': 'No hay sesión activa'}, status=400)
             
+            # Buscar el trabajador asociado a esta cuenta
+            try:
+                trabajador = models.Trabajador.objects.get(cuenta=cuenta)
+            except models.Trabajador.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'No hay trabajador asociado a esta cuenta'}, status=400)
+
             # Actualizar descripción si se proporciona
             descripcion = request.POST.get('descripcion', '')
             if descripcion:
                 reserva.descripEvento = descripcion
-            
+
             # Confirmar la reservación
             reserva.estado_reserva = models.EstadoReserva.objects.get(codigo='CON')
-            reserva.trabajador = cuenta.trabajador
+            reserva.trabajador = trabajador
             reserva.save()
-            
+
             return JsonResponse({'success': True, 'message': 'Reservación confirmada'})
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=500)

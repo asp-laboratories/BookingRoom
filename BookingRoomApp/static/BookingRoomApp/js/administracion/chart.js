@@ -1,183 +1,370 @@
 document.addEventListener('DOMContentLoaded', function() {
-  // Tab 1: Tipo de Eventos
-  const ctx1 = document.getElementById('chart-tipo-evento');
-  if (ctx1) {
-    new Chart(ctx1, {
+  console.log('=== Chart.js Loading ===');
+  const data = window.estadisticasData || {};
+  console.log('Data loaded:', data);
+  const backgroundColor = 'rgba(209, 138, 91, 0.7)';
+  
+  // Función helper para crear charts de forma segura
+  function crearChart(canvasId, config) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) {
+      console.log(`Canvas ${canvasId} no encontrado`);
+      return null;
+    }
+    
+    // Destruir chart existente si hay uno
+    if (canvas._chart) {
+      canvas._chart.destroy();
+    }
+    
+    // Crear nuevo chart
+    const chart = new Chart(canvas, config);
+    canvas._chart = chart; // Guardar referencia
+    return chart;
+  }
+  
+  // ==========================================
+  // TAB: EQUIPAMIENTO
+  // ==========================================
+  
+  // Equipamiento mas requerido
+  console.log('Chart 1 - Data:', data.equipamiento_requerido);
+  if (data.equipamiento_requerido && data.equipamiento_requerido.length > 0) {
+    crearChart('chart-equipamiento-requerido', {
       type: 'bar',
       data: {
-        labels: ['Boda', 'Reunion', 'Ceremonia', 'Aniversario', 'Conferencia', 'Debate'],
+        labels: data.equipamiento_requerido.map(item => item.nombre),
         datasets: [{
-          label: 'Cantidad',
-          data: [12, 19, 3, 5, 2, 3],
-          backgroundColor: 'rgba(209, 138, 91, 0.7)',
+          label: 'Frecuencia',
+          data: data.equipamiento_requerido.map(item => item.frecuencia),
+          backgroundColor: backgroundColor,
           borderWidth: 1
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { y: { beginAtZero: true } } 
+      }
     });
   }
 
-  const ctx1b = document.getElementById('chart-tipo-frecuente');
-  if (ctx1b) {
-    new Chart(ctx1b, {
+  // Dinero generado por equipamiento
+  console.log('Chart 2 - Data:', data.equipamiento_dinero);
+  if (data.equipamiento_dinero && data.equipamiento_dinero.length > 0) {
+    crearChart('chart-equipamiento-dinero', {
       type: 'bar',
       data: {
-        labels: ['Boda', 'Reunion', 'Conferencia'],
+        labels: data.equipamiento_dinero.map(item => item.nombre),
         datasets: [{
-          label: 'Cantidad',
-          data: [45, 30, 20],
-          backgroundColor: 'rgba(209, 138, 91, 0.7)',
+          label: 'Dinero Generado ($)',
+          data: data.equipamiento_dinero.map(item => item.dinero_generado),
+          backgroundColor: backgroundColor,
           borderWidth: 1
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { y: { beginAtZero: true } } 
+      }
     });
   }
 
-  // Tab 2: Reservaciones
-  const ctx2 = document.getElementById('chart-reservaciones-mes');
-  if (ctx2) {
-    new Chart(ctx2, {
+  // Equipamiento mas usado por tipo de evento
+  console.log('Chart 3 - Data:', data.equipamiento_evento);
+  if (data.equipamiento_evento && data.equipamiento_evento.length > 0) {
+    crearChart('chart-equipamiento-evento', {
       type: 'bar',
       data: {
-        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+        labels: data.equipamiento_evento.map(item => `${item.tipo_evento} - ${item.equipamiento}`),
         datasets: [{
-          label: 'Cantidad',
-          data: [15, 22, 18, 25, 30, 28],
-          backgroundColor: 'rgba(209, 138, 91, 0.7)',
-
+          label: 'Frecuencia',
+          data: data.equipamiento_evento.map(item => item.frecuencia),
+          backgroundColor: backgroundColor,
           borderWidth: 1
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { y: { beginAtZero: true } },
+        plugins: {
+          legend: { display: false }
+        }
+      }
     });
   }
 
-  const ctx2b = document.getElementById('chart-reservaciones-dia');
-  if (ctx2b) {
-    new Chart(ctx2b, {
+  // ==========================================
+  // TAB: SERVICIOS
+  // ==========================================
+  
+  // Servicios mas requeridos
+  console.log('Chart 4 - Data:', data.servicios_requeridos);
+  if (data.servicios_requeridos && data.servicios_requeridos.length > 0) {
+    crearChart('chart-servicios-requeridos', {
       type: 'bar',
       data: {
-        labels: ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'],
+        labels: data.servicios_requeridos.map(item => item.nombre),
         datasets: [{
-          label: 'Reservaciones',
-          data: [5, 8, 12, 15, 25, 30, 10],
-          backgroundColor: 'rgba(209, 138, 91, 0.7)',
-          
+          label: 'Frecuencia',
+          data: data.servicios_requeridos.map(item => item.frecuencia),
+          backgroundColor: backgroundColor,
           borderWidth: 1
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { y: { beginAtZero: true } } 
+      }
     });
   }
 
-  // Tab 3: Ingresos
-  const ctx3 = document.getElementById('chart-ingresos-servicios');
-  if (ctx3) {
-    new Chart(ctx3, {
+  // Dinero generado por servicios
+  console.log('Chart 5 - Data:', data.servicios_dinero);
+  if (data.servicios_dinero && data.servicios_dinero.length > 0) {
+    crearChart('chart-servicios-dinero', {
       type: 'bar',
       data: {
-        labels: ['Catering', 'Audio', 'Decoracion', 'Fotografia', 'Transporte'],
+        labels: data.servicios_dinero.map(item => item.nombre),
         datasets: [{
-          label: 'Ingresos ($)',
-          data: [15000, 8000, 12000, 5000, 3500],
-          backgroundColor: 'rgba(209, 138, 91, 0.7)',
-
+          label: 'Dinero Generado ($)',
+          data: data.servicios_dinero.map(item => item.dinero_generado),
+          backgroundColor: backgroundColor,
           borderWidth: 1
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { y: { beginAtZero: true } } 
+      }
     });
   }
 
-  const ctx3b = document.getElementById('chart-ingresos-totales');
-  if (ctx3b) {
-    new Chart(ctx3b, {
+  // Servicios mas usados por tipo de evento
+  console.log('Chart 5b - Data:', data.servicios_evento);
+  if (data.servicios_evento && data.servicios_evento.length > 0) {
+    crearChart('chart-servicios-evento', {
       type: 'bar',
       data: {
-        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+        labels: data.servicios_evento.map(item => `${item.tipo_evento} - ${item.servicio}`),
         datasets: [{
-          label: 'Ingresos ($)',
-          data: [45000, 52000, 48000, 61000, 55000, 60000],
-          backgroundColor: 'rgba(209, 138, 91, 0.7)',
-
+          label: 'Frecuencia',
+          data: data.servicios_evento.map(item => item.frecuencia),
+          backgroundColor: backgroundColor,
           borderWidth: 1
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { y: { beginAtZero: true } },
+        plugins: {
+          legend: { display: false }
+        }
+      }
     });
   }
 
-  // Tab 4: Estado
-  const ctx4 = document.getElementById('chart-estado-reservaciones');
-  if (ctx4) {
-    new Chart(ctx4, {
+  // ==========================================
+  // TAB: MOBILIARIO
+  // ==========================================
+  
+  // Mobiliario mas requerido
+  console.log('Chart 6 - Data:', data.mobiliario_requerido);
+  if (data.mobiliario_requerido && data.mobiliario_requerido.length > 0) {
+    crearChart('chart-mobiliario-requerido', {
       type: 'bar',
       data: {
-        labels: ['Confirmada', 'Pendiente', 'Cancelada', 'Completada'],
+        labels: data.mobiliario_requerido.map(item => item.nombre),
         datasets: [{
-          label: 'Reservaciones',
-          data: [45, 20, 8, 60],
-          backgroundColor: 'rgba(209, 138, 91, 0.7)',
-
+          label: 'Frecuencia',
+          data: data.mobiliario_requerido.map(item => item.frecuencia),
+          backgroundColor: backgroundColor,
           borderWidth: 1
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { y: { beginAtZero: true } } 
+      }
     });
   }
 
-  const ctx4b = document.getElementById('chart-salones-utilizados');
-  if (ctx4b) {
-    new Chart(ctx4b, {
+  // Dinero generado por mobiliario
+  console.log('Chart 7 - Data:', data.mobiliario_dinero);
+  if (data.mobiliario_dinero && data.mobiliario_dinero.length > 0) {
+    crearChart('chart-mobiliario-dinero', {
       type: 'bar',
       data: {
-        labels: ['Salón A', 'Salón B', 'Salón C', 'Salón D'],
+        labels: data.mobiliario_dinero.map(item => item.nombre),
         datasets: [{
-          label: 'Veces utilizado',
-          data: [35, 28, 22, 15],
-          backgroundColor: 'rgba(209, 138, 91, 0.7)',
+          label: 'Dinero Generado ($)',
+          data: data.mobiliario_dinero.map(item => item.dinero_generado),
+          backgroundColor: backgroundColor,
           borderWidth: 1
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { y: { beginAtZero: true } } 
+      }
     });
   }
 
-  const ctx5 = document.getElementById('prueba');
-  if (ctx5) {
-    new Chart(ctx5, {
+  // Mobiliario mas usado por tipo de evento
+  console.log('Chart 7b - Data:', data.mobiliario_evento);
+  if (data.mobiliario_evento && data.mobiliario_evento.length > 0) {
+    crearChart('chart-mobiliario-evento', {
       type: 'bar',
       data: {
-        labels: ['Salón A', 'Salón B', 'Salón C', 'Salón D'],
+        labels: data.mobiliario_evento.map(item => `${item.tipo_evento} - ${item.mobiliario}`),
         datasets: [{
-          label: 'Veces utilizado',
-          data: [35, 28, 22, 15],
-          backgroundColor: 'rgba(209, 138, 91, 0.7)',
-
+          label: 'Frecuencia',
+          data: data.mobiliario_evento.map(item => item.frecuencia),
+          backgroundColor: backgroundColor,
           borderWidth: 1
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { y: { beginAtZero: true } },
+        plugins: {
+          legend: { display: false }
+        }
+      }
     });
   }
 
-
-  const ctx5b = document.getElementById('prueba2');
-  if (ctx5b) {
-    new Chart(ctx5b, {
+  // ==========================================
+  // TAB: SALONES
+  // ==========================================
+  
+  // Salones mas utilizados
+  console.log('Chart 8 - Data:', data.salones_utilizados);
+  if (data.salones_utilizados && data.salones_utilizados.length > 0) {
+    crearChart('chart-salones-utilizados', {
       type: 'bar',
       data: {
-        labels: ['Salón A', 'Salón B', 'Salón C', 'Salón D'],
+        labels: data.salones_utilizados.map(item => item.nombre),
         datasets: [{
-          label: 'Veces utilizado',
-          data: [35, 28, 22, 15],
-          backgroundColor: 'rgba(209, 138, 91, 0.7)',
-
+          label: 'Veces Utilizado',
+          data: data.salones_utilizados.map(item => item.veces_utilizado),
+          backgroundColor: backgroundColor,
           borderWidth: 1
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { y: { beginAtZero: true } } 
+      }
     });
   }
+
+  // Dinero generado por salones
+  console.log('Chart 9 - Data:', data.salones_dinero);
+  if (data.salones_dinero && data.salones_dinero.length > 0) {
+    crearChart('chart-salones-dinero', {
+      type: 'bar',
+      data: {
+        labels: data.salones_dinero.map(item => item.nombre),
+        datasets: [{
+          label: 'Dinero Generado ($)',
+          data: data.salones_dinero.map(item => item.dinero_generado),
+          backgroundColor: backgroundColor,
+          borderWidth: 1
+        }]
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { y: { beginAtZero: true } } 
+      }
+    });
+  }
+
+  // Salones mas usados por tipo de evento
+  console.log('Chart 9b - Data:', data.salones_evento);
+  if (data.salones_evento && data.salones_evento.length > 0) {
+    crearChart('chart-salones-evento', {
+      type: 'bar',
+      data: {
+        labels: data.salones_evento.map(item => `${item.tipo_evento} - ${item.salon}`),
+        datasets: [{
+          label: 'Frecuencia',
+          data: data.salones_evento.map(item => item.frecuencia),
+          backgroundColor: backgroundColor,
+          borderWidth: 1
+        }]
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { y: { beginAtZero: true } },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+  }
+
+  // ==========================================
+  // TAB: MONTAJES
+  // ==========================================
+  
+  // Tipos de montaje mas usados
+  console.log('Chart 10 - Data:', data.montajes_usados);
+  if (data.montajes_usados && data.montajes_usados.length > 0) {
+    crearChart('chart-montajes-usados', {
+      type: 'bar',
+      data: {
+        labels: data.montajes_usados.map(item => item.nombre),
+        datasets: [{
+          label: 'Frecuencia',
+          data: data.montajes_usados.map(item => item.frecuencia),
+          backgroundColor: backgroundColor,
+          borderWidth: 1
+        }]
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { y: { beginAtZero: true } } 
+      }
+    });
+  }
+
+  // Tipos de montaje mas usados por tipo de evento
+  console.log('Chart 10b - Data:', data.montajes_evento);
+  if (data.montajes_evento && data.montajes_evento.length > 0) {
+    crearChart('chart-montajes-evento', {
+      type: 'bar',
+      data: {
+        labels: data.montajes_evento.map(item => `${item.tipo_evento} - ${item.montaje}`),
+        datasets: [{
+          label: 'Frecuencia',
+          data: data.montajes_evento.map(item => item.frecuencia),
+          backgroundColor: backgroundColor,
+          borderWidth: 1
+        }]
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { y: { beginAtZero: true } },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+  }
+  
+  console.log('=== Chart.js Loading Complete ===');
 });

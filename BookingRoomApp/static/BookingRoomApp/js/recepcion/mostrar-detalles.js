@@ -58,14 +58,14 @@ async function abrirModalDetalleCompleto(pk) {
 
     const equipamientosSpan = document.getElementById(prefix + "equipamientos-lista");
     if (data.equipamientos && data.equipamientos.length > 0) {
-      equipamientosSpan.textContent = data.equipamientos.join(", ");
+      equipamientosSpan.textContent = data.equipamientos.map(e => `${e.nombre} (x${e.cantidad})`).join(", ");
     } else {
       equipamientosSpan.textContent = "No hay equipamientos";
     }
 
     const mobiliarioSpan = document.getElementById(prefix + "mobiliario-lista");
-    if (data.mobiliario && data.mobiliario.length > 0) {
-      mobiliarioSpan.textContent = data.mobiliario.join(", ");
+    if (data.mobiliarios && data.mobiliarios.length > 0) {
+      mobiliarioSpan.textContent = data.mobiliarios.map(m => `${m.nombre} (x${m.cantidad})`).join(", ");
     } else {
       mobiliarioSpan.textContent = "No hay mobiliario";
     }
@@ -135,14 +135,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const equipamientosSpan = document.getElementById(prefix + "equipamientos-lista");
     if (data.equipamientos && data.equipamientos.length > 0) {
-      equipamientosSpan.textContent = data.equipamientos.join(", ");
+      equipamientosSpan.textContent = data.equipamientos.map(e => `${e.nombre} (x${e.cantidad})`).join(", ");
     } else {
       equipamientosSpan.textContent = "No hay equipamientos";
     }
 
     const mobiliarioSpan = document.getElementById(prefix + "mobiliario-lista");
-    if (data.mobiliario && data.mobiliario.length > 0) {
-      mobiliarioSpan.textContent = data.mobiliario.join(", ");
+    if (data.mobiliarios && data.mobiliarios.length > 0) {
+      mobiliarioSpan.textContent = data.mobiliarios.map(m => `${m.nombre} (x${m.cantidad})`).join(", ");
     } else {
       mobiliarioSpan.textContent = "No hay mobiliario";
     }
@@ -216,14 +216,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const equipamientosSpan = document.getElementById(prefix + "equipamientos-lista");
       if (data.equipamientos && data.equipamientos.length > 0) {
-        equipamientosSpan.textContent = data.equipamientos.join(", ");
+        equipamientosSpan.textContent = data.equipamientos.map(e => `${e.nombre} (x${e.cantidad})`).join(", ");
       } else {
         equipamientosSpan.textContent = "No hay equipamientos";
       }
 
       const mobiliarioSpan = document.getElementById(prefix + "mobiliario-lista");
-      if (data.mobiliario && data.mobiliario.length > 0) {
-        mobiliarioSpan.textContent = data.mobiliario.join(", ");
+      if (data.mobiliarios && data.mobiliarios.length > 0) {
+        mobiliarioSpan.textContent = data.mobiliarios.map(m => `${m.nombre} (x${m.cantidad})`).join(", ");
       } else {
         mobiliarioSpan.textContent = "No hay mobiliario";
       }
