@@ -216,7 +216,7 @@
               <option value="">-- Selecciona una fecha primero --</option>
               {% for salon in salones %}
               <!-- de aca se obtiene montaje.salon -->
-              <option value="{{salon.id}}">{{salon.nombre}}</option>
+              <option value="{{salon.id}}">{{salon.nombre}} (Cap: {{salon.maxCapacidad}})</option>
               {% endfor %}
             </select>
           </div>

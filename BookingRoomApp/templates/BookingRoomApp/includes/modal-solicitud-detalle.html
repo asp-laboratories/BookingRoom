@@ -3,16 +3,29 @@
 <style>
   .descripcion-textarea {
     width: 100%;
-    min-height: 80px;
-    padding: 10px;
+    min-height: 100px;
+    padding: 12px;
     border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px;
+    border-radius: 6px;
+    font-size: 0.95rem;
     font-family: inherit;
     resize: vertical;
   }
   .modal-div-8 {
     grid-column: span 2;
+  }
+  #solicitud-servicios-lista,
+  #solicitud-equipamientos-lista,
+  #solicitud-mobiliario-lista {
+    font-size: 0.95rem;
+    color: #333;
+    font-weight: 500;
+  }
+  .item-lista {
+    display: block;
+    font-size: 0.95rem;
+    color: #333;
+    padding: 3px 0;
   }
 </style>
 
@@ -181,21 +194,21 @@ async function cargarDetallesSolicitud(pk) {
         
         // Cargar servicios
         if (data.servicios && data.servicios.length > 0) {
-            document.getElementById('solicitud-servicios-lista').textContent = data.servicios;
+            document.getElementById('solicitud-servicios-lista').innerHTML = data.servicios.map(s => `<span class="item-lista">• ${s}</span>`).join('');
         } else {
             document.getElementById('solicitud-servicios-lista').textContent = 'No hay servicios';
         }
-        
+
         // Cargar equipamientos
         if (data.equipamentos && data.equipamentos.length > 0) {
-            document.getElementById('solicitud-equipamientos-lista').textContent = data.equipamentos;
+            document.getElementById('solicitud-equipamientos-lista').innerHTML = data.equipamentos.map(e => `<span class="item-lista">• ${e}</span>`).join('');
         } else {
             document.getElementById('solicitud-equipamientos-lista').textContent = 'No hay equipamientos';
         }
-        
+
         // Cargar mobiliario
         if (data.mobiliarios && data.mobiliarios.length > 0) {
-            document.getElementById('solicitud-mobiliario-lista').textContent = data.mobiliarios;
+            document.getElementById('solicitud-mobiliario-lista').innerHTML = data.mobiliarios.map(m => `<span class="item-lista">• ${m}</span>`).join('');
         } else {
             document.getElementById('solicitud-mobiliario-lista').textContent = 'No hay mobiliario';
         }

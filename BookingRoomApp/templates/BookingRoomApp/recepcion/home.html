@@ -43,12 +43,19 @@ async function abrirModalDetalleCompleto(pk) {
         } else {
             serviciosSpan.textContent = 'No hay servicios';
         }
-        
-        document.getElementById('detalle-equipamientos-lista').textContent = 'Consultar en detalle';
-        
+
+        // Equipamientos
+        const equipamientosSpan = document.getElementById('detalle-equipamientos-lista');
+        if (data.equipamientos && data.equipamientos.length > 0) {
+            equipamientosSpan.innerHTML = data.equipamientos.map(e => `<span class="item-lista">• ${e.nombre} (x${e.cantidad})</span>`).join('');
+        } else {
+            equipamientosSpan.textContent = 'No hay equipamientos';
+        }
+
+        // Mobiliarios
         const mobiliarioSpan = document.getElementById('detalle-mobiliario-lista');
-        if (data.mobiliario && data.mobiliario.length > 0) {
-            mobiliarioSpan.textContent = data.mobiliario.join(', ');
+        if (data.mobiliarios && data.mobiliarios.length > 0) {
+            mobiliarioSpan.innerHTML = data.mobiliarios.map(m => `<span class="item-lista">• ${m.nombre} (x${m.cantidad})</span>`).join('');
         } else {
             mobiliarioSpan.textContent = 'No hay mobiliario';
         }

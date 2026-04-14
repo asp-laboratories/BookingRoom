@@ -405,6 +405,39 @@ class ServicioViewSet(viewsets.ModelViewSet):
 class PagoViewSet(viewsets.ModelViewSet):
     queryset = models.Pago.objects.select_related('metodo_pago', 'concepto_pago', 'reservacion').all()
     serializer_class = serializers.PagoSerializer
+    
+    def create(self, request, *args, **kwargs):
+        """
+        Al crear un pago, cambiar el estado de la reservación a 'CON' (Confirmada)
+        """
+        from django.db import transaction
+        
+        with transaction.atomic():
+            # Obtener la reservación antes de crear el pago
+            reservacion_id = request.data.get('reservacion') or request.data.get('reservacion_id')
+            
+            if not reservacion_id:
+                return Response({'error': 'Reservación requerida'}, status=400)
+            
+            try:
+                reservacion = models.Reservacion.objects.get(pk=reservacion_id)
+                
+                # Cambiar estado a 'CON' (Confirmada) cuando se realiza un pago
+                estado_confirmado = models.EstadoReserva.objects.filter(codigo='CON').first()
+                if estado_confirmado and reservacion.estado_reserva.codigo != 'CON':
+                    reservacion.estado_reserva = estado_confirmado
+                    reservacion.save(update_fields=['estado_reserva'])
+                    
+                    # Registrar el cambio de estado
+                    models.RegistrEstadReserva.objects.create(
+                        reservacion=reservacion,
+                        estado_reserva=estado_confirmado
+                    )
+            except models.Reservacion.DoesNotExist:
+                return Response({'error': 'Reservación no encontrada'}, status=404)
+            
+            # Crear el pago normalmente
+            return super().create(request, *args, **kwargs)
 
 
 class BuscarReservacionView(APIView):
@@ -737,61 +770,96 @@ class PerfilView(APIView):
 def api_signup(request):
     import logging
     logger = logging.getLogger(__name__)
-    
+
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             logger.info(f"Signup request data keys: {data.keys()}")
-            
+
             token = data.get('token')
             nombre_usuario = data.get('nombre', '')
-            
+
             if not token:
                 logger.warning("Signup: Token requerido")
                 return JsonResponse({'error': 'Token requerido'}, status=400)
-            
+
             if not FIREBASE_ENABLED:
                 logger.warning("Signup: Firebase no configurado")
                 return JsonResponse({'error': 'Firebase no configurado'}, status=500)
-            
+
             if len(token) > 10000:
                 logger.warning("Signup: Token inválido (muy largo)")
                 return JsonResponse({'error': 'Token inválido'}, status=400)
-            
+
             decoded = auth.verify_id_token(token)
             firebase_uid = decoded['uid']
             email = decoded.get('email', '')
             display_name = decoded.get('name', '')
             logger.info(f"Signup: Firebase user verified - email: {email}")
-            
+
             # Usar nombre de Flutter o el de Firebase
             nombre_final = nombre_usuario if nombre_usuario else display_name
-            
+
             estado_cuenta = models.EstadoCuenta.objects.filter(codigo='ACT').first()
+
+            # Verificar si la cuenta ya existe
+            cuenta_existente = models.Cuenta.objects.filter(
+                models.Q(firebase_uid=firebase_uid) | models.Q(correo_electronico=email)
+            ).first()
             
-            cuenta, created = models.Cuenta.objects.get_or_create(
-                firebase_uid=firebase_uid,
-                defaults={
-                    'nombre_usuario': nombre_final,
-                    'correo_electronico': email,
-                    'estado_cuenta': estado_cuenta,
-                }
-            )
-            
-            if created:
-                logger.info(f"Signup: Cuenta creada para {email}")
-                return JsonResponse({'success': True, 'message': 'Cuenta creada exitosamente'})
-            else:
+            if cuenta_existente:
                 logger.info(f"Signup: Cuenta existente para {email}")
                 return JsonResponse({'success': True, 'message': 'Ya tenías una cuenta'})
-                
+
+            # Crear la cuenta
+            cuenta = models.Cuenta.objects.create(
+                nombre_usuario=nombre_final,
+                correo_electronico=email,
+                firebase_uid=firebase_uid,
+                estado_cuenta=estado_cuenta,
+            )
+            
+            logger.info(f"Signup: Cuenta creada para {email}")
+            
+            # Crear DatosCliente básico para que pueda hacer reservaciones
+            # Se usa un tipo_cliente por defecto (el primero disponible)
+            tipo_cliente_default = models.TipoCliente.objects.filter(disposicion=True).first()
+            
+            if tipo_cliente_default:
+                models.DatosCliente.objects.create(
+                    rfc='',  # Se actualizará después desde el perfil
+                    nombre_fiscal='',
+                    nombre=nombre_final,
+                    apellidoPaterno='',
+                    apelidoMaterno='',
+                    telefono='',
+                    correo_electronico=email,
+                    dir_colonia='',
+                    dir_calle='',
+                    dir_numero='',
+                    tipo_cliente=tipo_cliente_default,
+                    cuenta=cuenta,
+                )
+                logger.info(f"Signup: DatosCliente creados para {email}")
+            
+            # Iniciar sesión automáticamente
+            request.session['cuenta_id'] = cuenta.id
+            request.session['firebase_uid'] = firebase_uid
+            request.session.modified = True
+            
+            return JsonResponse({
+                'success': True, 
+                'message': 'Cuenta creada exitosamente',
+                'cuenta_id': cuenta.id
+            })
+
         except json.JSONDecodeError as e:
             logger.error(f"Signup: JSON decode error - {e}")
             return JsonResponse({'error': f'JSON inválido: {str(e)}'}, status=400)
         except Exception as e:
             logger.error(f"Signup: Error general - {type(e).__name__}: {e}")
             return JsonResponse({'error': str(e)}, status=400)
-    
+
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 

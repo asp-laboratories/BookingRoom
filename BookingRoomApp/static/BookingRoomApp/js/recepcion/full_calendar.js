@@ -3,6 +3,21 @@ document.addEventListener('DOMContentLoaded', function() {
     var calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth',
       locale: 'es',
+      buttonText: {
+    prev: "Ant",
+    next: "Sig",
+    today: "Hoy",
+    month: "Mes",
+    week: "Semana",
+    day: "Día",
+    list: "Agenda"
+  },
+  weekText: "Sm",
+  allDayText: "Todo el día",
+  moreLinkText: "más",
+  noEventsText: "No hay eventos para mostrar",
+  monthNames: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+  dayNames: ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'],
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',

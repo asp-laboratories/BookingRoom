@@ -41,7 +41,45 @@ function editarRegistro(id) {
         } else if (campo.tipo === 'numero') {
             celda.innerHTML = `<input type="number" step="0.01" class="inline-input" data-campo="${campo.nombre}" value="${valor}">`;
         } else if (campo.tipo === 'entero') {
-            celda.innerHTML = `<input type="number" step="1" class="inline-input" data-campo="${campo.nombre}" value="${valor}">`;
+            celda.innerHTML = `<input type="text" class="inline-input" data-campo="${campo.nombre}" value="${valor}" inputmode="numeric" placeholder="Solo números">`;
+            const input = celda.querySelector('input');
+            input.addEventListener('input', function() {
+                // Solo permitir números enteros
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+        } else if (campo.tipo === 'telefono') {
+            celda.innerHTML = `<input type="text" class="inline-input" data-campo="${campo.nombre}" value="${valor}" maxlength="10" inputmode="numeric" placeholder="Solo números">`;
+            const input = celda.querySelector('input');
+            input.addEventListener('input', function() {
+                // Solo permitir números
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+        } else if (campo.tipo === 'rfc') {
+            celda.innerHTML = `<input type="text" class="inline-input" data-campo="${campo.nombre}" value="${valor}" maxlength="13" placeholder="10-13 caracteres">`;
+            const input = celda.querySelector('input');
+            input.addEventListener('input', function() {
+                // Convertir a mayúsculas automáticamente
+                this.value = this.value.toUpperCase();
+            });
+        } else if (campo.tipo === 'costo') {
+            celda.innerHTML = `<input type="text" class="inline-input" data-campo="${campo.nombre}" value="${valor}" inputmode="decimal" placeholder="0.00">`;
+            const input = celda.querySelector('input');
+            input.addEventListener('input', function() {
+                // Solo permitir números y un punto decimal
+                this.value = this.value.replace(/[^0-9.]/g, '');
+                // Solo permitir un punto decimal
+                const parts = this.value.split('.');
+                if (parts.length > 2) {
+                    this.value = parts[0] + '.' + parts.slice(1).join('');
+                }
+            });
+        } else if (campo.tipo === 'stock') {
+            celda.innerHTML = `<input type="text" class="inline-input" data-campo="${campo.nombre}" value="${valor}" inputmode="numeric" placeholder="Solo números">`;
+            const input = celda.querySelector('input');
+            input.addEventListener('input', function() {
+                // Solo permitir números enteros
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
         } else if (campo.tipo === 'select') {
             celda.innerHTML = `
                 <select class="inline-input" data-campo="${campo.nombre}">
@@ -121,33 +159,50 @@ function editarRegistro(id) {
 
 function guardarRegistro(id) {
     if (!inlineEditConfig) return;
-    
+
     const row = document.querySelector(`tr[data-id="${id}"]`);
     if (!row) return;
-    
+
     const datos = {};
     let valido = true;
-    
+    let errores = [];
+
     row.querySelectorAll('.inline-input').forEach(input => {
         const campo = input.dataset.campo;
         let valor = input.value;
-        
+
         if (input.type === 'number') {
             valor = valor || '0';
         }
-        
+
+        // Validaciones específicas por tipo de campo
+        if (campo === 'rfc' || campo === 'RFC') {
+            if (valor.length < 10 || valor.length > 13) {
+                errores.push('El RFC debe tener entre 10 y 13 caracteres');
+                valido = false;
+            }
+        }
+
+        if (campo === 'telefono' || campo === 'telefono') {
+            if (!/^\d{10}$/.test(valor)) {
+                errores.push('El teléfono debe tener exactamente 10 dígitos numéricos');
+                valido = false;
+            }
+        }
+
         if (campo === inlineEditConfig.campoObligatorio && !valor) {
             valido = false;
+            errores.push('El campo "' + inlineEditConfig.campoObligatorio + '" es obligatorio');
         }
-        
+
         datos[campo] = valor;
     });
-    
+
     if (!valido) {
-        mostrarToastExito('Complete todos los campos requeridos', 'error');
+        mostrarToastExito(errores.join('\n• '), 'error');
         return;
     }
-    
+
     const nombre = datos[inlineEditConfig.campoNombre] || `registro ${id}`;
     abrirModalConfirmar(
         'Confirmar cambios',

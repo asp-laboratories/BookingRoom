@@ -97,7 +97,6 @@ def registrar_trabajador(request):
                     correo_electronico=cuenta_data["email"],
                     firebase_uid=firebase_uid,
                     estado_cuenta=estado_cuenta,
-                    disposicion=True,
                 )
 
                 models.Trabajador.objects.create(
