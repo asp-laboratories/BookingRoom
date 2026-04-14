@@ -55,8 +55,11 @@ class TipoMontajeViewSet(viewsets.ModelViewSet):
         queryset = models.TipoMontaje.objects.all()
         parametro_salon = self.request.query_params.get('salon', None)
         if parametro_salon is not None:
-            salon = models.Salon.objects.get(id=parametro_salon)
-            queryset = queryset.filter(capacidadIdeal__lte=salon.maxCapacidad)
+            try:
+                salon = models.Salon.objects.get(id=parametro_salon)
+                queryset = queryset.filter(capacidadIdeal__lte=salon.maxCapacidad)
+            except models.Salon.DoesNotExist:
+                return models.TipoMontaje.objects.none()
         return queryset
 
 
@@ -861,6 +864,8 @@ class DisponibilidadSalonesView(APIView):
             resultado.append({
                 'id': salon.id,
                 'nombre': salon.nombre,
+                'dimensiones': f"{salon.dimenAncho}m x {salon.dimenLargo}m x {salon.dimenAlto}m",
+                'metrosCuadrados': float(salon.metrosCuadrados),
                 'capacidad': salon.maxCapacidad if salon.maxCapacidad else 0,
                 'precio': float(salon.costo) if salon.costo else 0,
                 'estado': estado_nombre,

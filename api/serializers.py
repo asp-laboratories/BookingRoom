@@ -337,11 +337,19 @@ class EquipamientoSerializer(serializers.ModelSerializer):
     tipo_equipa = serializers.StringRelatedField()
     costo = serializers.IntegerField()
     stock = serializers.IntegerField()
+    stockDisponible = serializers.SerializerMethodField()
     
     class Meta:
         model = models.Equipamiento
-        fields = ['id', 'nombre', 'descripcion', 'costo', 'stock', 'tipo_equipa']
+        fields = ['id', 'nombre', 'descripcion', 'costo', 'stock', 'tipo_equipa', 'stockDisponible']
 
+
+    def get_stockDisponible(self, obj):
+        inventario = models.InventarioEquipa.objects.get(equipamiento=obj, estado_equipa__codigo__in=['DIS', 'DISPO'])
+        if inventario:
+            return int(inventario.cantidad)
+        return 0
+        
 
 # class InventarioEquipaSerializer(serializers.ModelSerializer):
 #     class Meta:
@@ -395,10 +403,11 @@ class SalonSerializer(serializers.ModelSerializer):
     precio = serializers.SerializerMethodField()
     capacidad = serializers.SerializerMethodField()
     estado = serializers.SerializerMethodField()
+    dimensiones = serializers.SerializerMethodField()
     
     class Meta:
         model = models.Salon
-        fields = ['id', 'nombre', 'precio', 'capacidad', 'estado', 'ubicacion', 'dimenLargo', 'dimenAncho', 'dimenAlto', 'metrosCuadrados']
+        fields = ['id', 'nombre', 'precio', 'capacidad', 'estado', 'ubicacion', 'dimenLargo', 'dimenAncho', 'dimenAlto', 'metrosCuadrados', 'dimensiones']
     
     def get_precio(self, obj):
         if obj.costo:
@@ -414,6 +423,11 @@ class SalonSerializer(serializers.ModelSerializer):
         if obj.estado_salon:
             return obj.estado_salon.nombre
         return 'Disponible'
+
+    def get_dimensiones(self, obj):
+        if obj.dimenLargo and obj.dimenAncho and obj.dimenAlto:
+            return f"{obj.dimenAncho}m x {obj.dimenLargo}m x {obj.dimenAlto}m"
+        return f"{obj.dimenAncho}m x {obj.dimenAlto}m"
 
 
 class TipoEventoSerializer(serializers.ModelSerializer):
@@ -433,23 +447,61 @@ class MontajeSerializer(serializers.ModelSerializer):
 
 
 class TipoMontajeSerializer(serializers.ModelSerializer):
+    montaje_mobiliario = serializers.SerializerMethodField()
+
     class Meta:
         model = models.TipoMontaje
-        fields = '__all__'
+        fields = ['id', 'nombre', 'descripcion', 'disposicion', 'capacidadIdeal', 'montaje_mobiliario']
+
+    def get_montaje_mobiliario(self, obj):
+        request = self.context.get('request')
+        if not request:
+            return []
+        salon_id = request.query_params.get('salon')
+        if not salon_id:
+            return []    
+        montaje = models.Montaje.objects.filter(tipo_montaje=obj, salon_id=salon_id, montajemobiliario__isnull=False).distinct().order_by('-id').first()
+        if not montaje:
+            return []
+        sugeridos = []
+        for item in models.MontajeMobiliario.objects.filter(montaje=montaje):
+            sugeridos.append({
+                'id': item.mobiliario.id,
+                'nombre': item.mobiliario.nombre,
+                'cantidad': item.cantidad,
+                'costo': item.mobiliario.costo if item.mobiliario.costo else 0
+            })
+        return sugeridos
 
 
 class MobiliarioSerializer(serializers.ModelSerializer):
     precio = serializers.SerializerMethodField()
+    stockDisponible = serializers.SerializerMethodField()
+    caracteristicas = serializers.SerializerMethodField()
     tipo_nombre = serializers.CharField(source='tipo_movil.nombre', read_only=True)
     
     class Meta:
         model = models.Mobiliario
-        fields = ['id', 'nombre', 'descripcion', 'precio', 'stock', 'tipo_movil', 'tipo_nombre']
+        fields = ['id', 'nombre', 'descripcion', 'precio', 'stock', 'tipo_movil', 'tipo_nombre', 'stockDisponible', 'caracteristicas']
     
     def get_precio(self, obj):
         if obj.costo:
             return int(obj.costo)
         return 0
+
+    def get_stockDisponible(self, obj):
+        inventario = models.InventarioMob.objects.get(mobiliario=obj, estado_mobil__codigo__in=['DIS', 'DISPO'])
+        if inventario:
+            return int(inventario.cantidad)
+        return 0
+
+    def get_caracteristicas(self, obj):
+        caracteristicas = obj.descripcion_mob.all()
+        nombres = []
+        for caracteristica in caracteristicas:
+            nombres.append(caracteristica.descripcion)
+        return nombres
+
 
 
 class MontajeMobiliarioSerializer(serializers.ModelSerializer):
