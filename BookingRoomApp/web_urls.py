@@ -6,6 +6,7 @@ urlpatterns = [
     path('sign_up/', views.sign_up, name="sign_up"),
     path('home/', views.Home.as_view(), name="home"),
     path('reservacion/', views.ReservacionView.as_view(), name="reservacion"),
+    path('cliente/reservacion/', views.ReservacionClienteView.as_view(), name="reservacion_cliente"),
     path('home/<int:pk>/json/', views.reservacion_detalle_json, name='reservacion_detalle_json'),
     path('reservacion/buscar-cliente/', views.buscar_cliente, name='buscar_cliente'),
     path('reservacion/servicios-por-tipo/', views.obtener_servicios_por_tipo, name='obtener_servicios_por_tipo'),

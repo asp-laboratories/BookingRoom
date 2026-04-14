@@ -57,23 +57,24 @@ document.addEventListener("DOMContentLoaded", function() {
 
             // data.salones contiene: { id, nombre, disponible, estado_salon, reservado }
             const opcionesSalon = selectSalon.querySelectorAll('option');
-            
+
             opcionesSalon.forEach(opcion => {
                 const salonId = opcion.value;
                 if (!salonId) return; // Skip the default option
 
                 const salonInfo = data.salones.find(s => s.id == salonId);
-                
+
                 if (salonInfo) {
-                    const estaBloqueado = salonInfo.reservado || 
+                    const estaBloqueado = salonInfo.reservado ||
                         estadosBloqueados.includes(salonInfo.estado_salon);
-                    
+
                     if (estaBloqueado) {
                         opcion.disabled = true;
-                        opcion.textContent = `${salonInfo.nombre} (No disponible - ${salonInfo.estado_salon})`;
+                        opcion.textContent = `${salonInfo.nombre} (Cap: ${salonInfo.max_capacidad || '?'}) [No disponible]`;
                     } else {
                         opcion.disabled = false;
-                        opcion.textContent = salonInfo.nombre;
+                        // Mantener la capacidad en el texto
+                        opcion.textContent = `${salonInfo.nombre} (Cap: ${salonInfo.max_capacidad || '?'})`;
                     }
                 }
             });
@@ -85,11 +86,11 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Cuando se selecciona un salón, habilitar montaje
+    // Cuando se selecciona un salón, habilitar montaje y cargar montajes
     if (selectSalon) {
         selectSalon.addEventListener('change', function() {
             const salonSeleccionado = this.value;
-            
+
             if (!salonSeleccionado) {
                 // Deshabilitar montaje y mobiliario si no hay salón seleccionado
                 selectMontaje.disabled = true;
@@ -109,8 +110,29 @@ document.addEventListener("DOMContentLoaded", function() {
                 return;
             }
 
-            // El montaje se carga desde añadir-selects.js
+            // Cargar montajes del salón seleccionado
+            if (typeof cargarMontajesSalon === 'function') {
+                cargarMontajesSalon(salonSeleccionado);
+            }
+
             console.log('Salón seleccionado:', salonSeleccionado);
+        });
+    }
+
+    // Cuando se selecciona un montaje, habilitar mobiliario
+    if (selectMontaje) {
+        selectMontaje.addEventListener('change', function() {
+            const montajeSeleccionado = this.value;
+            if (montajeSeleccionado) {
+                mobiliarioTipoSelects.forEach(s => {
+                    s.disabled = false;
+                });
+            } else {
+                mobiliarioTipoSelects.forEach(s => {
+                    s.disabled = true;
+                    s.value = '';
+                });
+            }
         });
     }
 });

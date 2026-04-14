@@ -77,6 +77,29 @@ class ReservacionView(generic.View):
         })
 
 
+class ReservacionClienteView(generic.View):
+    template_name = "BookingRoomApp/cliente/reservacion_cliente.html"
+
+    def get(self, request):
+        cuenta, rol = get_cuenta_and_rol(request)
+        if not cuenta:
+            return HttpResponseRedirect(reverse("login"))
+
+        return render(request, self.template_name, {
+            "tipos_evento": models.TipoEvento.objects.all(),
+            "trabajador_id": "",  # Cliente no tiene trabajador
+            "trabajador_no_empleado": "",
+            "cliente_email": cuenta.correo_electronico,  # Email para cargar datos
+            "tipos_mobiliarios": models.TipoMobil.objects.filter(disposicion=True),
+            "salones": models.Salon.objects.filter(estado_salon='DIS'),
+            "tipos_servicio": models.TipoServicio.objects.filter(disposicion=True),
+            "tipos_equipa": models.TipoEquipa.objects.filter(disposicion=True),
+            "tipos_equipamiento": models.TipoEquipa.objects.filter(disposicion=True),
+            "tipos_montaje": models.TipoMontaje.objects.filter(disposicion=True),
+            "rol": rol,
+        })
+
+
 @csrf_exempt
 def buscar_cliente(request):
     if request.method == 'GET':

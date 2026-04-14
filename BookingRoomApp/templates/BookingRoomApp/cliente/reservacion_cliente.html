@@ -4,28 +4,26 @@
   rel="stylesheet"
   href="{% static 'BookingRoomApp/css/recepcion/reservacion.css' %}"
 />
-<link rel="stylesheet" href="{% static 'BookingRoomApp/css/recepcion/pagos.css' %}">
 
 {% include "BookingRoomApp/includes/alert-confirmar.html" %}
 {% include "BookingRoomApp/includes/alert-cancelar.html" %}
 {% include "BookingRoomApp/includes/alert-exito.html" %}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script src="{% static "BookingRoomApp/js/recepcion/pagos.js" %}" defer></script>
 <script src="{% static "BookingRoomApp/js/recepcion/añadir-selects.js" %}"></script>
 <script src="{% static "BookingRoomApp/js/recepcion/validar-salones.js" %}"></script>
 <script src="{% static "BookingRoomApp/js/recepcion/calcular-costo.js" %}"></script>
 <script src="{% static "BookingRoomApp/js/recepcion/validar-cliente.js" %}"></script>
 <script src="{% static "BookingRoomApp/js/recepcion/validar-reservacion.js" %}"></script>
 <script src="{% static "BookingRoomApp/js/reservacion/crear_reservacion.js" %}"></script>
+<script src="{% static "BookingRoomApp/js/cliente/reservacion-cliente.js" %}"></script>
 
 
-<h1 style="margin: 50px 0px 20px 20px;"><a style="color: black;" href="{% url 'home' %}">
+<h1 style="margin: 50px 0px 20px 20px;"><a style="color: black; display: none;" href="javascript:void(0)" onclick="confirmarCancelacion()">
 
                     <svg class="icono negro icono-48">
                     <use href="{% static 'BookingRoomApp/img/icons/sprite.svg'%}#icon-left"></use>
                   </svg>
-</a>Reservación</h1>
+</a>Solicitar Reservación</h1>
 <div class="reservacion-contenedor-principal">
   <div class="reservacion-contenedor-navegacion">
     <nav class="reservacion-navegacion">
@@ -35,38 +33,7 @@
         <li><a href="#salon">Salones</a></li>
         <li><a href="#servicios">Servicios</a></li>
         <li><a href="#equipamiento">Equipamiento</a></li>
-        <li>
-          <a class="expandir-solicitud">
-                  <svg class="icono negro icono-20">
-                    <use href="{% static 'BookingRoomApp/img/icons/sprite.svg'%}#icon-bell"></use>
-                  </svg>
-                  
-          </a>
-        </li>
       </ul>
-      <div class="reservacion-overlay" id="reservacion-overlay">
-        <div class="reservacion-modal">
-          <button class="reservacion-cerrar" id="reservacion-cerrar">
-            &times;
-          </button>
-          <h2>Bandeja de solicitudes</h2>
-          <div class="reservacion-lista-notificaciones">
-            {% for reservacion in reservaciones_solicitudes %}
-            <div class="bandeja-item">
-              <span>{{ reservacion.nombreEvento }}</span>
-              <span class="estado-badge {{ reservacion.estado_reserva.codigo }}">{{ reservacion.estado_reserva.nombre }}</span>
-              <button class="boton-accion boton-beo ver-detalles-solicitud" data-pk="{{ reservacion.pk }}">
-                Ver detalles
-              </button>
-            </div>
-            {% empty %}
-            <div class="bandeja-item">
-              <span>No hay solicitudes pendientes</span>
-            </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
     </nav>
   </div>
 
@@ -76,16 +43,6 @@
         <h2 class="reservacion-titulo-seccion">Datos del cliente</h2>
 
         <div class="reservacion-campo-contenedor reservacion-grid-campos">
-          <div class="reservacion-campo span-2 buscar-row-reverse">
-            <input
-              type="text"
-              class="reservacion-input"
-              id="buscar-cliente-input"
-              placeholder="Buscar por RFC o nombre del contacto..."
-            />
-            <button type="button" class="boton-accion" id="btn-buscar-cliente">Buscar</button>
-          </div>
-
           <div class="reservacion-campo">
             <label class="reservacion-label">Tipo de cliente</label>
             <div class="reservacion-radio-group">
@@ -95,7 +52,6 @@
           </div>
           <div class="reservacion-campo">
             <label class="reservacion-label">RFC</label>
-            <!-- de aca se obtiene el id del cliente -->
             <input type="text" class="reservacion-input cliente-input" id="cliente-rfc" placeholder="Ej: XAXX010101000" disabled />
           </div>
 
@@ -155,13 +111,11 @@
           <div class="reservacion-campo">
             <div class="reservacion-campo span-2">
               <label class="reservacion-label">Nombre del evento</label>
-              <!-- de aca se obtiene el nombre -->
               <input type="text" class="reservacion-input" id="nombreEvento" placeholder="Ej: XV años de María" />
             </div>
 
             <div class="reservacion-campo span-2">
               <label class="reservacion-label">Tipo de evento</label>
-              <!-- de aca se obtiene el tipo_evento -->
                 <select class="reservacion-input" id="tipo_evento">
                   <option value="">-- Selecciona un tipo --</option>
                   {% for tipo in tipos_evento %}
@@ -172,31 +126,26 @@
           </div>
           <div class="reservacion-campo">
             <label class="reservacion-label">Fecha del evento</label>
-            <!-- de aca se obtiene fechaEvento -->
             <input type="date" class="reservacion-input" id="fecha_evento"/>
           </div>
 
           <div class="reservacion-campo">
             <label class="reservacion-label">Estimado de asistentes</label>
-            <!-- de aca se obtiene estimaAsistentes -->
             <input type="number" class="reservacion-input" id="estimado_asistentes" placeholder="Ej: 150" />
           </div>
 
           <div class="reservacion-campo">
             <label class="reservacion-label">Hora de inicio</label>
-            <!-- de aca se obtiene horaInicio -->
             <input type="time" class="reservacion-input" id="hora_inicio"/>
           </div>
 
           <div class="reservacion-campo">
             <label class="reservacion-label">Hora de cierre</label>
-            <!-- de aca se obtiene la horaFin -->
             <input type="time" class="reservacion-input" id="hora_fin" />
           </div>
 
           <div class="reservacion-campo span-2">
             <label class="reservacion-label">Descripción del evento</label>
-            <!-- de aca se obtiene la descripEvento -->
             <textarea rows="3" class="reservacion-textarea" id="descripcion_evento" placeholder="Ej: Decoración floral, pastel de 3 pisos, mesa de dulces..."></textarea>
           </div>
         </div>
@@ -215,7 +164,6 @@
             <select class="reservacion-input" id="select-salon" disabled>
               <option value="">-- Selecciona una fecha primero --</option>
               {% for salon in salones %}
-              <!-- de aca se obtiene montaje.salon -->
               <option value="{{salon.id}}">{{salon.nombre}} (Cap: {{salon.maxCapacidad}})</option>
               {% endfor %}
             </select>
@@ -224,11 +172,9 @@
             <label class="reservacion-label">Seleccionar Montaje</label>
             <select class="reservacion-input" id="select-montaje" disabled>
               <option value="">-- Selecciona un montaje --</option>
-              <!-- tecnicamente de aca se obtiene montaje.tipo_montaje -->
             </select>
           </div>
         </div>
-        <!-- esta parte de aca es para los inserts de mobiliarios -->
         <div class="servicios-contenedor">
           <div id="mobiliarios-selects">
             <div class="mobil-pair" data-index="1">
@@ -245,7 +191,6 @@
                 <label class="reservacion-label">Seleccionar Mobiliario</label>
                 <select class="reservacion-input mobiliario-select" name="mobiliario_1" disabled>
                   <option value="">-- Selecciona un mobiliario --</option>
-                  <!-- tecnicamente de aca se obtiene mobiliario -->
                 </select>
               </div>
               <div class="reservacion-campo">
@@ -279,7 +224,6 @@
                 <label class="reservacion-label">Seleccionar Servicio</label>
                 <select class="reservacion-input servicio-select" name="servicio_1" disabled>
                   <option value="">-- Selecciona un servicio --</option>
-                  <!-- tecnicamente de aca se obtiene reserva_servicio -->
                 </select>
               </div>
             </div>
@@ -309,7 +253,6 @@
                 <label class="reservacion-label">Seleccionar Equipo</label>
                 <select class="reservacion-input equipamiento-select" name="equipamiento_1" disabled>
                   <option value="">-- Selecciona un equipo --</option>
-                  <!-- tecnicamente de aca se obtiene reserva_equipa -->
                 </select>
               </div>
               <div class="reservacion-campo">
@@ -345,17 +288,13 @@
             <span>Total</span>
             <span>$0.00</span>
           </div>
-          <div class="reservacion-fila">
-            <span>Atendido por:</span>
-            <span>{{ trabajador_no_empleado }}</span>
-          </div>
         </div>
 
         <div class="reservacion-botones">
           <button class="reservacion-btn reservacion-btn-confirmar" id="btn-confirmar-reservacion">
-            Confirmar
+            Enviar Solicitud
           </button>
-          <button class="reservacion-btn reservacion-btn-cancelar" onclick="window.location.href='/home/'">
+          <button class="reservacion-btn reservacion-btn-cancelar" onclick="confirmarCancelacion()">
             Cancelar
           </button>
         </div>
@@ -363,16 +302,25 @@
     </div>
   </div>
 
-  <!-- de aca se obtiene el id de trabajador -->
-  <input type="hidden" id="trabajador_id" value="{{ trabajador_id }}"/>
+  <input type="hidden" id="trabajador_id" value=""/>
 
 </div>
 
-<script src="{% static "BookingRoomApp/js/recepcion/reservacion-inputs.js" %}"></script> 
+<script src="{% static "BookingRoomApp/js/recepcion/reservacion-inputs.js" %}"></script>
 
+<script>
+// Email del cliente para cargar/guardar datos
+window.CLIENTE_EMAIL = '{{ cliente_email|default:"" }}';
+
+function confirmarCancelacion() {
+    if (confirm('¿Estás seguro de que deseas cancelar? Se perderán todos los datos no guardados.')) {
+        // Redirigir de vuelta a la página de solicitud de cliente (recargar)
+        window.location.href = '/cliente/reservacion/';
+    }
+}
+</script>
 
 {% include "BookingRoomApp/includes/modal-detalle-reservacion.html" with modal_id="miModal" %}
-{% include "BookingRoomApp/includes/modal-solicitud-detalle.html" %}
 
 <style>
   .estado-badge {
@@ -386,145 +334,14 @@
   }
   .estado-badge.SOLIC { background: #f39c12; color: white; }
   .estado-badge.CON { background: #27ae60; color: white; }
-  .reservacion-lista-notificaciones {
-    max-height: 160px;
-    overflow-y: auto;
+
+  /* Corrección: evitar que la navegación se desplace a la derecha */
+  .reservacion-contenedor-navegacion > nav {
+    margin-left: 0 !important;
   }
-  .reservacion-lista-notificaciones .bandeja-item {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-    min-height: 45px;
-    padding: 6px 8px;
-    width: 100%;
-    margin: 0 0 8px 0;
-    border-left: 3px solid var(--color-primario);
-    background: white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    border-radius: 4px;
-  }
-  .reservacion-lista-notificaciones .bandeja-item span:first-child {
-    flex: 1 1 calc(100% - 200px);
-    min-width: 120px;
-  }
-  .reservacion-lista-notificaciones .bandeja-item .estado-badge {
-    flex: 0 0 auto;
-  }
-  .reservacion-lista-notificaciones .bandeja-item .boton-accion {
-    flex: 0 0 auto;
+  .reservacion-contenedor-navegacion :last-child {
+    margin-left: 0 !important;
   }
 </style>
-
-
-<dialog id="modalPagos" class="modal-beo">
-
-<div class="pagos-container">
-    <div class="pagos-header">
-        <h2 class="pagos-h2">Registro de pagos</h2>
-    </div>
-
-    <div class="pagos-layout">
-        <div class="pagos-busqueda">
-            <div class="pagos-section-title">Buscar reservación</div>
-            <div class="pagos-field-group">
-                <label class="pagos-label">Número de reservación</label>
-                <input data-field="reservacion" type="number" class="pagos-input-text" placeholder="Ej: 1">
-            </div>
- 
- 
-            <button id="btn-buscar-reservacion" class="pagos-btn pagos-btn-buscar boton-accion">Buscar</button>
-            <div class="pagos-field-group">
-                <label class="pagos-label">Estado</label>
-                <input data-field="estado" type="text" class="pagos-input-text" readonly placeholder="--">
-            </div>
- 
-            <input data-field="reservacion_id" type="hidden">
-        </div>
-
-        <div class="pagos-datos-reservacion">
-            <div class="pagos-section-title">Datos de la reservación</div>
-            <div class="pagos-row">
-                <div class="pagos-field-group">
-                    <label class="pagos-label">Cliente</label>
-                    <input data-field="cliente" type="text" class="pagos-input-text" readonly placeholder="--">
-                </div>
-                <div class="pagos-field-group">
-                    <label class="pagos-label">Nombre del evento</label>
-                    <input data-field="nombre_evento" type="text" class="pagos-input-text" readonly placeholder="--">
-                </div>
-            </div>
-
-            <div class="pagos-row">
-                <div class="pagos-field-group">
-                    <label class="pagos-label">Subtotal</label>
-                    <input data-field="subtotal" type="text" class="pagos-input-text" readonly placeholder="$0.00">
-                </div>
-                <div class="pagos-field-group">
-                    <label class="pagos-label">Total</label>
-                    <input data-field="total" type="text" class="pagos-input-text" readonly placeholder="$0.00">
-                </div>
-                            <div class="pagos-field-group">
-                <label class="pagos-label">Descripción</label>
-                <input data-field="descripcion" type="text" class="pagos-input-text" readonly placeholder="--">
-            </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="pagos-section-title">Datos del pago</div>
-    <div class="pagos-row">
-        <div class="pagos-field-group">
-            <label class="pagos-label">Monto a pagar</label>
-            <input data-field="monto" type="number" step="0.01" class="pagos-input-text" placeholder="Ej: 500.00">
-        </div>
-        <div class="pagos-field-group">
-            <label class="pagos-label">Saldo restante</label>
-            <input data-field="saldo" type="text" class="pagos-input-text" readonly placeholder="$0.00">
-        </div>
-    </div>
-
-    <div class="pagos-field-group">
-        <label class="pagos-label">Nota</label>
-        <input data-field="nota" type="text" class="pagos-input-text" placeholder="Ej: Pago parcial, saldo pendiente">
-    </div>
-
-    <div class="pagos-section-title">Concepto de pago</div>
-    <div class="pagos-options-group">
-        <label class="pagos-option"><input type="radio" name="concepto" checked class="pagos-input-radio pagos-concepto" value="ABONO"> Abono</label>
-        <label class="pagos-option"><input type="radio" name="concepto" class="pagos-input-radio pagos-concepto" value="LIQUI"> Liquidación</label>
-        <label class="pagos-option"><input type="radio" name="concepto" class="pagos-input-radio pagos-concepto" value="EXTR"> Extra</label>
-    </div>
-
-    <div class="pagos-section-title">Método de pago</div>
-    <div class="pagos-options-group">
-        <label class="pagos-option"><input type="radio" name="metodo" checked class="pagos-input-radio pagos-metodo" value="EFECT"> Efectivo</label>
-        <label class="pagos-option"><input type="radio" name="metodo" class="pagos-input-radio pagos-metodo" value="TARJE"> Tarjeta</label>
-        <label class="pagos-option"><input type="radio" name="metodo" class="pagos-input-radio pagos-metodo" value="NFC"> NFC</label>
-        <label class="pagos-option"><input type="radio" name="metodo" class="pagos-input-radio pagos-metodo" value="TRANS"> Transferencia</label>
-    </div>
-
-    <div class="pagos-actions">
-        <button id="btn-confirmar-pago" class="pagos-btn pagos-btn-confirm">Confirmar</button>
-        <button class="pagos-btn pagos-btn-cancel" id="btn-cancelar-pago">Cancelar</button>
-    </div>
-</div>
-</dialog>
-
-<dialog id="modal-comprobante" class="pagos-comprobante-modal">
-    <div class="modal-comprobante-content">
-        <div class="comprobante-header">
-            <h2>Comprobante de Pago</h2>
-            <button onclick="document.getElementById('modal-comprobante').close()" class="cerrar-btn">X</button>
-        </div>
-        <div class="comprobante-body" id="comprobante-content">
-            {% include "BookingRoomApp/includes/comprobante.html" %}
-        </div>
-        <div class="comprobante-footer">
-            <button onclick="generarPDF()">Guardar PDF</button>
-            <button onclick="document.getElementById('modal-comprobante').close()">Cerrar</button>
-        </div>
-    </div>
-</dialog>
 
 {% endblock inicio %}

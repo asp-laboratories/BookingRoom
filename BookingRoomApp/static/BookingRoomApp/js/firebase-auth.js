@@ -36,7 +36,16 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         });
 
         if (response.ok) {
-            window.location.href = '/home/';
+            const data = await response.json();
+            
+            // Redirigir según el rol
+            if (data.user && data.user.rol === 'CLIENTE') {
+                // Cliente -> ir a reservación de cliente
+                window.location.href = '/cliente/reservacion/';
+            } else {
+                // Trabajador (ADMIN, RECEP, etc) -> ir a home
+                window.location.href = '/home/';
+            }
         } else {
             const data = await response.json();
             mostrarToastExito(data.error || 'Error al iniciar sesión', 'error');

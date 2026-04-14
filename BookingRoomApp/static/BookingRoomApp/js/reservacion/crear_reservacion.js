@@ -180,6 +180,12 @@ function datosReservacion() {
 
     });
 
+    // Determinar el estado según la página
+    // Si estamos en la página de cliente, enviar como SOLIC (solicitud)
+    // Si estamos en la página de recepción, enviar como PEN (pendiente)
+    const esPaginaCliente = window.location.pathname.includes('cliente');
+    const estadoReserva = esPaginaCliente ? 'SOLIC' : 'PEN';
+
     return {
         nombre: nombre,
         descripEvento: descripEvento,
@@ -189,7 +195,7 @@ function datosReservacion() {
         horaFin: horaFin,
         cliente: cliente,
         trabajador: trabajador,
-        estado_reserva: 'PEN',  // Reservaciones desde recepcion inician como PENDIENTES
+        estado_reserva: estadoReserva,  // SOLIC para cliente, PEN para recepción
         reserva_servicio: reserva_servicio,
         reserva_equipa: reserva_equipa,
         montaje: montaje,
@@ -256,8 +262,11 @@ async function confirmarReservacion() {
         botonConfirmar.disabled = true;
         botonConfirmar.style.opacity = '0.5';
         botonConfirmar.style.cursor = 'not-allowed';
-        botonConfirmar.textContent = 'Creando reservación...';
+        botonConfirmar.textContent = 'Procesando...';
     }
+
+    // Detectar si es página de cliente
+    const esPaginaCliente = window.location.pathname.includes('cliente');
 
     try {
         const resultado = await crearReservacion();
@@ -265,27 +274,34 @@ async function confirmarReservacion() {
         if (resultado && resultado.success) {
             reservacionCreadaId = resultado.id;
             
-            // Mostrar mensaje de éxito
-            mostrarToastExito(`¡Reservación #${resultado.id} creada exitosamente!`, 'success');
-            
-            // Preguntar si desea realizar pago
-            setTimeout(() => {
-                abrirModalConfirmar(
-                    'Reservación creada',
-                    `La reservación #${resultado.id} se creó exitosamente. ¿Deseas realizar un pago ahora?`,
-                    function() {
-                        abrirModalPagosConReservacion(reservacionCreadaId);
-                    }
-                );
-            }, 500);
-            
+            if (esPaginaCliente) {
+                // Para clientes: mostrar éxito y redirigir a la página de cliente
+                mostrarToastExito(`¡Solicitud #${resultado.id} enviada exitosamente! Un recepcionista la revisará pronto.`, 'success');
+                
+                setTimeout(() => {
+                    window.location.href = '/cliente/reservacion/';
+                }, 3000);
+            } else {
+                // Para recepción: preguntar si desea realizar pago
+                mostrarToastExito(`¡Reservación #${resultado.id} creada exitosamente!`, 'success');
+                
+                setTimeout(() => {
+                    abrirModalConfirmar(
+                        'Reservación creada',
+                        `La reservación #${resultado.id} se creó exitosamente. ¿Deseas realizar un pago ahora?`,
+                        function() {
+                            abrirModalPagosConReservacion(reservacionCreadaId);
+                        }
+                    );
+                }, 500);
+            }
         } else {
             // Si falló, re-habilitar el botón
             if (botonConfirmar) {
                 botonConfirmar.disabled = false;
                 botonConfirmar.style.opacity = '';
                 botonConfirmar.style.cursor = '';
-                botonConfirmar.textContent = 'Confirmar';
+                botonConfirmar.textContent = esPaginaCliente ? 'Enviar Solicitud' : 'Confirmar';
             }
         }
     } finally {

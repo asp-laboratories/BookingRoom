@@ -47,7 +47,8 @@ def verificar_salon_disponible(request):
             'nombre': salon.nombre,
             'estado_salon': estado_salon_nombre,
             'reservado': reservado,
-            'disponible': not reservado and estado_salon_nombre not in ['Ocupado', 'Reservado', 'En Limpieza', 'Mantenimiento']
+            'disponible': not reservado and estado_salon_nombre not in ['Ocupado', 'Reservado', 'En Limpieza', 'Mantenimiento'],
+            'max_capacidad': salon.maxCapacidad
         })
     
     return JsonResponse({

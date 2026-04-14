@@ -522,20 +522,30 @@ def api_login(request):
             decoded = auth.verify_id_token(token, clock_skew_seconds=10)
             firebase_uid = decoded['uid']
             email = decoded.get('email', '')
-            
+
             try:
                 cuenta = models.Cuenta.objects.get(firebase_uid=firebase_uid)
             except models.Cuenta.DoesNotExist:
                 return JsonResponse({'error': 'Cuenta no registrada en el sistema'}, status=404)
-            
+
             request.session['cuenta_id'] = cuenta.id
             request.session['firebase_uid'] = firebase_uid
             request.session.modified = True
-            
+
+            # Obtener el rol del usuario
+            rol_codigo = None
+            try:
+                trabajador = models.Trabajador.objects.get(cuenta=cuenta)
+                rol_codigo = trabajador.rol.codigo
+            except models.Trabajador.DoesNotExist:
+                # No es trabajador, es cliente
+                rol_codigo = 'CLIENTE'
+
             return JsonResponse({'success': True, 'user': {
                 'id': cuenta.id,
                 'nombre': cuenta.nombre_usuario,
-                'email': cuenta.correo_electronico
+                'email': cuenta.correo_electronico,
+                'rol': rol_codigo
             }})
             
         except Exception as e:
