@@ -108,22 +108,23 @@ function datosReservacion() {
 
     // Validar salón y montaje
     const salon = document.getElementById('select-salon')?.value;
-    const tipo_montaje = document.getElementById('select-montaje')?.value;
+    const selectMontaje = document.getElementById('select-montaje');
+    const selectedMontajeOption = selectMontaje?.options[selectMontaje.selectedIndex];
+    const tipoMontajeId = selectedMontajeOption?.dataset.tipoMontajeId;
 
     if (!salon) {
         mostrarToastExito('Falta seleccionar un salón', 'error');
         return null;
     }
 
-    if (!tipo_montaje) {
+    if (!tipoMontajeId) {
         mostrarToastExito('Falta seleccionar un montaje', 'error');
         return null;
     }
 
     console.log('=== Datos de Montaje para Reservación ===');
     console.log('Salón ID:', salon);
-    console.log('Tipo Montaje ID:', tipo_montaje);
-    console.log('Montaje select value:', document.getElementById('select-montaje')?.value);
+    console.log('Tipo Montaje ID:', tipoMontajeId);
 
     // Validar mobiliarios (al menos uno)
     const mobiliarios = [];
@@ -151,7 +152,7 @@ function datosReservacion() {
 
     const montaje = {
         salon: parseInt(salon),
-        tipo_montaje: parseInt(tipo_montaje),  // Esto ahora es el tipo_montaje_id correcto
+        tipo_montaje: parseInt(tipoMontajeId),
         mobiliarios
     };
 
@@ -204,15 +205,26 @@ function datosReservacion() {
 }
 
 function obtenerError(info) {
+    console.error('🔍 Respuesta de error del servidor:', JSON.stringify(info, null, 2));
+    
     if (info.error) return info.error;
+    if (info.message) return info.message;
     if (typeof info === 'object') {
         for (const key in info) {
             const val = info[key];
-            if (Array.isArray(val)) return `${key}: ${val[0]}`;
+            if (Array.isArray(val)) return `${key}: ${val.join(', ')}`;
             if (typeof val === 'string') return `${key}: ${val}`;
+            if (typeof val === 'object' && val !== null) {
+                // Buscar errores anidados
+                for (const subKey in val) {
+                    const subVal = val[subKey];
+                    if (Array.isArray(subVal)) return `${key}.${subKey}: ${subVal.join(', ')}`;
+                    if (typeof subVal === 'string') return `${key}.${subKey}: ${subVal}`;
+                }
+            }
         }
     }
-    return 'No se localizo el error';
+    return 'Error desconocido. Revisa la consola (F12) para más detalles.';
 }
 
 async function crearReservacion() {

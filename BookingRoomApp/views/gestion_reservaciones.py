@@ -200,6 +200,21 @@ def mobiliarios_por_tipo(request):
 @csrf_exempt
 def montaje_por_salon(request):
     salonId = request.GET.get('salon_id')
+    todos = request.GET.get('todos')
+    
+    if todos == 'true':
+        montajes = models.Montaje.objects.select_related('tipo_montaje', 'salon')
+        lista = []
+        for m in montajes:
+            lista.append({
+                'id': m.id,
+                'tipo_montaje_id': m.tipo_montaje.id,
+                'nombre': f'{m.tipo_montaje.nombre} - {m.salon.nombre}',
+                'capacidadIdeal': m.tipo_montaje.capacidadIdeal,
+                'costo': str(m.costo),
+                'salon_nombre': m.salon.nombre
+            })
+        return JsonResponse({'montajes': lista})
     
     if not salonId:
         return JsonResponse({'montajes': []})

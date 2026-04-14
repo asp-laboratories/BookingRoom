@@ -1434,6 +1434,71 @@ class CompletarSolicitudExtraView(APIView):
         return Response({'mensaje': 'Items actualizados correctamente'})
 
 
+class AceptarSolicitudExtraView(APIView):
+    """API para aceptar las solicitudes extra de una reservación - aumenta el precio"""
+    def post(self, request, reservacion_id):
+        from django.db import transaction
+        
+        try:
+            reservacion = models.Reservacion.objects.select_related('montaje').get(pk=reservacion_id)
+        except models.Reservacion.DoesNotExist:
+            return Response({'error': 'Reservación no encontrada'}, status=404)
+        
+        mobiliarios_ids = request.data.get('mobiliarios_ids', [])
+        equipamentos_ids = request.data.get('equipamentos_ids', [])
+        
+        with transaction.atomic():
+            # Aceptar mobiliarios extra
+            total_mobiliarios = 0
+            for mm_id in mobiliarios_ids:
+                try:
+                    mm = models.MontajeMobiliario.objects.get(
+                        pk=mm_id,
+                        montaje=reservacion.montaje,
+                        extra=True
+                    )
+                    mm.aceptado = True
+                    mm.save(update_fields=['aceptado'])
+                    # Calcular precio (cantidad * costo mobiliario)
+                    if mm.mobiliario and mm.mobiliario.costo:
+                        total_mobiliarios += mm.cantidad * mm.mobiliario.costo
+                except models.MontajeMobiliario.DoesNotExist:
+                    pass
+            
+            # Aceptar equipamiento extra
+            total_equipamiento = 0
+            for re_id in equipamentos_ids:
+                try:
+                    re = models.ReservaEquipa.objects.get(
+                        pk=re_id,
+                        reservacion=reservacion,
+                        extra=True
+                    )
+                    re.aceptado = True
+                    re.save(update_fields=['aceptado'])
+                    if re.equipamiento and re.equipamiento.costo:
+                        total_equipamiento += re.cantidad * re.equipamiento.costo
+                except models.ReservaEquipa.DoesNotExist:
+                    pass
+            
+            # Actualizar precio total de la reservación
+            if total_mobiliarios > 0 or total_equipamiento > 0:
+                nuevo_subtotal = (reservacion.subtotal or 0) + total_mobiliarios + total_equipamiento
+                nuevo_iva = nuevo_subtotal * Decimal('0.16')
+                nuevo_total = nuevo_subtotal + nuevo_iva
+                
+                reservacion.subtotal = nuevo_subtotal
+                reservacion.IVA = nuevo_iva
+                reservacion.total = nuevo_total
+                reservacion.save(update_fields=['subtotal', 'IVA', 'total'])
+        
+        return Response({
+            'mensaje': 'Solicitudes aceptadas correctamente',
+            'total_adicional': float(total_mobiliarios + total_equipamiento),
+            'nuevo_total': float(reservacion.total)
+        })
+
+
 class MisSolicitudesExtraView(APIView):
     """API para obtener las solicitudes extra de las reservaciones del cliente"""
     def get(self, request):
