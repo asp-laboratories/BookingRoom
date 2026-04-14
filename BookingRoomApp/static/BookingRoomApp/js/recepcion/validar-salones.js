@@ -56,21 +56,19 @@ document.addEventListener("DOMContentLoaded", function() {
                 const salonId = opcion.value;
                 if (!salonId) return;
 
-                const salonInfo = data.salones.find(s => s.id == salonId);
-                if (!salonInfo) return;
-
-                // Validar si está bloqueado ( Flutter: _estaBloqueado() )
-                const estaBloqueado = salonInfo.reservado ||
-                                      estadosBloqueados.includes(salonInfo.estado_salon?.toUpperCase());
-
-                const capacidad = salonInfo.max_capacidad || '?';
-
-                if (estaBloqueado) {
-                    opcion.disabled = true;
-                    opcion.textContent = `${salonInfo.nombre} (Cap: ${capacidad}) ❌ No disponible`;
-                } else {
-                    opcion.disabled = false;
-                    opcion.textContent = `${salonInfo.nombre} (Cap: ${capacidad})`;
+                const salonInfo = data.salones.find(s => s.nombre == salonId);
+                
+                if (salonInfo) {
+                    const estaBloqueado = salonInfo.reservado || 
+                        estadosBloqueados.includes(salonInfo.estado_salon);
+                    
+                    if (estaBloqueado) {
+                        opcion.disabled = true;
+                        opcion.textContent = `${salonInfo.nombre} (No disponible - ${salonInfo.estado_salon})`;
+                    } else {
+                        opcion.disabled = false;
+                        opcion.textContent = salonInfo.nombre;
+                    }
                 }
             });
 

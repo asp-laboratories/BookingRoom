@@ -178,6 +178,7 @@ class TipoMobil(models.Model):
 
 class TipoMontaje(models.Model):
     nombre = models.CharField(max_length=100)
+    descripcion = models.CharField(max_length=255, blank=True)
     disposicion = models.BooleanField(default=True)
     capacidadIdeal = models.IntegerField(default=0)
 
@@ -188,6 +189,11 @@ class TipoMontaje(models.Model):
 
     def __str__(self):
         return self.nombre
+
+    def save(self, *args, **kwargs):
+        if not self.descripcion:
+            self.descripcion = f"Montaje en forma {self.nombre}"
+        super().save(*args, **kwargs)
 
 
 class TipoEvento(models.Model):

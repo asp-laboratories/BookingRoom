@@ -49,8 +49,18 @@ class TipoClienteViewSet(viewsets.ModelViewSet):
 
 
 class TipoMontajeViewSet(viewsets.ModelViewSet):
-    queryset = models.TipoMontaje.objects.all()
     serializer_class = serializers.TipoMontajeSerializer
+
+    def get_queryset(self):
+        queryset = models.TipoMontaje.objects.all()
+        parametro_salon = self.request.query_params.get('salon', None)
+        if parametro_salon is not None:
+            try:
+                salon = models.Salon.objects.get(id=parametro_salon)
+                queryset = queryset.filter(capacidadIdeal__lte=salon.maxCapacidad)
+            except models.Salon.DoesNotExist:
+                return models.TipoMontaje.objects.none()
+        return queryset
 
 
 class TipoMobilViewSet(viewsets.ModelViewSet):
@@ -519,7 +529,7 @@ def api_login(request):
             if len(token) > 10000:
                 return JsonResponse({'error': 'Token inválido'}, status=400)
             
-            decoded = auth.verify_id_token(token, clock_skew_seconds=10)
+            decoded = auth.verify_id_token(token, clock_skew_seconds=60)
             firebase_uid = decoded['uid']
             email = decoded.get('email', '')
 
@@ -570,7 +580,7 @@ def api_flutter_login(request):
             if len(token) > 10000:
                 return JsonResponse({'error': 'Token inválido'}, status=400)
             
-            decoded = auth.verify_id_token(token)
+            decoded = auth.verify_id_token(token, clock_skew_seconds=60)
             firebase_uid = decoded['uid']
             
             try:
@@ -932,6 +942,8 @@ class DisponibilidadSalonesView(APIView):
             resultado.append({
                 'id': salon.id,
                 'nombre': salon.nombre,
+                'dimensiones': f"{salon.dimenAncho}m x {salon.dimenLargo}m x {salon.dimenAlto}m",
+                'metrosCuadrados': float(salon.metrosCuadrados),
                 'capacidad': salon.maxCapacidad if salon.maxCapacidad else 0,
                 'precio': float(salon.costo) if salon.costo else 0,
                 'estado': estado_nombre,
@@ -1247,8 +1259,7 @@ class ReservacionProximaView(APIView):
 class ListaPaquetesView(APIView):
     """API para listar paquetes disponibles (para móvil)"""
     def get(self, request):
-        paquetes = models.Reservacion.objects.filter(
-            es_paquete=True
+        paquetes = models.Reservacion.objects.filter(estado_reserva__codigo__in=['PAQUE', 'PLANT', 'PLAN']
         ).select_related(
             'montaje__salon', 'montaje__tipo_montaje'
         ).prefetch_related(

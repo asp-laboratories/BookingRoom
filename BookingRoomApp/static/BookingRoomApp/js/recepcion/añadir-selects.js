@@ -225,8 +225,79 @@ async function cargarEquipamientoPorTipo(tipoSelect, equipamientoSelect) {
   }
 }
 
-async function cargarMobiliariosPorTipo(tipoSelect, mobiliarioSelect) {
-  const tipoId = tipoSelect.value;
+// funcion pa poner montajes por salon (en duda aun pero anadido por si acaso)
+async function cargarMontajesSalon(salon) {
+  const montajeElegido = document.getElementById("select-montaje");
+
+  document.querySelectorAll(".mobiliario-tipo").forEach((s) => {
+    s.disabled = true;
+    s.value = "";
+  });
+  document.querySelectorAll(".mobiliario-select").forEach((s) => {
+    s.disabled = true;
+    s.innerHTML = '<option value="">-- Seleccion un tipo primero --</option>';
+  });
+
+  if (!salon) {
+    montajeElegido.innerHTML =
+      '<option value="">-- Selecciona un salon primero --</option>';
+    montajeElegido.disabled = true;
+    return;
+  }
+
+  try {
+    const repuesta = await fetch(
+      `/reservacion/montajes-salon/?salon_id=${salon}`,
+    );
+    const datos = await repuesta.json();
+
+    montajeElegido.innerHTML =
+      '<option value="">-- Selecciona un montaje --</option>';
+    montajeElegido.disabled = false;
+
+    if (datos.montajes && datos.montajes.length > 0) {
+      datos.montajes.forEach((montaje) => {
+        const option = document.createElement("option");
+        option.value = montaje.id;  // Usar tipo_montaje_id, no montaje.id
+        option.textContent = `${montaje.nombre} (Capacidad: ${montaje.capacidadIdeal || 'N/A'})`;
+        option.dataset.costo = montaje.costo || 0; // Guardar costo para calculo dinamico
+        option.dataset.montajeId = montaje.id; // Guardar ID del montaje existente para referencia
+        montajeElegido.appendChild(option);
+      });
+    } else {
+      montajeElegido.innerHTML =
+        '<option value="">-- No se encontraron montajes --</option>';
+    }
+
+    // Mostrar información del salón seleccionado en la consola
+    if (datos.salon) {
+      console.log(`Salón: ${datos.salon.nombre} - Costo: $${datos.salon.costo} - Capacidad: ${datos.salon.capacidad}`);
+    }
+  } catch (error) {
+    console.error("Error al cargar los montajes", error);
+    mostrarToastExito("Error al cargar montajes", "error");
+  }
+
+  montajeElegido.addEventListener(
+    "change",
+    function () {
+      const mobiliariosBloqueados =
+        document.querySelectorAll(".mobiliario-tipo");
+      if (this.value) {
+        mobiliariosBloqueados.forEach((s) => (s.disabled = false));
+      } else {
+        mobiliariosBloqueados.forEach((s) => {
+          s.disabled = true;
+          s.value = "";
+        });
+      }
+    },
+    { once: true },
+  );
+}
+
+async function cargarMobiliariosPorTipo(tipo, mobiliarioSelect) {
+  const tipoId = tipo.value;
 
   if (!tipoId) {
     mobiliarioSelect.innerHTML = '<option value="">-- Selecciona un tipo primero --</option>';

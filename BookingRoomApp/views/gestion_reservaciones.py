@@ -67,7 +67,7 @@ class ReservacionView(generic.View):
             "trabajador_id": trabajador.pk,
             "trabajador_no_empleado": trabajador.no_empleado,
             "tipos_mobiliarios": models.TipoMobil.objects.filter(disposicion=True),
-            "salones": models.Salon.objects.filter(estado_salon='DIS'),
+            "salones": models.Salon.objects.all(),
             "tipos_servicio": models.TipoServicio.objects.filter(disposicion=True),
             "tipos_equipa": models.TipoEquipa.objects.filter(disposicion=True),
             "tipos_equipamiento": models.TipoEquipa.objects.filter(disposicion=True),
@@ -222,16 +222,16 @@ def montaje_por_salon(request):
     try:
         salon = models.Salon.objects.get(id=salonId)
         
-        montajes = models.Montaje.objects.filter(salon=salon).select_related('tipo_montaje')
+        montajes = models.TipoMontaje.objects.filter(capacidadIdeal__lte=salon.maxCapacidad, disposicion=True)
 
         lista = []
         for m in montajes:
             lista.append({
                 'id': m.id,
-                'tipo_montaje_id': m.tipo_montaje.id,  # Agregar ID del tipo de montaje
-                'nombre': m.tipo_montaje.nombre,
-                'capacidadIdeal': m.tipo_montaje.capacidadIdeal,
-                'costo': str(m.costo)
+                'tipo_montaje_id': m.id,  # Agregar ID del tipo de montaje
+                'nombre': m.nombre,
+                'capacidadIdeal': m.capacidadIdeal,
+                'costo': '0.0'
             })
         
         return JsonResponse({
