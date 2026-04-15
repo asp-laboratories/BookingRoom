@@ -285,10 +285,7 @@ class PagoSerializer(serializers.ModelSerializer):
         try:
             if obj.reservacion and obj.reservacion.cliente:
                 cliente = obj.reservacion.cliente
-                nombre = cliente.nombre or ''
-                ap = cliente.apellido_paterno or ''
-                am = cliente.apellido_materno or ''
-                return f"{nombre} {ap} {am}".strip()
+                return cliente.nombre_fiscal or '-'
         except Exception as e:
             print('Error get_cliente_nombre:', e)
             pass

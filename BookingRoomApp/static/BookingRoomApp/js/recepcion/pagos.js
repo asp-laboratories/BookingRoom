@@ -197,7 +197,6 @@ async function ejecutarPago(data, csrfToken) {
             const compCliente = document.getElementById('comp-cliente');
             const compEvento = document.getElementById('comp-evento');
             const compFechaEvento = document.getElementById('comp-fecha-evento');
-            const compFechaEventoDetalle = document.getElementById('comp-fecha-evento-detalle');
             const compHoraInicio = document.getElementById('comp-hora-inicio');
             const compHoraCierre = document.getElementById('comp-hora-cierre');
             
@@ -206,7 +205,6 @@ async function ejecutarPago(data, csrfToken) {
             if (compCliente) compCliente.textContent = clienteNombreCompleto;
             if (compEvento) compEvento.textContent = document.querySelector('[data-field="nombre_evento"]')?.value || '—';
             if (compFechaEvento) compFechaEvento.textContent = datosPago.fecha_evento || '—';
-            if (compFechaEventoDetalle) compFechaEventoDetalle.textContent = datosPago.fecha_evento || '—';
             if (compHoraInicio) compHoraInicio.textContent = datosPago.hora_inicio || '—';
             if (compHoraCierre) compHoraCierre.textContent = datosPago.hora_fin || '—';
             
@@ -320,21 +318,19 @@ function generarPDF() {
         return;
     }
     
-    console.log('Container content:', container.innerHTML);
-    console.log('Container visible:', container.offsetHeight, container.offsetWidth);
-    
     const fecha = new Date().toISOString().slice(0, 10);
     const opt = {
-        margin: 5,
+        margin: [0, 0, 0, 0],
         filename: `comprobante_pago_${fecha}.pdf`,
-        image: { type: 'png', quality: 1.0 },
+        image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
-            scale: 3, 
+            scale: 2, 
+            y: 0, 
+            scrollY: 0,
             useCORS: true,
-            logging: true,
             backgroundColor: '#ffffff'
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
     };
     
     html2pdf().set(opt).from(container).save();

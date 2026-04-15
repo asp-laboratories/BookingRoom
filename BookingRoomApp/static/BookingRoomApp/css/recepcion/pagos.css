@@ -332,6 +332,11 @@
   min-height: 100px;
 }
 
+.comprobante-body {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
 .comprobante-body .receipt-container {
   position: relative;
   width: 100%;
@@ -380,35 +385,33 @@
 .receipt-container {
   background-color: white;
   width: 100%;
-  max-width: 800px;
-  padding: 40px;
+  max-width: 700px;
+  padding: 15px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: auto auto auto auto auto auto;
-  gap: 20px;
+  gap: 10px;
+  font-size: 10px;
+line-height: 1.2;
 }
 
 .section-label {
   font-weight: bold;
-  margin-bottom: 8px;
-  font-size: 0.9rem;
-  color: #333;
-}
-
-.gray-box {
-  background-color: #e0e0e0;
-  padding: 15px;
-  border-radius: 4px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  margin-bottom: 3px;
+  font-size: 0.8rem;
 }
 
 .header-section {
   grid-column: span 2;
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.header-section h1 {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 .mobiliario-section {
@@ -416,10 +419,9 @@
 }
 
 .mobiliario-section .extras-box {
-  background-color: #f5f5f5;
-  padding: 15px;
+  padding: 8px;
   border-radius: 4px;
-  min-height: 40px;
+  min-height: 25px;
   border: 1px solid #ddd;
 }
 
@@ -428,10 +430,11 @@
 }
 
 .header-section h1 {
-  margin: 0;
-  font-size: 2rem;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 1.2rem;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
 
 .reservation-section {
@@ -443,7 +446,7 @@
 }
 
 .client-section .gray-box {
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
 }
 
 .event-details {
@@ -464,48 +467,73 @@
 }
 
 .extras-box {
-  background-color: #e0e0e0;
-  padding: 15px;
+  background-color: #f0f0f0;
+  padding: 6px;
   border-radius: 4px;
-  min-height: 80px;
+  min-height: 30px;
+  font-size: 0.7rem;
+}
+
+.extras-section .section-label,
+.mobiliario-section .section-label,
+.servicios-section .section-label,
+.equipamiento-section .section-label {
+  font-size: 0.75rem;
+}
+
+.extras-section .extras-box,
+.mobiliario-section .extras-box,
+.servicios-section .extras-box,
+.equipamiento-section .extras-box {
+  font-size: 0.65rem;
+}
+
+.section-label {
+  font-weight: bold;
+  margin-bottom: 3px;
+  font-size: 0.8rem;
 }
 
 .financial-section {
   grid-column: span 2;
+}
+
+.financial-box {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  margin-top: 10px;
-  padding: 10px;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 4px;
 }
 
-.balance-info {
+.financial-box > div:nth-child(1) { grid-row: 1; grid-column: 1; }
+.financial-box > div:nth-child(2) { grid-row: 1; grid-column: 2; }
+.financial-box > div:nth-child(3) { grid-row: 1; grid-column: 3; }
+.financial-box > div:nth-child(4) { grid-row: 2; grid-column: 1; }
+.financial-box > div:nth-child(5) { grid-row: 2; grid-column: 2; }
+
+.financial-row {
   display: flex;
-  align-items: flex-end;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.7rem;
+  color: #222;
+}
+
+.financial-row div {
+  display: flex;
+  gap: 4px;
+}
+
+.financial-row .total-bold {
   font-weight: bold;
-  font-size: 1.1rem;
-}
-
-.totals-info {
-  text-align: right;
-  line-height: 1.8;
-}
-
-.totals-info span {
-  display: inline-block;
-  width: 120px;
-}
-
-.total-bold {
-  font-size: 1.2rem;
-  font-weight: bold;
-  border-top: 1px solid #333;
-  margin-top: 5px;
-  padding-top: 5px;
+  font-size: 0.75rem;
+  color: #000;
 }
 
 span.label {
-  color: #555;
-  font-size: 0.85rem;
+  color: #333;
+  font-size: 0.75rem;
   display: block;
 }
 
