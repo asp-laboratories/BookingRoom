@@ -106,8 +106,28 @@ DATABASES = {
         'PASSWORD': 'postgres',
         'HOST': 'localhost',
         'PORT': '5432',
+    },
+    'nueva_data': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'bookingroom_nuevadata',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'bookingroom_nuevadata',  # Cambia aquí
+#         'USER': 'postgres',
+#         'PASSWORD': 'postgres',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
+
 
 # SQLite (descomenta si prefieres usar SQLite)
 # DATABASES = {

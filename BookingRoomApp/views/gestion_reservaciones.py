@@ -222,16 +222,17 @@ def montaje_por_salon(request):
     try:
         salon = models.Salon.objects.get(id=salonId)
         
-        montajes = models.TipoMontaje.objects.filter(capacidadIdeal__lte=salon.maxCapacidad, disposicion=True)
+        # Obtener los Montaje relacionados con este salon
+        montajes = models.Montaje.objects.filter(salon=salon).select_related('tipo_montaje')
 
         lista = []
         for m in montajes:
             lista.append({
                 'id': m.id,
-                'tipo_montaje_id': m.id,  # Agregar ID del tipo de montaje
-                'nombre': m.nombre,
-                'capacidadIdeal': m.capacidadIdeal,
-                'costo': '0.0'
+                'tipo_montaje_id': m.tipo_montaje.id,
+                'nombre': m.tipo_montaje.nombre,
+                'capacidadIdeal': m.tipo_montaje.capacidadIdeal,
+                'costo': str(m.costo)
             })
         
         return JsonResponse({

@@ -15,6 +15,7 @@
     <button class="estadisticas-tab-btn" onclick="mostrarTab('mobiliario', this)">Mobiliario</button>
     <button class="estadisticas-tab-btn" onclick="mostrarTab('salones', this)">Salones</button>
     <button class="estadisticas-tab-btn" onclick="mostrarTab('montajes', this)">Montajes</button>
+    <button class="estadisticas-tab-btn" onclick="mostrarTab('paquetes', this)">Paquetes</button>
   </div>
 </div>
 
@@ -141,6 +142,40 @@
   </div>
 </div>
 
+<!-- Tab: Paquetes -->
+<div id="tab-paquetes" class="estadisticas-tab-content">
+  <div class="estadisticas-grid">
+    <div class="estadisticas-card">
+      <h3>Combinaciones populares (Evento + Montaje + Servicios)</h3>
+      <div class="estadisticas-canvas-container">
+        <canvas id="chart-combinaciones"></canvas>
+      </div>
+    </div>
+
+    <div class="estadisticas-card estadisticas-card-wide">
+      <h3>Top 5 por Tipo de Evento</h3>
+      <div class="estadisticas-grid-small">
+        <div class="estadisticas-card-mini">
+          <canvas id="chart-top-servicios"></canvas>
+        </div>
+        <div class="estadisticas-card-mini">
+          <canvas id="chart-top-equipamiento"></canvas>
+        </div>
+        <div class="estadisticas-card-mini">
+          <canvas id="chart-top-mobiliario"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="estadisticas-card">
+      <h3>Precios promedio por evento</h3>
+      <div class="estadisticas-canvas-container">
+        <canvas id="chart-precios-promedio"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 function mostrarTab(tabId, btn) {
   // Ocultar todos los contenidos
@@ -183,6 +218,13 @@ window.estadisticasData = {
   // Montajes
   montajes_usados: {{ tipos_montaje_mas_usados|safe|default:"[]" }},
   montajes_evento: {{ montajes_por_tipo_evento|safe|default:"[]" }},
+  
+  // Paquetes
+  combinaciones_populares: {{ combinaciones_populares|safe|default:"[]" }},
+  servicios_top_por_evento: {{ servicios_top_por_evento|safe|default:"[]" }},
+  equipamiento_top_por_evento: {{ equipamiento_top_por_evento|safe|default:"[]" }},
+  mobiliario_top_por_evento: {{ mobiliario_top_por_evento|safe|default:"[]" }},
+  precios_promedio_evento: {{ precios_promedio_evento|safe|default:"[]" }},
 };
 </script>
 

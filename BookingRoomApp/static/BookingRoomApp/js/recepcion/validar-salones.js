@@ -1,238 +1,179 @@
-// Validación de salones, montaje y capacidad
-// Basado en la lógica de FollowRoom Flutter (tab_salon_reservacion.dart)
+// ========================================
+// VALIDAR SALONES.JS - FUNCIONAL COMPLETA
+// ========================================
+alert('=== INICIANDO validar-salones.js ===');
 
-document.addEventListener("DOMContentLoaded", function() {
-    const fechaEventoInput = document.getElementById('fecha_evento');
-    const selectSalon = document.getElementById('select-salon');
-    const selectMontaje = document.getElementById('select-montaje');
-    const estimadoInput = document.getElementById('estimado_asistentes');
+var fechaInput = document.getElementById('fecha_evento');
+var salonSelect = document.getElementById('select-salon');
+var montajeSelect = document.getElementById('select-montaje');
+var estimadoInput = document.getElementById('estimado_asistentes');
 
-    // Estados que bloquean un salón ( Flutter: _estaBloqueado() )
-    const estadosBloqueados = ['RESV', 'OCUP', 'LIMPI', 'LIMP', 'MANTE', 'MAN'];
+var capacidadSalon = 0;
 
-    // Flag para evitar llamadas duplicadas
-    let cargandoMontajes = false;
+alert('Elementos encontrados');
 
-    // ========================================
-    // 1. CAMBIO DE FECHA → Verificar salones
-    // ========================================
-    if (fechaEventoInput) {
-        fechaEventoInput.addEventListener('change', async function() {
-            const fecha = this.value;
-
-            // Resetear todo al cambiar fecha
-            selectSalon.value = '';
-            selectSalon.disabled = true;
-            selectMontaje.innerHTML = '<option value="">-- Selecciona un salón primero --</option>';
-            selectMontaje.disabled = true;
-            document.querySelectorAll('.mobiliario-tipo').forEach(s => { s.disabled = true; s.value = ''; });
-            document.querySelectorAll('.mobiliario-select').forEach(s => { s.disabled = true; s.innerHTML = '<option value="">-- Selecciona un tipo primero --</option>'; });
-
-            if (!fecha) return;
-
-            console.log('📅 Verificando salones para:', fecha);
-            selectSalon.disabled = false;
-            await verificarDisponibilidadSalones(fecha);
-        });
-    }
-
-    // ========================================
-    // 2. VERIFICAR DISPONIBILIDAD DE SALONES
-    // ========================================
-    async function verificarDisponibilidadSalones(fecha) {
-        try {
-            const response = await fetch(`/reservacion/verificar-salones-disponibles/?fecha=${fecha}`);
-            const data = await response.json();
-
-            if (!data.success) {
-                console.error('Error verificando salones:', data.message);
-                return;
-            }
-
-            // data.salones = [{ id, nombre, disponible, estado_salon, reservado, max_capacidad }]
-            const opciones = selectSalon.querySelectorAll('option');
-
-            opciones.forEach(opcion => {
-                const salonId = opcion.value;
-                if (!salonId) return;
-
-                const salonInfo = data.salones.find(s => s.nombre == salonId);
-                
-                if (salonInfo) {
-                    const estaBloqueado = salonInfo.reservado || 
-                        estadosBloqueados.includes(salonInfo.estado_salon);
-                    
-                    if (estaBloqueado) {
-                        opcion.disabled = true;
-                        opcion.textContent = `${salonInfo.nombre} (No disponible - ${salonInfo.estado_salon})`;
-                    } else {
-                        opcion.disabled = false;
-                        opcion.textContent = salonInfo.nombre;
-                    }
-                }
-            });
-
-            console.log('✅ Salones verificados:', data.salones.length);
-
-        } catch (error) {
-            console.error('Error verificando salones:', error);
+// 1. Habilitar salon al cambiar fecha
+if (fechaInput && salonSelect) {
+    // Establecer rango de fecha (hoy + 5 meses)
+    var hoy = new Date();
+    var maxFecha = new Date();
+    maxFecha.setMonth(hoy.getMonth() + 5);
+    
+    var formatoFecha = function(f) {
+        var y = f.getFullYear();
+        var m = String(f.getMonth() + 1).padStart(2, '0');
+        var d = String(f.getDate()).padStart(2, '0');
+        return y + '-' + m + '-' + d;
+    };
+    
+    fechaInput.min = formatoFecha(hoy);
+    fechaInput.max = formatoFecha(maxFecha);
+    alert('Rango de fecha establecido');
+    
+    // Evento change
+    fechaInput.onchange = function() {
+        alert('Fecha seleccionada: ' + this.value);
+        if (this.value) {
+            salonSelect.disabled = false;
+            alert('Salón habilitado');
+        } else {
+            salonSelect.disabled = true;
         }
-    }
+    };
+    alert('Evento de fecha agregado');
+}
 
-    // ========================================
-    // 3. SELECCIÓN DE SALÓN → Cargar montajes
-    // ========================================
-    if (selectSalon) {
-        selectSalon.addEventListener('change', function() {
-            const salonId = this.value;
-
-            // Resetear montaje (limpieza completa)
-            selectMontaje.value = '';
-            while (selectMontaje.firstChild) {
-                selectMontaje.removeChild(selectMontaje.firstChild);
-            }
-            const defaultOpt = document.createElement('option');
-            defaultOpt.value = '';
-            defaultOpt.textContent = '-- Selecciona un montaje --';
-            selectMontaje.appendChild(defaultOpt);
-            selectMontaje.disabled = true;
-
-            // Resetear mobiliario
-            document.querySelectorAll('.mobiliario-tipo').forEach(s => { s.disabled = true; s.value = ''; });
-            document.querySelectorAll('.mobiliario-select').forEach(s => { s.disabled = true; s.innerHTML = '<option value="">-- Selecciona un tipo primero --</option>'; });
-
-            if (!salonId) return;
-
-            // Validar que no esté bloqueado
-            const opcionSeleccionada = this.options[this.selectedIndex];
-            if (opcionSeleccionada.disabled) {
-                mostrarToastExito('Este salón no está disponible para la fecha seleccionada', 'warning');
-                this.value = '';
-                return;
-            }
-
-            // Validar capacidad vs estimado
-            const estimado = parseInt(estimadoInput?.value) || 0;
-            const capacidadMax = parseInt(this.dataset.capacidad || opcionSeleccionada.dataset.capacidad || 0);
-
-            if (estimado > 0 && capacidadMax > 0 && estimado > capacidadMax) {
-                mostrarToastExito(
-                    `⚠️ El salón tiene capacidad máxima de ${capacidadMax} personas. Tu estimado es de ${estimado} asistentes.`,
-                    'warning'
-                );
-                this.value = '';
-                return;
-            }
-
-            // Cargar montajes
-            cargarMontajesSalon(salonId);
-            console.log('🏛️ Salón seleccionado:', salonId);
-        });
-    }
-
-    // ========================================
-    // 4. VALIDAR CAPACIDAD AL CAMBIAR ESTIMADO
-    // ========================================
-    if (estimadoInput) {
-        estimadoInput.addEventListener('change', function() {
-            const estimado = parseInt(this.value) || 0;
-            if (!selectSalon.value) return;
-
-            const opcionSeleccionada = selectSalon.options[selectSalon.selectedIndex];
-            const capacidadMax = parseInt(opcionSeleccionada.dataset.capacidad || 0);
-
-            if (estimado > capacidadMax && capacidadMax > 0) {
-                mostrarToastExito(
-                    `⚠️ El salón tiene capacidad de ${capacidadMax} personas.`,
-                    'warning'
-                );
-                selectSalon.value = '';
-                selectMontaje.value = '';
-                while (selectMontaje.firstChild) {
-                    selectMontaje.removeChild(selectMontaje.firstChild);
-                }
-                const opt = document.createElement('option');
-                opt.value = '';
-                opt.textContent = '-- Selecciona un salón primero --';
-                selectMontaje.appendChild(opt);
-                selectMontaje.disabled = true;
-            }
-        });
-    }
-
-    // ========================================
-    // 5. CARGAR TODOS LOS MONTAJES (como Flutter)
-    // ========================================
-    async function cargarMontajesSalon(salonId) {
-        // Prevenir llamadas duplicadas
-        if (cargandoMontajes) {
-            console.log('⚠️ Ya se están cargando montajes, ignorando llamada duplicada');
+// 2. Cargar montajes al seleccionar salon
+if (salonSelect && montageSelect) {
+    salonSelect.onchange = function() {
+        var salonId = this.value;
+        alert('Salón seleccionado: ' + salonId);
+        
+        if (!salonId) {
+            montageSelect.innerHTML = '<option value="">-- Selecciona un salón primero --</option>';
+            montajeSelect.disabled = true;
             return;
         }
+        
+        // Obtener capacidad del salon
+        var opcion = this.options[this.selectedIndex];
+        capacidadSalon = parseInt(opcion.dataset.capacidad || 0);
+        alert('Capacidad del salón: ' + capacidadSalon);
+        
+        // Cargar montajes
+        cargarMontajes(salonId);
+    };
+}
 
-        cargandoMontajes = true;
+// 3. Funcion para cargar montajes
+async function cargarMontajes(salonId) {
+    try {
+        alert('Cargando montajes...');
+        
+        var response = await fetch('/reservacion/montajes-salon/?salon_id=' + salonId);
+        var data = await response.json();
 
-        try {
-            // Flutter muestra TODOS los montajes, no solo los del salón
-            const response = await fetch(`/reservacion/montajes-salon/?todos=true`);
-            const data = await response.json();
+        alert('Montajes recibidos: ' + (data.montajes ? data.montajes.length : 0));
 
-            // LIMPIAR completamente antes de agregar
-            while (selectMontaje.firstChild) {
-                selectMontaje.removeChild(selectMontaje.firstChild);
-            }
-
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.textContent = '-- Selecciona un montaje --';
-            selectMontaje.appendChild(defaultOption);
-
-            selectMontaje.disabled = false;
-
-            if (data.montajes && data.montajes.length > 0) {
-                data.montajes.forEach(montaje => {
-                    const option = document.createElement('option');
-                    option.value = montaje.id;
-                    option.textContent = `${montaje.nombre} (Capacidad ideal: ${montaje.capacidadIdeal || 'N/A'})`;
-                    option.dataset.costo = montaje.costo || 0;
-                    option.dataset.montajeId = montaje.id;
-                    option.dataset.tipoMontajeId = montaje.tipo_montaje_id;
-                    selectMontaje.appendChild(option);
-                });
-                console.log('🎨 Todos los montajes cargados:', data.montajes.length);
-            } else {
-                selectMontaje.innerHTML = '<option value="">-- No hay montajes disponibles --</option>';
-                selectMontaje.disabled = true;
-            }
-
-        } catch (error) {
-            console.error('Error cargando montajes:', error);
-            mostrarToastExito('Error al cargar montajes', 'error');
-        } finally {
-            cargandoMontajes = false;
+        // Limpiar select
+        while (montajeSelect.firstChild) {
+            montageSelect.removeChild(montajeSelect.firstChild);
         }
-    }
 
-    // ========================================
-    // 6. SELECCIÓN DE MONTAJE → Habilitar mobiliario
-    // ========================================
-    if (selectMontaje) {
-        selectMontaje.addEventListener('change', function() {
-            const montajeSeleccionado = this.value;
-            const mobiliarioTipos = document.querySelectorAll('.mobiliario-tipo');
+        var defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = '-- Selecciona un montaje --';
+        montageSelect.appendChild(defaultOpt);
 
-            if (montajeSeleccionado) {
-                // Habilitar tipos de mobiliario
-                mobiliarioTipos.forEach(s => s.disabled = false);
-                console.log('🪑 Montaje seleccionado, mobiliario habilitado');
+        if (data.montajes && data.montajes.length > 0) {
+            // Filtrar montajes por capacidad del salon
+            var montajesFiltrados = data.montajes.filter(function(m) {
+                var cap = parseInt(m.capacidadIdeal || 0);
+                return cap <= capacidadSalon;
+            });
+
+            alert('Montajes que soportan la capacidad: ' + montajesFiltrados.length);
+
+            if (montajesFiltrados.length === 0) {
+                alert('Ningún montaje soporta la capacidad del salón');
+                montageSelect.disabled = true;
             } else {
-                // Resetear todo el mobiliario
-                mobiliarioTipos.forEach(s => { s.disabled = true; s.value = ''; });
-                document.querySelectorAll('.mobiliario-select').forEach(s => {
-                    s.disabled = true;
-                    s.innerHTML = '<option value="">-- Selecciona un tipo primero --</option>';
+                montajesFiltrados.forEach(function(m) {
+                    var opt = document.createElement('option');
+                    opt.value = m.tipo_montaje_id;
+                    opt.textContent = m.nombre + ' (Cap: ' + (m.capacidadIdeal || 'N/A') + ')';
+                    opt.dataset.capacidadIdeal = m.capacidadIdeal || 0;
+                    opt.dataset.costo = m.costo || 0;
+                    opt.dataset.montajeId = m.id;
+                    montageSelect.appendChild(opt);
                 });
+                montageSelect.disabled = false;
+                alert('Montajes cargados correctamente');
             }
-        });
+        } else {
+            alert('No hay montajes disponibles');
+            montajeSelect.disabled = true;
+        }
+    } catch (error) {
+        alert('Error: ' + error);
     }
-});
+}
+
+// 4. Habilitar mobiliario al seleccionar montaje
+if (montajeSelect) {
+    montageSelect.onchange = function() {
+        var opcion = this.options[this.selectedIndex];
+        
+        if (opcion && opcion.value) {
+            var capacidadMontaje = parseInt(opcion.dataset.capacidadIdeal || 0);
+            
+            // Validar que la capacidad del montaje no exceda la del salon
+            if (capacidadMontaje > capacidadSalon && capacidadSalon > 0) {
+                alert('El montaje excede la capacidad del salón');
+                this.value = '';
+                deshabilitarMobiliario();
+                return;
+            }
+            
+            // Habilitar mobiliario
+            var mobiliarios = document.querySelectorAll('.mobiliario-tipo');
+            mobiliarios.forEach(function(s) {
+                s.disabled = false;
+            });
+            alert('Mobiliario habilitado');
+        } else {
+            deshabilitarMobiliario();
+        }
+    };
+}
+
+function deshabilitarMobiliario() {
+    var mobiliarios = document.querySelectorAll('.mobiliario-tipo');
+    mobiliarios.forEach(function(s) {
+        s.disabled = true;
+        s.value = '';
+    });
+    var selects = document.querySelectorAll('.mobiliario-select');
+    selects.forEach(function(s) {
+        s.disabled = true;
+        s.innerHTML = '<option value="">-- Selecciona un tipo primero --</option>';
+    });
+}
+
+// 5. Validar estimado de asistentes
+if (estimadoInput && salonSelect) {
+    estimadoInput.oninput = function() {
+        var estimado = parseInt(this.value) || 0;
+        
+        if (estimado > 0 && capacidadSalon > 0 && estimado > capacidadSalon) {
+            alert('El estimado excede la capacidad del salón (' + capacidadSalon + ')');
+            this.value = '';
+            salonSelect.value = '';
+            salonSelect.disabled = true;
+            montageSelect.innerHTML = '<option value="">-- Selecciona un salón primero --</option>';
+            montageSelect.disabled = true;
+        }
+    };
+}
+
+alert('=== VALIDACION COMPLETADA ===');

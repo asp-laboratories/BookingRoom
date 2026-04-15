@@ -4,6 +4,13 @@
 {% block inicio %}
 
 <link rel="stylesheet" href="{% static 'BookingRoomApp/css/almacen/inventario_equipamiento.css' %}">
+<link rel="stylesheet" href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
+
+<style>
+.equipamiento-container .administrador-tablita {
+    max-height: 700px;
+}
+</style>
 
 <div class="equipamiento-container">
     <h2 class="equipamiento-titulo">Equipamientos</h2>
@@ -38,33 +45,37 @@
             </div>
         </form>
 
-        <table class="equipamiento-tabla">
-            <thead>
+        <div class="administrador-tablita">
+
+        <table class="administrador-tabla">
+            <thead class="administrador-thead">
                 <tr>
-                    <th class="equipamiento-th">Indice</th>
-                    <th class="equipamiento-th">Servicio</th>
-                    <th class="equipamiento-th">Tipo</th>
-                    <th class="equipamiento-th">Descripcion</th>
-                    <th class="equipamiento-th">Costo</th>
-                    <th class="equipamiento-th">Stock</th>
-                    <th class="equipamiento-th">Estado</th>
-                    <th class="equipamiento-th">Cambiar estado</th>
+                    <th class="administrador-th">Indice</th>
+                    <th class="administrador-th">Servicio</th>
+                    <th class="administrador-th">Tipo</th>
+                    <th class="administrador-th">Descripcion</th>
+                    <th class="administrador-th">Costo</th>
+                    <th class="administrador-th">Stock</th>
+                    <th class="administrador-th">Estado</th>
+                    <th class="administrador-th">Cambiar estado</th>
                 </tr>
             </thead>
 
-            <tbody>
+            <tbody class="administrador-tbody">
                 {% for item in inventario %}
                 <tr>
-                    <td class="equipamiento-td">{{ forloop.counter }}</td>
-                    <td class="equipamiento-td">{{ item.equipamiento.nombre }}</td>
-                    <td class="equipamiento-td">{{ item.equipamiento.tipo_equipa.nombre }}</td>
-                    <td class="equipamiento-td">{{ item.equipamiento.descripcion }}</td>
-                    <td class="equipamiento-td">{{ item.equipamiento.costo }}</td>
-                    <td class="equipamiento-td">{{ item.cantidad }}</td>
-                    <td class="equipamiento-td">{{ item.estado_equipa.nombre }}</td>
-                    <td class="equipamiento-td">
+                    <td class="administrador-td">{{ forloop.counter }}</td>
+                    <td class="administrador-td">{{ item.equipamiento.nombre }}</td>
+                    <td class="administrador-td">{{ item.equipamiento.tipo_equipa.nombre }}</td>
+                    <td class="administrador-td">{{ item.equipamiento.descripcion }}</td>
+                    <td class="administrador-td">{{ item.equipamiento.costo }}</td>
+                    <td class="administrador-td">{{ item.cantidad }}</td>
+                    <td class="administrador-td">{{ item.estado_equipa.nombre }}</td>
+                    <td class="administrador-td">
                         <button type="button" class="equipamiento-btn-verde" onclick="abrirModal({{ item.id }})">
-                            ↑↓
+                            <svg class="icono blanco">
+                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-change-arrows"></use>
+              </svg>
                         </button>
                     </td>
                 </tr>
@@ -78,6 +89,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
 
     </div>
 

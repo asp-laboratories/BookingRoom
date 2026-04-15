@@ -75,11 +75,11 @@ document.addEventListener("DOMContentLoaded", function() {
     // Para persona física: Nombre Fiscal = Nombre + Apellido Paterno + Apellido Materno
     // No se puede editar manualmente
     function actualizarNombreFiscal() {
-        const tipoSeleccionado = tipoMoral?.checked ? 'moral' : tipoFisica?.checked ? 'fisica' : null;
+        const tipoSeleccionado = tipoMoral?.checked ? 'MOR' : tipoFisica?.checked ? 'FIS' : null;
         
         if (!nombreFiscalInput) return;
         
-        if (tipoSeleccionado === 'fisica') {
+        if (tipoSeleccionado === 'FIS') {
             // Persona física: nombre fiscal = nombre completo
             const nombre = nombreInput?.value || '';
             const apellidoPaterno = apellidoPaternoInput?.value || '';
@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function() {
             nombreFiscalInput.style.cursor = 'not-allowed';
             nombreFiscalInput.placeholder = 'Se genera automáticamente';
             
-        } else if (tipoSeleccionado === 'moral') {
+        } else if (tipoSeleccionado === 'MOR') {
             // Persona moral: nombre fiscal es el nombre de la empresa (editable)
             nombreFiscalInput.readOnly = false;
             nombreFiscalInput.style.backgroundColor = '';
@@ -192,9 +192,9 @@ document.addEventListener("DOMContentLoaded", function() {
     function onTipoClienteChange() {
         actualizarNombreFiscal();
         
-        const tipoSeleccionado = tipoMoral?.checked ? 'moral' : tipoFisica?.checked ? 'fisica' : null;
+        const tipoSeleccionado = tipoMoral?.checked ? 'MOR' : tipoFisica?.checked ? 'FIS' : null;
         
-        if (tipoSeleccionado === 'moral') {
+        if (tipoSeleccionado === 'MOR') {
             // Cambiar labels para empresa
             document.getElementById('label-nombre-contacto').textContent = 'Nombre del contacto';
             document.getElementById('label-nombre-fiscal').textContent = 'Nombre de la empresa';
@@ -204,7 +204,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 nombreFiscalInput.value = nombreInput.value;
             }
             
-        } else if (tipoSeleccionado === 'fisica') {
+        } else if (tipoSeleccionado === 'FIS') {
             // Cambiar labels para persona física
             document.getElementById('label-nombre-contacto').textContent = 'Nombre completo';
             document.getElementById('label-nombre-fiscal').textContent = 'Nombre Fiscal';

@@ -4,6 +4,13 @@
 {% block inicio %}
 
 <link rel="stylesheet" href="{% static 'BookingRoomApp/css/almacen/inventario_mobiliario.css' %}">
+<link rel="stylesheet" href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
+
+<style>
+.mobiliario-container .administrador-tablita {
+    max-height: 600px;
+}
+</style>
 
 <div class="mobiliario-container">
     <h2 class="mobiliario-titulo">Mobiliario</h2>
@@ -48,32 +55,34 @@
             </div>
         </form>
 
-        <table class="mobiliario-tabla">
-            <thead>
+        <div class="administrador-tablita">
+
+        <table class="administrador-tabla">
+            <thead class="administrador-thead">
                 <tr>
-                    <th class="mobiliario-th">Indice</th>
-                    <th class="mobiliario-th">Mobiliario</th>
-                    <th class="mobiliario-th">Tipo</th>
-                    <th class="mobiliario-th">Descripcion</th>
-                    <th class="mobiliario-th">Costo</th>
-                    <th class="mobiliario-th">Stock</th>
-                    <th class="mobiliario-th">Estado</th>
-                    <th class="mobiliario-th">Cambiar estado</th>
+                    <th class="administrador-th">Indice</th>
+                    <th class="administrador-th">Mobiliario</th>
+                    <th class="administrador-th">Tipo</th>
+                    <th class="administrador-th">Descripcion</th>
+                    <th class="administrador-th">Costo</th>
+                    <th class="administrador-th">Stock</th>
+                    <th class="administrador-th">Estado</th>
+                    <th class="administrador-th">Cambiar estado</th>
                 </tr>
             </thead>
 
-            <tbody>
+            <tbody class="administrador-tbody">
                 {% for item in inventario %}
                 <tr>
-                    <td class="mobiliario-td">{{ forloop.counter }}</td>
-                    <td class="mobiliario-td">{{ item.mobiliario.nombre }}</td>
-                    <td class="mobiliario-td">{{ item.mobiliario.tipo_movil.nombre }}</td>
-                    <td class="mobiliario-td">{{ item.mobiliario.descripcion }}</td>
-                    <td class="mobiliario-td">{{ item.mobiliario.costo }}</td>
-                    <td class="mobiliario-td">{{ item.cantidad }}</td>
-                    <td class="mobiliario-td">{{ item.estado_mobil.nombre }}</td>
+                    <td class="administrador-td">{{ forloop.counter }}</td>
+                    <td class="administrador-td">{{ item.mobiliario.nombre }}</td>
+                    <td class="administrador-td">{{ item.mobiliario.tipo_movil.nombre }}</td>
+                    <td class="administrador-td">{{ item.mobiliario.descripcion }}</td>
+                    <td class="administrador-td">{{ item.mobiliario.costo }}</td>
+                    <td class="administrador-td">{{ item.cantidad }}</td>
+                    <td class="administrador-td">{{ item.estado_mobil.nombre }}</td>
 
-                    <td class="mobiliario-td">
+                    <td class="administrador-td">
                             <button type="button" class="mobiliario-btn-verde" onclick="abrirModalMob({{ item.id }})">
                                 ↑↓
                             </button>
@@ -88,6 +97,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
 
     </div>
     

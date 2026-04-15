@@ -75,13 +75,25 @@ async function cargarDatosCliente() {
             // Determinar tipo de cliente
             const tipoClienteId = data.tipo_cliente_id;
             if (tipoClienteId) {
-                const id = parseInt(tipoClienteId);
-                const tipoRadio = id > 1 ? 'tipo-moral' : 'tipo-fisica';
-                const radio = document.getElementById(tipoRadio);
-                if (radio) {
-                    radio.checked = true;
-                    radio.disabled = false;
-                    actualizarLabelsCliente(id > 1 ? 'moral' : 'fisica');
+                // Si es MOR o FIS (basado en IDs)
+                // Depende de cómo estén los IDs en la base de datos, 
+                // pero lo más seguro es usar el código que ya actualizamos en el HTML
+                const radioMoral = document.getElementById('tipo-moral');
+                const radioFisica = document.getElementById('tipo-fisica');
+                
+                // Si viene el código directo
+                if (data.tipo_cliente === 'MOR') {
+                    if (radioMoral) {
+                        radioMoral.checked = true;
+                        radioMoral.disabled = false;
+                        actualizarLabelsCliente('MOR');
+                    }
+                } else if (data.tipo_cliente === 'FIS') {
+                    if (radioFisica) {
+                        radioFisica.checked = true;
+                        radioFisica.disabled = false;
+                        actualizarLabelsCliente('FIS');
+                    }
                 }
             }
             
@@ -220,7 +232,7 @@ function actualizarLabelsCliente(tipo) {
     const labelNombreFiscal = document.getElementById('label-nombre-fiscal');
     const nombreInput = document.getElementById('cliente-nombre');
     
-    if (tipo === 'moral') {
+    if (tipo === 'MOR') {
         labelNombre.textContent = 'Nombre del contacto';
         labelNombreFiscal.textContent = 'Nombre de la empresa';
         if (nombreInput) {

@@ -51,6 +51,7 @@ class Salones(generic.ListView):
             return HttpResponseRedirect(reverse("login"))
 
         if request.POST.get("form_salones") == "salon":
+            maxCapacidad = request.POST.get("maxCapacidad") or 50
             models.Salon.objects.create(
                 nombre=request.POST.get("nameSalon"),
                 costo=request.POST.get("costoSalon"),
@@ -59,7 +60,7 @@ class Salones(generic.ListView):
                 dimenAncho=request.POST.get("anchoSalon"),
                 dimenAlto=request.POST.get("alturaSalon"),
                 metrosCuadrados=request.POST.get("meCuadra"),
-                maxCapacidad=50,
+                maxCapacidad=maxCapacidad,
                 estado_salon=models.EstadoSalon.objects.get(codigo="DIS"),
             )
             messages.success(request, f'Salón registrado exitosamente')

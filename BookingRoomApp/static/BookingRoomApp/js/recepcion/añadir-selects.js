@@ -276,24 +276,18 @@ async function cargarMontajesSalon(salon) {
   } catch (error) {
     console.error("Error al cargar los montajes", error);
     mostrarToastExito("Error al cargar montajes", "error");
-  }
+}
 
-  montajeElegido.addEventListener(
-    "change",
-    function () {
-      const mobiliariosBloqueados =
-        document.querySelectorAll(".mobiliario-tipo");
-      if (this.value) {
-        mobiliariosBloqueados.forEach((s) => (s.disabled = false));
-      } else {
-        mobiliariosBloqueados.forEach((s) => {
-          s.disabled = true;
-          s.value = "";
-        });
-      }
-    },
-    { once: true },
-  );
+  // Habilitar/deshabilitar mobiliario-tipo segun el valor del montaje
+  const mobiliariosBloqueados = document.querySelectorAll('.mobiliario-tipo');
+  if (montajeElegido.value) {
+    mobiliariosBloqueados.forEach((s) => (s.disabled = false));
+  } else {
+    mobiliariosBloqueados.forEach((s) => {
+      s.disabled = true;
+      s.value = '';
+    });
+  }
 }
 
 async function cargarMobiliariosPorTipo(tipo, mobiliarioSelect) {

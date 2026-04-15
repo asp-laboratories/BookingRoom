@@ -13,7 +13,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="{% static "BookingRoomApp/js/recepcion/pagos.js" %}" defer></script>
 <script src="{% static "BookingRoomApp/js/recepcion/añadir-selects.js" %}"></script>
-<script src="{% static "BookingRoomApp/js/recepcion/validar-salones.js" %}"></script>
+<script src="{% static 'BookingRoomApp/js/recepcion/validar-salones.js' %}"></script>
 <script src="{% static "BookingRoomApp/js/recepcion/calcular-costo.js" %}"></script>
 <script src="{% static "BookingRoomApp/js/recepcion/validar-cliente.js" %}"></script>
 <script src="{% static "BookingRoomApp/js/recepcion/validar-reservacion.js" %}"></script>
@@ -89,8 +89,8 @@
           <div class="reservacion-campo">
             <label class="reservacion-label">Tipo de cliente</label>
             <div class="reservacion-radio-group">
-              <label><input type="radio" name="tipo-cliente" id="tipo-moral" value="moral" disabled /> Empresa</label>
-              <label><input type="radio" name="tipo-cliente" id="tipo-fisica" value="fisica" disabled /> Persona física</label>
+              <label><input type="radio" name="tipo-cliente" id="tipo-moral" value="MOR" disabled /> Empresa</label>
+              <label><input type="radio" name="tipo-cliente" id="tipo-fisica" value="FIS" disabled /> Persona física</label>
             </div>
           </div>
           <div class="reservacion-campo">
@@ -398,7 +398,7 @@
     min-height: 45px;
     padding: 6px 8px;
     width: 100%;
-    margin: 0 0 8px 0;
+    margin: 15px 0 15px 0;
     border-left: 3px solid var(--color-primario);
     background: white;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);

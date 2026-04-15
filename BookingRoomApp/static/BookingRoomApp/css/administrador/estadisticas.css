@@ -46,6 +46,28 @@
     min-height: 350px;
 }
 
+.estadisticas-card-wide {
+    grid-column: span 2;
+}
+
+.estadisticas-grid-small {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.estadisticas-card-mini {
+    background: #f8f8f8;
+    border-radius: 8px;
+    padding: 10px;
+    min-height: 200px;
+}
+
+.estadisticas-card-mini canvas {
+    max-height: 180px;
+}
+
 .estadisticas-card-titulo {
     margin: 0 0 20px 0;
     padding-bottom: 10px;

@@ -6,6 +6,13 @@
   rel="stylesheet"
   href="{% static 'BookingRoomApp/css/reservacion/historial_reservacion.css' %}"
 />
+<link rel="stylesheet" href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}" />
+
+<style>
+.historial-container .administrador-tablita {
+    max-height: 700px;
+}
+</style>
 
 {% include "BookingRoomApp/includes/alert-exito.html" %}
 
@@ -34,34 +41,36 @@
     >
   </form>
 
-  <table class="historial-tabla">
-    <thead>
+  <div class="administrador-tablita">
+
+  <table class="administrador-tabla">
+    <thead class="administrador-thead">
       <tr>
-        <th class="historial-th">Número</th>
-        <th class="historial-th">Nombre del evento</th>
-        <th class="historial-th">Cliente</th>
-        <th class="historial-th">Fecha de evento</th>
-        <th class="historial-th">Horario</th>
-        <th class="historial-th">Salón</th>
-        <th class="historial-th">Estado</th>
-        <th class="historial-th">Acción</th>
+        <th class="administrador-th">Número</th>
+        <th class="administrador-th">Nombre del evento</th>
+        <th class="administrador-th">Cliente</th>
+        <th class="administrador-th">Fecha de evento</th>
+        <th class="administrador-th">Horario</th>
+        <th class="administrador-th">Salón</th>
+        <th class="administrador-th">Estado</th>
+        <th class="administrador-th">Acción</th>
       </tr>
     </thead>
 
-    <tbody>
+    <tbody class="administrador-tbody">
       {% for reservacion in reservaciones %}
       <tr>
-        <td class="historial-td">{{reservacion.id}}</td>
-        <td class="historial-td">{{reservacion.nombreEvento}}</td>
-        <td class="historial-td">{{reservacion.cliente.nombre}}</td>
-        <td class="historial-td">{{reservacion.fechaEvento}}</td>
-        <td class="historial-td">
+        <td class="administrador-td">{{reservacion.id}}</td>
+        <td class="administrador-td">{{reservacion.nombreEvento}}</td>
+        <td class="administrador-td">{{reservacion.cliente.nombre}}</td>
+        <td class="administrador-td">{{reservacion.fechaEvento}}</td>
+        <td class="administrador-td">
           {{reservacion.horaInicio}} - {{reservacion.horaFin}}
         </td>
-        <td class="historial-td">{{reservacion.montaje.salon.nombre}}</td>
-        <td class="historial-td">{{reservacion.estado_reserva.nombre}}</td>
+        <td class="administrador-td">{{reservacion.montaje.salon.nombre}}</td>
+        <td class="administrador-td">{{reservacion.estado_reserva.nombre}}</td>
 
-        <td class="historial-td">
+        <td class="administrador-td">
           <button
             class="historial-btn ver-pagos"
             data-pk="{{ reservacion.id }}"
@@ -85,11 +94,12 @@
       </tr>
       {% empty %}
       <tr>
-        <td colspan="8" class="historial-td">No hay reservaciones</td>
+        <td colspan="8" class="administrador-td">No hay reservaciones</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+  </div>
 </div>
 
 <div id="modalPagos" class="historial-modal">

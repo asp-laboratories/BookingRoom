@@ -208,6 +208,83 @@ def estadisticas(request):
         LIMIT 5
     """)
     
+    # ==========================================
+    # PAQUETES - Para construcción de paquetes
+    # ==========================================
+    
+    # Combinaciones populares (tipo evento + montaje + salon)
+    combinaciones_populares = ejecutar_query("""
+        SELECT 
+            te.nombre as tipo_evento,
+            tm.nombre as montaje,
+            s.nombre as salon,
+            COUNT(r.id) as frecuencia,
+            ROUND(AVG(r.total), 2) as promedio_total
+        FROM reservacion r
+        JOIN tipo_evento te ON r.tipo_evento_id = te.id
+        JOIN montaje m ON r.montaje_id = m.id
+        JOIN tipo_montaje tm ON m.tipo_montaje_id = tm.id
+        JOIN salon s ON m.salon_id = s.id
+        JOIN estado_reserva er ON r.estado_reserva_id = er.codigo
+        WHERE er.codigo IN ('CON', 'FIN')
+        GROUP BY te.nombre, tm.nombre, s.nombre
+        ORDER BY frecuencia DESC
+        LIMIT 5
+    """)
+    
+    # Top servicios por tipo de evento
+    servicios_top_por_evento = ejecutar_query("""
+        SELECT te.nombre as tipo_evento, s.nombre as servicio, COUNT(rs.id) as frecuencia
+        FROM reserva_servicio rs
+        JOIN servicio s ON rs.servicio_id = s.id
+        JOIN reservacion r ON rs.reservacion_id = r.id
+        JOIN tipo_evento te ON r.tipo_evento_id = te.id
+        GROUP BY te.nombre, s.id, s.nombre
+        ORDER BY te.nombre, frecuencia DESC
+        LIMIT 10
+    """)
+    
+    # Top equipamiento por tipo de evento
+    equipamiento_top_por_evento = ejecutar_query("""
+        SELECT te.nombre as tipo_evento, e.nombre as equipamiento, SUM(re.cantidad) as cantidad_total
+        FROM reserva_equipa re
+        JOIN equipamiento e ON re.equipamiento_id = e.id
+        JOIN reservacion r ON re.reservacion_id = r.id
+        JOIN tipo_evento te ON r.tipo_evento_id = te.id
+        GROUP BY te.nombre, e.id, e.nombre
+        ORDER BY te.nombre, cantidad_total DESC
+        LIMIT 10
+    """)
+    
+    # Top mobiliario por tipo de evento
+    mobiliario_top_por_evento = ejecutar_query("""
+        SELECT te.nombre as tipo_evento, m.nombre as mobiliario, SUM(mm.cantidad) as cantidad_total
+        FROM montaje_mobiliario mm
+        JOIN mobiliario m ON mm.mobiliario_id = m.id
+        JOIN reservacion r ON mm.montaje_id = r.montaje_id
+        JOIN tipo_evento te ON r.tipo_evento_id = te.id
+        GROUP BY te.nombre, m.id, m.nombre
+        ORDER BY te.nombre, cantidad_total DESC
+        LIMIT 10
+    """)
+    
+    # Precios promedio por tipo de evento
+    precios_promedio_evento = ejecutar_query("""
+        SELECT 
+            te.nombre as tipo_evento,
+            ROUND(AVG(r.total), 2) as promedio_total,
+            ROUND(AVG(r.subtotal), 2) as promedio_subtotal,
+            ROUND(AVG(r."IVA"), 2) as promedio_iva,
+            COUNT(r.id) as total_reservaciones
+        FROM reservacion r
+        JOIN tipo_evento te ON r.tipo_evento_id = te.id
+        JOIN estado_reserva er ON r.estado_reserva_id = er.codigo
+        WHERE er.codigo IN ('CON', 'FIN')
+        GROUP BY te.nombre
+        ORDER BY promedio_total DESC
+        LIMIT 5
+    """)
+
     context = {
         "rol": rol,
         # Equipamiento
@@ -229,6 +306,12 @@ def estadisticas(request):
         # Tipos de montaje
         "tipos_montaje_mas_usados": tipos_montaje_mas_usados,
         "montajes_por_tipo_evento": montajes_por_tipo_evento,
+        # Paquetes
+        "combinaciones_populares": combinaciones_populares,
+        "servicios_top_por_evento": servicios_top_por_evento,
+        "equipamiento_top_por_evento": equipamiento_top_por_evento,
+        "mobiliario_top_por_evento": mobiliario_top_por_evento,
+        "precios_promedio_evento": precios_promedio_evento,
     }
     
     return render(request, "BookingRoomApp/administracion/estadisticas.html", context)

@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from BookingRoomApp import models
 from . import serializers
 from .services import montajeService, reservacionesService
+from decimal import Decimal
 import json
 
 try:

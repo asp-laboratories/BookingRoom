@@ -345,7 +345,7 @@ class EquipamientoSerializer(serializers.ModelSerializer):
 
 
     def get_stockDisponible(self, obj):
-        inventario = models.InventarioEquipa.objects.get(equipamiento=obj, estado_equipa__codigo__in=['DIS', 'DISPO'])
+        inventario = models.InventarioEquipa.objects.filter(equipamiento=obj, estado_equipa__codigo__in=['DIS', 'DISP', 'DISPO']).first()
         if inventario:
             return int(inventario.cantidad)
         return 0
@@ -490,7 +490,7 @@ class MobiliarioSerializer(serializers.ModelSerializer):
         return 0
 
     def get_stockDisponible(self, obj):
-        inventario = models.InventarioMob.objects.get(mobiliario=obj, estado_mobil__codigo__in=['DIS', 'DISPO'])
+        inventario = models.InventarioMob.objects.filter(mobiliario=obj, estado_mobil__codigo__in=['DIS', 'DISP', 'DISPO']).first()
         if inventario:
             return int(inventario.cantidad)
         return 0

@@ -14,7 +14,6 @@
 .administrador-input{
   border-bottom: 2px solid var(--color-primario);
   margin-top: 10px;
-
 }
 
 .administrador-input:focus{
@@ -36,15 +35,10 @@
   color: #333;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239c5c31' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239c5b31' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
   padding-right: 35px;
-}
-
-.emparejar-select{
-  margin-top: 10px;
-
 }
 
 .administrador-select:focus {
@@ -129,12 +123,10 @@
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  background-color: transparent;
   background-color: var(--color-fondo);
   box-shadow: rgb(155, 88, 43, 0.5) 1.95px 1.95px 2.6px;
   margin-bottom: 15px;
   margin-right: 10px;
-
   border-radius: 5px;
 }
 
@@ -303,8 +295,8 @@
   width: 100%;
   max-height: 400px;
   overflow-y: auto;
-  border-radius: 5px;
-  background-color: transparent;
+  overflow-x: auto;
+  background-color: white;
 }
 
 .administrador-tabla {
@@ -313,39 +305,45 @@
   table-layout: fixed;
 }
 
-.administrador-tbody {
-  background-color: transparent;
+.administrador-thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.administrador-thead::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-primario);
+  z-index: -1;
 }
 
 .administrador-thead th {
-  position: sticky;
-  top: 0;
-  background-color: var(--color-primario);
-  color: #fff;
-  border: 1px solid var(--color-primario) !important;
-  box-shadow: none;
-}
-
-.administrador-thead {
-  border: none;
-}
-
-.administrador-thead tr {
-  border: none;
-}
-
-.administrador-thead th + th {
-  border-left: none;
-}
-
-.administrador-td,
-.administrador-th {
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border: 1px solid rgba(155, 88, 43, 0.3);
+  background: transparent;
+  color: white;
   padding: 10px;
+  text-align: center;
+  border: 1px solid var(--color-primario);
+  font-weight: bold;
+  position: relative;
+}
+
+.administrador-td {
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+.administrador-tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.administrador-tbody tr:hover {
+  background-color: #f0f0f0;
 }
 
 .administrador-inputGrid {

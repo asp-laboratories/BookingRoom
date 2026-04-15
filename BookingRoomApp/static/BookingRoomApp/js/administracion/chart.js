@@ -17,6 +17,57 @@ document.addEventListener('DOMContentLoaded', function() {
       canvas._chart.destroy();
     }
     
+    // Agregar opciones para mostrar todas las etiquetas
+    if (!config.options) config.options = {};
+    if (!config.options.scales) config.options.scales = {};
+    if (!config.options.scales.x) config.options.scales.x = {};
+    if (!config.options.scales.y) config.options.scales.y = {};
+    
+    // Guardar las etiquetas originales para el tooltip
+    let labelsOriginales = [];
+    if (config.data && config.data.labels) {
+      labelsOriginales = [...config.data.labels];
+    }
+    
+    // Función para truncar etiquetas largas
+    function truncateLabel(label, maxLength) {
+      if (typeof label !== 'string') label = String(label);
+      if (label.length > maxLength) {
+        return label.substring(0, maxLength - 4) + '...';
+      }
+      return label;
+    }
+    
+    // Truncar las etiquetas en los datos si existen
+    if (config.data && config.data.labels) {
+      config.data.labels = config.data.labels.map(label => truncateLabel(label, 15));
+    }
+    
+    // Configurar que las etiquetas del eje X se muestren
+    config.options.scales.x.ticks = {
+      autoSkip: false,
+      maxRotation: 0,
+      minRotation: 0,
+      font: { size: 10 }
+    };
+    
+    // Agregar padding al eje X para evitar que se corten las etiquetas
+    config.options.scales.x.padding = 10;
+    
+    // Configurar tooltips para mostrar etiqueta completa
+    config.options.plugins = config.options.plugins || {};
+    config.options.plugins.tooltip = {
+      callbacks: {
+        title: function(context) {
+          const index = context[0].dataIndex;
+          return labelsOriginales[index] || '';
+        },
+        label: function(context) {
+          return context.dataset.label + ': ' + context.raw;
+        }
+      }
+    };
+    
     // Crear nuevo chart
     const chart = new Chart(canvas, config);
     canvas._chart = chart; // Guardar referencia
@@ -362,6 +413,123 @@ document.addEventListener('DOMContentLoaded', function() {
         plugins: {
           legend: { display: false }
         }
+      }
+    });
+  }
+  
+  // ==========================================
+  // TAB: PAQUETES
+  // ==========================================
+  
+  // Combinaciones populares
+  console.log('Chart 11 - Data:', data.combinaciones_populares);
+  if (data.combinaciones_populares && data.combinaciones_populares.length > 0) {
+    crearChart('chart-combinaciones', {
+      type: 'bar',
+      data: {
+        labels: data.combinaciones_populares.map(item => `${item.tipo_evento} + ${item.montaje} + ${item.salon}`),
+        datasets: [{
+          label: 'Frecuencia',
+          data: data.combinaciones_populares.map(item => item.frecuencia),
+          backgroundColor: backgroundColor,
+          borderWidth: 1
+        }]
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { y: { beginAtZero: true } } 
+      }
+    });
+  }
+  
+  // Top servicios por tipo de evento
+  console.log('Chart 12 - Data:', data.servicios_top_por_evento);
+  if (data.servicios_top_por_evento && data.servicios_top_por_evento.length > 0) {
+    crearChart('chart-top-servicios', {
+      type: 'bar',
+      data: {
+        labels: data.servicios_top_por_evento.map(item => `${item.tipo_evento}: ${item.servicio}`),
+        datasets: [{
+          label: 'Frecuencia',
+          data: data.servicios_top_por_evento.map(item => item.frecuencia),
+          backgroundColor: backgroundColor,
+          borderWidth: 1
+        }]
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        indexAxis: 'y',
+        scales: { x: { beginAtZero: true } } 
+      }
+    });
+  }
+  
+  // Top equipamiento por tipo de evento
+  console.log('Chart 13 - Data:', data.equipamiento_top_por_evento);
+  if (data.equipamiento_top_por_evento && data.equipamiento_top_por_evento.length > 0) {
+    crearChart('chart-top-equipamiento', {
+      type: 'bar',
+      data: {
+        labels: data.equipamiento_top_por_evento.map(item => `${item.tipo_evento}: ${item.equipamiento}`),
+        datasets: [{
+          label: 'Cantidad',
+          data: data.equipamiento_top_por_evento.map(item => item.cantidad_total),
+          backgroundColor: backgroundColor,
+          borderWidth: 1
+        }]
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        indexAxis: 'y',
+        scales: { x: { beginAtZero: true } } 
+      }
+    });
+  }
+  
+  // Top mobiliario por tipo de evento
+  console.log('Chart 14 - Data:', data.mobiliario_top_por_evento);
+  if (data.mobiliario_top_por_evento && data.mobiliario_top_por_evento.length > 0) {
+    crearChart('chart-top-mobiliario', {
+      type: 'bar',
+      data: {
+        labels: data.mobiliario_top_por_evento.map(item => `${item.tipo_evento}: ${item.mobiliario}`),
+        datasets: [{
+          label: 'Cantidad',
+          data: data.mobiliario_top_por_evento.map(item => item.cantidad_total),
+          backgroundColor: backgroundColor,
+          borderWidth: 1
+        }]
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        indexAxis: 'y',
+        scales: { x: { beginAtZero: true } } 
+      }
+    });
+  }
+  
+  // Precios promedio por evento
+  console.log('Chart 15 - Data:', data.precios_promedio_evento);
+  if (data.precios_promedio_evento && data.precios_promedio_evento.length > 0) {
+    crearChart('chart-precios-promedio', {
+      type: 'bar',
+      data: {
+        labels: data.precios_promedio_evento.map(item => `${item.tipo_evento} (${item.total_reservaciones})`),
+        datasets: [{
+          label: 'Promedio Total ($)',
+          data: data.precios_promedio_evento.map(item => item.promedio_total),
+          backgroundColor: backgroundColor,
+          borderWidth: 1
+        }]
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { y: { beginAtZero: true } } 
       }
     });
   }

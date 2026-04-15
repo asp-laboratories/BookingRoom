@@ -161,10 +161,16 @@ document.addEventListener("DOMContentLoaded", function() {
             } else {
                 const fechaSeleccionada = new Date(fechaEvento.value + 'T00:00:00');
                 const hoy = new Date();
+                const maxFecha = new Date();
+                maxFecha.setMonth(hoy.getMonth() + 5);
+                
                 hoy.setHours(0, 0, 0, 0);
+                maxFecha.setHours(0, 0, 0, 0);
                 
                 if (fechaSeleccionada < hoy) {
                     errores.push('La fecha del evento no puede ser anterior a hoy');
+                } else if (fechaSeleccionada > maxFecha) {
+                    errores.push('La fecha del evento no puede ser mayor a 5 meses desde hoy');
                 }
             }
             

@@ -112,8 +112,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const anchoVal = getFormValue('anchoSalon');
             const largoVal = getFormValue('largoSalon');
             const mCuadrados = getFormValue('meCuadra');
+            const maxCapacidad = getFormValue('maxCapacidad');
 
-            if (!nombre || !costo || !ubicacion || !altura || !anchoVal || !largoVal || !mCuadrados) {
+            if (!nombre || !costo || !ubicacion || !altura || !anchoVal || !largoVal || !mCuadrados || !maxCapacidad) {
                 alert('Por favor, complete todos los campos');
                 return;
             }
@@ -129,6 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     setHiddenValue('hidden-ancho', anchoVal);
                     setHiddenValue('hidden-largo', largoVal);
                     setHiddenValue('hidden-metros', mCuadrados);
+                    setHiddenValue('hidden-capacidad', maxCapacidad);
                     document.getElementById('form-salon').submit();
                 }
             );

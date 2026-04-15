@@ -93,6 +93,12 @@
         </div>
       </div>
     </div>
+        <div class="modal-div modal-div-6">
+      <h3 class="titulo-seccion-modal">Mobiliario</h3>
+      <div class="datos">
+        <span id="{{ id_prefix|default:'' }}mobiliario-lista">Consultar en detalle</span>
+      </div>
+    </div>
     <div class="modal-div modal-div-4">
       <h3 class="titulo-seccion-modal">Servicios</h3>
       <div class="datos">
@@ -105,12 +111,12 @@
         <span id="{{ id_prefix|default:'' }}equipamientos-lista">No hay equipamientos</span>
       </div>
     </div>
-    <div class="modal-div modal-div-6">
+    {% comment %} <div class="modal-div modal-div-6">
       <h3 class="titulo-seccion-modal">Mobiliario</h3>
       <div class="datos">
         <span id="{{ id_prefix|default:'' }}mobiliario-lista">Consultar en detalle</span>
       </div>
-    </div>
+    </div> {% endcomment %}
     <div class="modal-div modal-div-7">
       <h3 class="titulo-seccion-modal">Totales</h3>
       <div class="datos">
@@ -128,7 +134,7 @@
         </div>
       </div>
     </div>
-    <div class="modal-div modal-div-8">
+    <div class="modal-div modal-div-8" style="background: transparent;">
       <h3 class="titulo-seccion-modal">Descripción del Evento</h3>
       <div class="datos">
         <textarea id="{{ id_prefix|default:'' }}evento-descripcion-input" class="descripcion-textarea" placeholder="Ingresa la descripción del evento..."></textarea>
