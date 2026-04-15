@@ -1,4 +1,4 @@
-    <div class="receipt-container">
+<div class="receipt-container">
         
         <header class="header-section">
             <h1>Comprobante de Pago</h1>
@@ -7,6 +7,7 @@
         <section class="reservation-section">
             <div class="section-label">Referencia para la reservación:</div>
             <div class="gray-box">
+                <div><span class="label">No. Empleado:</span> <span id="comp-no-empleado">—</span></div>
                 <div><span class="label">Atendido por:</span> <span id="comp-atendido">—</span></div>
                 <div><span class="label">Número de recibo:</span> <span id="comp-no-pago">—</span></div>
                 <div><span class="label">Fecha de emisión:</span> <span id="comp-fecha">—</span> <span id="comp-hora">—</span></div>
@@ -16,7 +17,7 @@
         <section class="client-section">
             <div class="section-label">Datos del cliente y evento:</div>
             <div class="gray-box">
-                <div><span class="label">Recibe:</span> <span id="comp-cliente">—</span></div>
+                <div><span class="label">Cliente:</span> <span id="comp-cliente">—</span></div>
                 <div><span class="label">Evento:</span> <span id="comp-evento">""</span> (<span id="comp-fecha-evento">—</span>)</div>
                 <div class="event-details">
                     <div><span class="label">Fecha del evento:</span> <span id="comp-fecha-evento-detalle">—</span></div>
@@ -31,6 +32,13 @@
             <div class="gray-box">
                 <div><span class="label">Salón:</span> <span id="comp-salon">—</span></div>
                 <div><span class="label">Tipo de Montaje:</span> <span id="comp-montaje">—</span></div>
+            </div>
+        </section>
+
+        <section class="mobiliario-section">
+            <div class="section-label">Mobiliario:</div>
+            <div class="extras-box" id="comp-mobiliarios">
+                <span style="color: #666;">Consultar en detalle</span>
             </div>
         </section>
 

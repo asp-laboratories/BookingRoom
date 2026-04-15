@@ -414,7 +414,15 @@ class ServicioViewSet(viewsets.ModelViewSet):
 
 
 class PagoViewSet(viewsets.ModelViewSet):
-    queryset = models.Pago.objects.select_related('metodo_pago', 'concepto_pago', 'reservacion').all()
+    queryset = models.Pago.objects.select_related(
+        'metodo_pago', 'concepto_pago', 
+        'reservacion', 'reservacion__trabajador',
+        'reservacion__montaje', 'reservacion__montaje__tipo_montaje'
+    ).prefetch_related(
+        'reservacion__reservaservicio_set__servicio',
+        'reservacion__reservaequipa_set__equipamiento',
+        'reservacion__montaje__montajemobiliario_set__mobiliario'
+    ).all()
     serializer_class = serializers.PagoSerializer
     
     def create(self, request, *args, **kwargs):

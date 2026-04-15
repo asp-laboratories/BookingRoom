@@ -183,15 +183,19 @@ class PagoSerializer(serializers.ModelSerializer):
     servicios = serializers.SerializerMethodField()
     lista_equipamentos = serializers.SerializerMethodField()
     atendido_por = serializers.SerializerMethodField()
+    no_empleado = serializers.SerializerMethodField()
+    cliente_nombre = serializers.SerializerMethodField()
+    mobiliarios = serializers.SerializerMethodField()
     
     class Meta:
         model = models.Pago
         fields = ['nota', 'monto', 'saldo', 'no_pago', 'reservacion', 'concepto_pago', 'metodo_pago', 'fecha', 'hora',
                   'subtotal', 'iva', 'total', 'fecha_evento', 'hora_inicio', 'hora_fin', 
-                  'salon', 'montaje', 'servicios', 'lista_equipamentos', 'atendido_por']
+                  'salon', 'montaje', 'servicios', 'lista_equipamentos', 'atendido_por',
+                  'no_empleado', 'cliente_nombre', 'mobiliarios']
         read_only_fields = ['fecha', 'hora', 'no_pago', 'saldo', 'subtotal', 'iva', 'total', 
                             'fecha_evento', 'hora_inicio', 'hora_fin', 'salon', 'montaje', 
-                            'servicios', 'lista_equipamentos', 'atendido_por']
+                            'servicios', 'lista_equipamentos', 'atendido_por', 'no_empleado', 'cliente_nombre', 'mobiliarios']
     
     def get_subtotal(self, obj):
         try:
@@ -248,21 +252,56 @@ class PagoSerializer(serializers.ModelSerializer):
     def get_servicios(self, obj):
         try:
             if obj.reservacion:
-                return list(obj.reservacion.reserva_servicio.values_list('nombre', flat=True))
-        except:
-            pass
+                return list(obj.reservacion.reservaservicio_set.values_list('servicio__nombre', flat=True))
+        except Exception as e:
+            print('Error get_servicios:', e)
         return []
     
     def get_lista_equipamentos(self, obj):
         try:
             if obj.reservacion:
-                return list(obj.reservacion.reserva_equipa.select_related('equipamiento').values_list('equipamiento__nombre', flat=True))
-        except:
-            pass
+                return list(obj.reservacion.reservaequipa_set.values_list('equipamiento__nombre', flat=True))
+        except Exception as e:
+            print('Error get_lista_equipamentos:', e)
         return []
     
     def get_atendido_por(self, obj):
+        try:
+            if obj.reservacion and obj.reservacion.trabajador and obj.reservacion.trabajador.nombre:
+                return obj.reservacion.trabajador.nombre
+        except:
+            pass
         return 'Recepción'
+    
+    def get_no_empleado(self, obj):
+        try:
+            if obj.reservacion and obj.reservacion.trabajador:
+                return obj.reservacion.trabajador.no_empleado
+        except:
+            pass
+        return '—'
+    
+    def get_cliente_nombre(self, obj):
+        try:
+            if obj.reservacion and obj.reservacion.cliente:
+                cliente = obj.reservacion.cliente
+                nombre = cliente.nombre or ''
+                ap = cliente.apellido_paterno or ''
+                am = cliente.apellido_materno or ''
+                return f"{nombre} {ap} {am}".strip()
+        except Exception as e:
+            print('Error get_cliente_nombre:', e)
+            pass
+        return '—'
+    
+    def get_mobiliarios(self, obj):
+        try:
+            if obj.reservacion and obj.reservacion.montaje:
+                mobs = obj.reservacion.montaje.montajemobiliario_set.all()
+                return [{'tipo': m.mobiliario.nombre, 'cantidad': m.cantidad} for m in mobs]
+        except Exception as e:
+            print('Error get_mobiliarios:', e)
+        return []
     
     def create(self, validated_data):
         concepto_codigo = validated_data.pop('concepto_pago', None)

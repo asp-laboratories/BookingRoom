@@ -329,6 +329,14 @@
 
 .comprobante-body {
   padding: 20px;
+  min-height: 100px;
+}
+
+.comprobante-body .receipt-container {
+  position: relative;
+  width: 100%;
+  background: white;
+  color: black;
 }
 
 .comprobante-row {
@@ -401,6 +409,22 @@
   grid-column: span 2;
   text-align: center;
   margin-bottom: 20px;
+}
+
+.mobiliario-section {
+  grid-column: span 2;
+}
+
+.mobiliario-section .extras-box {
+  background-color: #f5f5f5;
+  padding: 15px;
+  border-radius: 4px;
+  min-height: 40px;
+  border: 1px solid #ddd;
+}
+
+.event-details {
+  display: contents;
 }
 
 .header-section h1 {

@@ -150,6 +150,10 @@ async function registrarPago() {
 }
 
 async function ejecutarPago(data, csrfToken) {
+    console.log('=== EJECUTANDO PAGO ===');
+    console.log('Data:', data);
+    console.log('CSRF Token:', csrfToken);
+    console.log('Fetching to: /api/pago/');
     try {
         const respuesta = await fetch('/api/pago/', {
             method: 'POST',
@@ -163,6 +167,7 @@ async function ejecutarPago(data, csrfToken) {
 
         console.log('Response status:', respuesta.status);
         console.log('Response statusText:', respuesta.statusText);
+        console.log('Response ok:', respuesta.ok);
         
         if (respuesta.ok) {
             const contentType = respuesta.headers.get('content-type') || '';
@@ -170,14 +175,19 @@ async function ejecutarPago(data, csrfToken) {
             
             const datosPago = await respuesta.json();
             console.log('Pago registrado:', datosPago);
+            console.log('Servicios:', datosPago.servicios);
+            console.log('Equipamentos:', datosPago.lista_equipamentos);
+            console.log('Mobiliarios:', datosPago.mobiliarios);
             
             // Referencia reservación
             const now = new Date();
+            const compNoEmpleado = document.getElementById('comp-no-empleado');
             const compAtendido = document.getElementById('comp-atendido');
             const compNoPago = document.getElementById('comp-no-pago');
             const compFecha = document.getElementById('comp-fecha');
             const compHora = document.getElementById('comp-hora');
             
+            if (compNoEmpleado) compNoEmpleado.textContent = datosPago.no_empleado || '—';
             if (compNoPago) compNoPago.textContent = datosPago.no_pago || '1';
             if (compFecha) compFecha.textContent = now.toLocaleDateString();
             if (compHora) compHora.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -191,12 +201,27 @@ async function ejecutarPago(data, csrfToken) {
             const compHoraInicio = document.getElementById('comp-hora-inicio');
             const compHoraCierre = document.getElementById('comp-hora-cierre');
             
-            if (compCliente) compCliente.textContent = document.querySelector('[data-field="cliente"]')?.value || '—';
+            const clienteInput = document.querySelector('[data-field="cliente"]')?.value;
+            const clienteNombreCompleto = datosPago.cliente_nombre || clienteInput || '—';
+            if (compCliente) compCliente.textContent = clienteNombreCompleto;
             if (compEvento) compEvento.textContent = document.querySelector('[data-field="nombre_evento"]')?.value || '—';
             if (compFechaEvento) compFechaEvento.textContent = datosPago.fecha_evento || '—';
             if (compFechaEventoDetalle) compFechaEventoDetalle.textContent = datosPago.fecha_evento || '—';
             if (compHoraInicio) compHoraInicio.textContent = datosPago.hora_inicio || '—';
             if (compHoraCierre) compHoraCierre.textContent = datosPago.hora_fin || '—';
+            
+            // Mobiliarios
+            const compMobiliarios = document.getElementById('comp-mobiliarios');
+            if (compMobiliarios) {
+                const mobiliarios = datosPago.mobiliarios;
+                if (mobiliarios && mobiliarios.length > 0) {
+                    compMobiliarios.innerHTML = mobiliarios.map(m => 
+                        `<div><span class="label">${m.tipo}:</span> ${m.cantidad} pza(s)</div>`
+                    ).join('');
+                } else {
+                    compMobiliarios.innerHTML = '<span style="color: #666;">Sin mobiliario</span>';
+                }
+            }
             
             // Espacio rentado
             const compSalon = document.getElementById('comp-salon');
@@ -209,8 +234,20 @@ async function ejecutarPago(data, csrfToken) {
             const compServicios = document.getElementById('comp-servicios');
             const compEquipamientos = document.getElementById('comp-equipamientos');
             
-            if (compServicios) compServicios.textContent = datosPago.servicios?.length ? datosPago.servicios.join(', ') : 'Sin servicios';
-            if (compEquipamientos) compEquipamientos.textContent = datosPago.lista_equipamentos?.length ? datosPago.lista_equipamentos.join(', ') : 'Sin equipamentos';
+            if (compServicios) {
+                if (datosPago.servicios && datosPago.servicios.length > 0) {
+                    compServicios.innerHTML = datosPago.servicios.map(s => `<span class="item-lista">• ${s}</span>`).join('');
+                } else {
+                    compServicios.innerHTML = '<span style="color: #666;">Sin servicios</span>';
+                }
+            }
+            if (compEquipamientos) {
+                if (datosPago.lista_equipamentos && datosPago.lista_equipamentos.length > 0) {
+                    compEquipamientos.innerHTML = datosPago.lista_equipamentos.map(e => `<span class="item-lista">• ${e}</span>`).join('');
+                } else {
+                    compEquipamientos.innerHTML = '<span style="color: #666;">Sin equipamentos</span>';
+                }
+            }
             
             // Datos financieros
             const compMonto = document.getElementById('comp-monto');
@@ -277,14 +314,28 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function generarPDF() {
-    const elemento = document.getElementById('comprobante-content');
+    const container = document.querySelector('#comprobante-content');
+    if (!container) {
+        alert('Error: No se encontró el contenido del comprobante');
+        return;
+    }
+    
+    console.log('Container content:', container.innerHTML);
+    console.log('Container visible:', container.offsetHeight, container.offsetWidth);
+    
     const fecha = new Date().toISOString().slice(0, 10);
     const opt = {
-        margin: 10,
+        margin: 5,
         filename: `comprobante_pago_${fecha}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
+        image: { type: 'png', quality: 1.0 },
+        html2canvas: { 
+            scale: 3, 
+            useCORS: true,
+            logging: true,
+            backgroundColor: '#ffffff'
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-    html2pdf().set(opt).from(elemento).save();
+    
+    html2pdf().set(opt).from(container).save();
 }
