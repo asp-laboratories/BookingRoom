@@ -1,5 +1,7 @@
 
 function datosReservacion() {
+    const esPaginaCliente = window.location.pathname.includes('cliente');
+    
     // Validar cliente
     const cliente = document.getElementById('cliente-rfc')?.value;
     const clienteNombre = document.getElementById('cliente-nombre')?.value?.trim();
@@ -56,8 +58,8 @@ function datosReservacion() {
         return null;
     }
 
-    const trabajador = document.getElementById('trabajador_id').value;
-    if (!trabajador) {
+    const trabajador = document.getElementById('trabajador_id')?.value;
+    if (!esPaginaCliente && !trabajador) {
         mostrarToastExito("No se identifico al trabajador", "error")
         return null;
     }
@@ -101,18 +103,25 @@ function datosReservacion() {
         return null;
     }
 
-    if (!descripEvento) {
+    if (!esPaginaCliente && !descripEvento) {
         mostrarToastExito('Falta la descripción del evento', 'error');
         return null;
     }
 
     // Validar salón y montaje
-    const salon = document.getElementById('select-salon')?.value;
+    const salonSelect = document.getElementById('select-salon');
+    const salon = salonSelect?.value;
+    const capacidadSalon = parseInt(salonSelect?.dataset?.capacidadActual || 0);
     const selectMontaje = document.getElementById('select-montaje');
     const tipoMontajeId = selectMontaje?.value;
 
     if (!salon) {
         mostrarToastExito('Falta seleccionar un salón', 'error');
+        return null;
+    }
+
+    if (capacidadSalon > 0 && estimaAsistentes > capacidadSalon) {
+        mostrarToastExito(`El estimado de asistentes (${estimaAsistentes}) excede la capacidad del salón (${capacidadSalon})`, 'error');
         return null;
     }
 
@@ -183,7 +192,6 @@ function datosReservacion() {
     // Determinar el estado según la página
     // Si estamos en la página de cliente, enviar como SOLIC (solicitud)
     // Si estamos en la página de recepción, enviar como PEN (pendiente)
-    const esPaginaCliente = window.location.pathname.includes('cliente');
     const estadoReserva = esPaginaCliente ? 'SOLIC' : 'PEN';
 
     return {
@@ -335,13 +343,21 @@ function abrirModalPagosConReservacion(reservacionId) {
 
 document.addEventListener('DOMContentLoaded', function () {
     const botonReservacion = document.querySelector('.reservacion-btn-confirmar');
+    
     if (botonReservacion) {
-        botonReservacion.onclick = function () {
-            abrirModalConfirmar(
-                'Confirmar reservación',
-                '¿Estás seguro de que deseas crear esta reservación?',
-                confirmarReservacion
-            );
-        };
+        botonReservacion.addEventListener('click', function (e) {
+            const esPaginaCliente = window.location.pathname.includes('cliente');
+            if (esPaginaCliente) {
+                e.preventDefault();
+                e.stopPropagation();
+                confirmarReservacion();
+            } else {
+                abrirModalConfirmar(
+                    'Confirmar reservación',
+                    '¿Estás seguro de que deseas crear esta reservación?',
+                    confirmarReservacion
+                );
+            }
+        });
     }
 });

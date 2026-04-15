@@ -7,12 +7,33 @@ window.onload = function() {
     var salonSelect = document.getElementById('select-salon');
     var montagemSelect = document.getElementById('select-montaje');
     var estimadoInput = document.getElementById('estimado_asistentes');
+    
+    if (estimadoInput) {
+        estimadoInput.onchange = function() {
+            var estimado = parseInt(this.value || 0);
+            var fecha = fechaInput?.value;
+            
+            if (estimado > 0 && fecha) {
+                salonSelect.disabled = false;
+                verificarSalonesDisponibles(fecha);
+            } else if (estimado === 0 && fecha) {
+                salonSelect.disabled = true;
+                resetearMontaje();
+                var opciones = salonSelect.querySelectorAll('option');
+                opciones.forEach(function(opt) {
+                    opt.disabled = false;
+                    opt.textContent = opt.textContent.replace(/\s*\(Cap: \d+\)/, '').replace(' (NO DISPONIBLE)', '').replace(' (Límite de asistentes)', '');
+                });
+            }
+        };
+    }
 
     console.log('fechaInput:', fechaInput !== null);
     console.log('salonSelect:', salonSelect !== null);
 
     var capacidadSalon = 0;
     var salonesDisponibles = {};
+    var capacidadesSalones = {};
 
     if (fechaInput && salonSelect) {
         console.log('Configurando fecha...');
@@ -45,6 +66,7 @@ window.onload = function() {
                     if (data.success && data.salones) {
                         data.salones.forEach(function(salon) {
                             salonesDisponibles[salon.id] = salon.disponible;
+                            capacidadesSalones[salon.id] = salon.max_capacidad || 0;
                             console.log('Salon', salon.id, '-', salon.nombre, ': disponible =', salon.disponible, ', reservado =', salon.reservado, ', estado =', salon.estado_salon);
                         });
                         
@@ -57,17 +79,28 @@ window.onload = function() {
         }
         
         function actualizarDisponibilidadSalones() {
+            var estimado = parseInt(estimadoInput?.value || 0);
             var opciones = salonSelect.querySelectorAll('option');
             
             opciones.forEach(function(opt) {
                 var salonId = parseInt(opt.value);
+                var capacidad = capacidadesSalones[salonId] || 0;
+                opt.dataset.capacidad = capacidad;
+                
+                var textoBase = opt.textContent.replace(/\s*\(Cap: \d+\)/, '').replace(' (NO DISPONIBLE)', '').replace(' (Límite de asistentes)', '');
                 
                 if (salonId && salonesDisponibles[salonId] === false) {
                     opt.disabled = true;
-                    opt.textContent = opt.textContent + ' (NO DISPONIBLE)';
-                } else if (salonId && salonesDisponibles[salonId] === true) {
+                    opt.textContent = textoBase + ' (NO DISPONIBLE)';
+                } else if (estimado > 0 && capacidad > 0 && estimado > capacidad) {
+                    opt.disabled = true;
+                    opt.textContent = textoBase + ' (Límite de asistentes)';
+                } else if (capacidad > 0) {
                     opt.disabled = false;
-                    opt.textContent = opt.textContent.replace(' (NO DISPONIBLE)', '');
+                    opt.textContent = textoBase + ' (Cap: ' + capacidad + ')';
+                } else {
+                    opt.disabled = false;
+                    opt.textContent = textoBase;
                 }
             });
         }
@@ -75,17 +108,20 @@ window.onload = function() {
         fechaInput.onchange = function() {
             console.log('=== CAMBIO EN FECHA ===', this.value);
             
-            if (this.value) {
+            var estimado = parseInt(estimadoInput?.value || 0);
+            
+            if (this.value && estimado > 0) {
                 salonSelect.disabled = false;
                 console.log('SALON HABILITADO');
                 verificarSalonesDisponibles(this.value);
             } else {
                 salonSelect.disabled = true;
                 salonesDisponibles = {};
+                capacidadesSalones = {};
                 var opciones = salonSelect.querySelectorAll('option');
                 opciones.forEach(function(opt) {
                     opt.disabled = false;
-                    opt.textContent = opt.textContent.replace(' (NO DISPONIBLE)', '');
+                    opt.textContent = opt.textContent.replace(' (NO DISPONIBLE)', '').replace(/ \(Cap: \d+\)/, '');
                 });
                 resetearMontaje();
             }
@@ -102,11 +138,13 @@ window.onload = function() {
             
             if (!this.value) {
                 montagemSelect.disabled = true;
+                this.dataset.capacidadActual = 0;
                 return;
             }
             
             var opcion = this.options[this.selectedIndex];
             capacidadSalon = parseInt(opcion.dataset.capacidad || 0);
+            this.dataset.capacidadActual = capacidadSalon;
             console.log('Capacidad salon:', capacidadSalon);
             
             var salonId = parseInt(this.value);

@@ -5,9 +5,7 @@
   href="{% static 'BookingRoomApp/css/recepcion/reservacion.css' %}"
 />
 
-{% include "BookingRoomApp/includes/alert-confirmar.html" %}
 {% include "BookingRoomApp/includes/alert-cancelar.html" %}
-{% include "BookingRoomApp/includes/alert-exito.html" %}
 
 <script src="{% static "BookingRoomApp/js/recepcion/añadir-selects.js" %}"></script>
 <script src="{% static "BookingRoomApp/js/recepcion/validar-salones.js" %}"></script>
@@ -144,10 +142,7 @@
             <input type="time" class="reservacion-input" id="hora_fin" />
           </div>
 
-          <div class="reservacion-campo span-2">
-            <label class="reservacion-label">Descripción del evento</label>
-            <textarea rows="3" class="reservacion-textarea" id="descripcion_evento" placeholder="Ej: Decoración floral, pastel de 3 pisos, mesa de dulces..."></textarea>
-          </div>
+
         </div>
       </section>
 
@@ -320,7 +315,7 @@ function confirmarCancelacion() {
 }
 </script>
 
-{% include "BookingRoomApp/includes/modal-detalle-reservacion.html" with modal_id="miModal" %}
+{% include "BookingRoomApp/includes/modal-detalle-reservacion.html" with modal_id="miModal" id_prefix="modal-" %}
 
 <style>
   .estado-badge {
@@ -341,6 +336,11 @@ function confirmarCancelacion() {
   }
   .reservacion-contenedor-navegacion :last-child {
     margin-left: 0 !important;
+  }
+
+  /* Ocultar descripción del evento en el modal para clientes */
+  #miModal .modal-div-8 {
+    display: none !important;
   }
 </style>
 

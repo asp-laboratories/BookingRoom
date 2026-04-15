@@ -69,7 +69,7 @@ def crear_reservacion(datos, confirmar_inventario=True):
             except models.Trabajador.DoesNotExist:
                 trabajador_obj = None
 
-        reservacion = models.Reservacion.objects.create(nombreEvento=datos['nombre'], descripEvento=datos['descripEvento'], 
+        reservacion = models.Reservacion.objects.create(nombreEvento=datos['nombre'], descripEvento=datos.get('descripEvento', '') or '', 
                                                         estimaAsistentes=datos['estimaAsistentes'], fechaEvento=datos['fechaEvento'], 
                                                         horaInicio=datos['horaInicio'], horaFin=datos['horaFin'], 
                                                         subtotal=subtotal, IVA=IVA, total=total, 

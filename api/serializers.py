@@ -602,7 +602,7 @@ class MontajeCreacionSerializer(serializers.Serializer):
 
 class ReservacionCreacionSerializer(serializers.Serializer):
     nombre = serializers.CharField() #
-    descripEvento = serializers.CharField() #
+    descripEvento = serializers.CharField(required=False, allow_blank=True, allow_null=True) #
     estimaAsistentes = serializers.IntegerField() #
     fechaEvento = serializers.DateField() #
     horaInicio = serializers.TimeField() #

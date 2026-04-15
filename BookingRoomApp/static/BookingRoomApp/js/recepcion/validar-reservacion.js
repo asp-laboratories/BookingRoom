@@ -141,6 +141,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
     if (btnConfirmar) {
         btnConfirmar.addEventListener('click', function(e) {
+            const esPaginaCliente = window.location.pathname.includes('cliente');
             let errores = [];
             
             // Validar nombre del evento
@@ -194,11 +195,13 @@ document.addEventListener("DOMContentLoaded", function() {
                 errores.push('La hora de inicio debe ser anterior a la hora de fin');
             }
             
-            // Validar descripción
-            if (!descripcionEvento.value || descripcionEvento.value.trim() === '') {
-                errores.push('La descripción del evento es obligatoria');
-            } else if (descripcionEvento.value.trim().length < 10) {
-                errores.push('La descripción debe tener al menos 10 caracteres');
+            // Validar descripción (opcional para clientes)
+            if (!esPaginaCliente) {
+                if (!descripcionEvento.value || descripcionEvento.value.trim() === '') {
+                    errores.push('La descripción del evento es obligatoria');
+                } else if (descripcionEvento.value.trim().length < 10) {
+                    errores.push('La descripción debe tener al menos 10 caracteres');
+                }
             }
             
             // Mostrar errores si los hay
