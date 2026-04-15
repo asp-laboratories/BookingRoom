@@ -10,10 +10,9 @@ window.onload = function() {
 
     console.log('fechaInput:', fechaInput !== null);
     console.log('salonSelect:', salonSelect !== null);
-    console.log('montagemSelect:', montagemSelect !== null);
-    console.log('estimadoInput:', estimadoInput !== null);
 
     var capacidadSalon = 0;
+    var salonesDisponibles = {};
 
     if (fechaInput && salonSelect) {
         console.log('Configurando fecha...');
@@ -35,18 +34,60 @@ window.onload = function() {
         console.log('Fecha minima:', fechaInput.min);
         console.log('Fecha maxima:', fechaInput.max);
         
-        // Usar onclick directamente para asegurar que funcione
-        fechaInput.onclick = function() {
-            console.log('Click en fecha detectado');
-        };
+        function verificarSalonesDisponibles(fecha) {
+            console.log('=== VERIFICANDO SALONES PARA FECHA:', fecha);
+            
+            fetch('/reservacion/verificar-salones-disponibles/?fecha=' + fecha)
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    console.log('Data disponibilidad:', data);
+                    
+                    if (data.success && data.salones) {
+                        data.salones.forEach(function(salon) {
+                            salonesDisponibles[salon.id] = salon.disponible;
+                            console.log('Salon', salon.id, '-', salon.nombre, ': disponible =', salon.disponible, ', reservado =', salon.reservado, ', estado =', salon.estado_salon);
+                        });
+                        
+                        actualizarDisponibilidadSalones();
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error verificando salones:', error);
+                });
+        }
+        
+        function actualizarDisponibilidadSalones() {
+            var opciones = salonSelect.querySelectorAll('option');
+            
+            opciones.forEach(function(opt) {
+                var salonId = parseInt(opt.value);
+                
+                if (salonId && salonesDisponibles[salonId] === false) {
+                    opt.disabled = true;
+                    opt.textContent = opt.textContent + ' (NO DISPONIBLE)';
+                } else if (salonId && salonesDisponibles[salonId] === true) {
+                    opt.disabled = false;
+                    opt.textContent = opt.textContent.replace(' (NO DISPONIBLE)', '');
+                }
+            });
+        }
         
         fechaInput.onchange = function() {
             console.log('=== CAMBIO EN FECHA ===', this.value);
+            
             if (this.value) {
                 salonSelect.disabled = false;
                 console.log('SALON HABILITADO');
+                verificarSalonesDisponibles(this.value);
             } else {
                 salonSelect.disabled = true;
+                salonesDisponibles = {};
+                var opciones = salonSelect.querySelectorAll('option');
+                opciones.forEach(function(opt) {
+                    opt.disabled = false;
+                    opt.textContent = opt.textContent.replace(' (NO DISPONIBLE)', '');
+                });
+                resetearMontaje();
             }
         };
         
@@ -68,7 +109,14 @@ window.onload = function() {
             capacidadSalon = parseInt(opcion.dataset.capacidad || 0);
             console.log('Capacidad salon:', capacidadSalon);
             
-            // Llamar a cargar montajes
+            var salonId = parseInt(this.value);
+            if (salonesDisponibles[salonId] === false) {
+                alert('Este salon no esta disponible para la fecha seleccionada');
+                this.value = '';
+                montagemSelect.disabled = true;
+                return;
+            }
+            
             console.log('Llamando cargarMontajes...');
             cargarMontajes(this.value);
         };
@@ -83,7 +131,6 @@ window.onload = function() {
             .then(function(response) { return response.json(); })
             .then(function(data) {
                 console.log('Data montajes:', data);
-                console.log('Montajes length:', data.montajes ? data.montajes.length : 0);
                 
                 while (montagemSelect.firstChild) {
                     montagemSelect.removeChild(montagemSelect.firstChild);
@@ -94,8 +141,6 @@ window.onload = function() {
                 defaultOpt.textContent = '-- Selecciona un montaje --';
                 montagemSelect.appendChild(defaultOpt);
                 
-                // Siempre habilitar el select, aunque no haya montajes
-                // Así el usuario puede ver qué opciones tiene (o que no hay)
                 if (data.montajes && data.montajes.length > 0) {
                     console.log('Hay', data.montajes.length, 'montajes');
                     
@@ -109,23 +154,24 @@ window.onload = function() {
                         montagemSelect.appendChild(opt);
                     });
                 } else {
-                    // Agregar opción indicando que no hay montajes
                     var optNoMontaje = document.createElement('option');
                     optNoMontaje.value = '';
                     optNoMontaje.textContent = '-- No hay montajes disponibles --';
                     optNoMontaje.disabled = true;
                     montagemSelect.appendChild(optNoMontaje);
-                    console.log('No hay montajes para este salón');
                 }
                 
-                // SIEMPRE habilitar el select
                 montagemSelect.disabled = false;
                 console.log('=== MONTAGE SELECT HABILITADO ===');
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                montagemSelect.disabled = false;
             });
+    }
+
+    function resetearMontaje() {
+        montagemSelect.innerHTML = '<option value="">-- Selecciona un montaje --</option>';
+        montagemSelect.disabled = true;
     }
 
     console.log('=== FIN CONFIGURACION ===');
