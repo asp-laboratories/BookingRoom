@@ -109,8 +109,7 @@ function datosReservacion() {
     // Validar salón y montaje
     const salon = document.getElementById('select-salon')?.value;
     const selectMontaje = document.getElementById('select-montaje');
-    const selectedMontajeOption = selectMontaje?.options[selectMontaje.selectedIndex];
-    const tipoMontajeId = selectedMontajeOption?.dataset.tipoMontajeId;
+    const tipoMontajeId = selectMontaje?.value;
 
     if (!salon) {
         mostrarToastExito('Falta seleccionar un salón', 'error');

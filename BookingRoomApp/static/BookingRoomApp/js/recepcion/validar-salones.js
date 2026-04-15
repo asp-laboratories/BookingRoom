@@ -127,7 +127,9 @@ window.onload = function() {
     function cargarMontajes(salonId) {
         console.log('=== CARGAR MONTajes ===', salonId);
         
-        fetch('/reservacion/montajes-salon/?salon_id=' + salonId)
+        // Usar el endpoint de API como en Flutter: /api/tipo-montaje/?salon={salonId}
+        // Este filtra los montajes cuya capacidadIdeal <= maxCapacidad del salon
+        fetch('/api/tipo-montaje/?salon=' + salonId)
             .then(function(response) { return response.json(); })
             .then(function(data) {
                 console.log('Data montajes:', data);
@@ -141,16 +143,18 @@ window.onload = function() {
                 defaultOpt.textContent = '-- Selecciona un montaje --';
                 montagemSelect.appendChild(defaultOpt);
                 
-                if (data.montajes && data.montajes.length > 0) {
-                    console.log('Hay', data.montajes.length, 'montajes');
+                // El API devuelve los resultados en 'results' para paginated responses
+                var montajes = data.results || data;
+                
+                if (montajes && montajes.length > 0) {
+                    console.log('Hay', montajes.length, 'montajes');
                     
-                    data.montajes.forEach(function(m) {
+                    montajes.forEach(function(m) {
                         var opt = document.createElement('option');
-                        opt.value = m.tipo_montaje_id;
+                        opt.value = m.id;
                         opt.textContent = m.nombre + ' (Cap: ' + (m.capacidadIdeal || 'N/A') + ')';
                         opt.dataset.capacidadIdeal = m.capacidadIdeal || 0;
                         opt.dataset.costo = m.costo || 0;
-                        opt.dataset.montajeId = m.id;
                         montagemSelect.appendChild(opt);
                     });
                 } else {
@@ -172,6 +176,38 @@ window.onload = function() {
     function resetearMontaje() {
         montagemSelect.innerHTML = '<option value="">-- Selecciona un montaje --</option>';
         montagemSelect.disabled = true;
+        
+        // Deshabilitar selects de mobiliario
+        var mobiliariosTipos = document.querySelectorAll('.mobiliario-tipo');
+        mobiliariosTipos.forEach(function(select) {
+            select.disabled = true;
+            select.value = '';
+        });
+    }
+
+    // Habilitar mobiliario al seleccionar montaje
+    if (montagemSelect) {
+        montagemSelect.onchange = function() {
+            console.log('=== CAMBIO EN MONTAJE ===', this.value);
+            
+            if (this.value) {
+                // Habilitar todos los selects de tipo de mobiliario
+                var mobiliariosTipos = document.querySelectorAll('.mobiliario-tipo');
+                console.log('找到 ' + mobiliariosTipos.length + ' selects de mobiliario');
+                
+                mobiliariosTipos.forEach(function(select) {
+                    select.disabled = false;
+                    console.log('Mobiliario tipo habilitado');
+                });
+            } else {
+                // Deshabilitar si no hay montaje seleccionado
+                var mobiliariosTipos = document.querySelectorAll('.mobiliario-tipo');
+                mobiliariosTipos.forEach(function(select) {
+                    select.disabled = true;
+                    select.value = '';
+                });
+            }
+        };
     }
 
     console.log('=== FIN CONFIGURACION ===');
