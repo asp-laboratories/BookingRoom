@@ -25,7 +25,7 @@
             <select class="paquetes-input" id="paquete-salon-select">
               <option value="">-- Selecciona un salón --</option>
               {% for salon in salones %}
-              <option value="{{ salon.id }}">{{ salon.nombre }}</option>
+              <option value="{{ salon.id }}" data-costo="{{salon.costo}}">{{ salon.nombre }} (Cap. {{salon.maxCapacidad}}) ${{salon.costo}}</option>
               {% endfor %}
             </select>
           </div>

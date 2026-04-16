@@ -381,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
         servicios.push(select.value);
       }
     });
-    alert('DEBUG servicios: ' + JSON.stringify(servicios));
+    // alert('DEBUG servicios: ' + JSON.stringify(servicios));
     console.log('DEBUG servicios:', servicios);
     
     const equipamiento = [];
@@ -395,7 +395,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
     });
-    alert('DEBUG equipamiento: ' + JSON.stringify(equipamiento));
+    // alert('DEBUG equipamiento: ' + JSON.stringify(equipamiento));
     console.log('DEBUG equipamiento:', equipamiento);
     
     const mobiliario = [];
@@ -409,13 +409,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
     });
-    alert('DEBUG mobiliario: ' + JSON.stringify(mobiliario));
+    // alert('DEBUG mobiliario: ' + JSON.stringify(mobiliario));
     console.log('DEBUG mobiliario:', mobiliario);
     
     const formData = new FormData();
     formData.append('nombre_paquete', nombre);
     formData.append('salon_id', salonSelect.value);
-    formData.append('montaje_id', montajeSelect.value);
+    formData.append('tipo_montaje_id', montajeSelect.value);
     formData.append('subtotal', document.getElementById('paquete-subtotal').value || 0);
     formData.append('iva', document.getElementById('paquete-iva').value || 16);
     formData.append('total', document.getElementById('paquete-total').value || 0);
@@ -465,7 +465,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <h4>Informacion General</h4>
             <p><strong>Nombre:</strong> ${paquete.nombre_paquete || 'N/A'}</p>
             <p><strong>Salon:</strong> ${paquete.salon_nombre || 'N/A'}</p>
-            <p><strong>Montaje:</strong> ${paquete.montaje_nombre || 'N/A'}</p>
+            <p><strong>Montaje:</strong> ${paquete.tipo_montaje_nombre || 'N/A'}</p>
             <p><strong>Subtotal:</strong> $${paquete.subtotal || '0.00'}</p>
             <p><strong>IVA:</strong> ${paquete.iva || '16'}%</p>
             <p><strong>Total:</strong> $${paquete.total || '0.00'}</p>
@@ -523,10 +523,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const salonSelect = document.getElementById('editar-salon');
         salonSelect.value = paquete.salon_id || '';
         
-        if (paquete.salon_id) {
-          cargarMontajesEditar(paquete.salon_id, paquete.montaje_id);
-        }
+        const montajeSelect = document.getElementById('editar-montaje');
+        montajeSelect.value = paquete.tipo_montaje_id || '';
         
+        if (paquete.salon_id) {
+          cargarMontajesEditar(paquete.salon_id, paquete.tipo_montaje_id);
+        }
+
         document.getElementById('modal-editar-paquete').showModal();
       }
     })
@@ -546,7 +549,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     try {
-      const response = await fetch(`/reservacion/montajes-salon/?salon_id=${salonId}`);
+      const response = await fetch(`/reservacion/tipos-montajes-salon/?salon_id=${salonId}`);
       const data = await response.json();
       
       montajeSelect.innerHTML = '<option value="">-- Selecciona un montaje --</option>';
@@ -555,7 +558,7 @@ document.addEventListener('DOMContentLoaded', function() {
         data.montajes.forEach(m => {
           const option = document.createElement('option');
           option.value = m.id;
-          option.textContent = `${m.nombre} (Capacidad: ${m.capacidadIdeal}) - $${m.costo}`;
+          option.textContent = `${m.nombre} (Cap. Ideal ${m.capacidadIdeal})`;
           option.dataset.costo = m.costo;
           if (selectedMontajeId && m.id == selectedMontajeId) {
             option.selected = true;
@@ -611,7 +614,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const formData = new FormData();
     formData.append('nombre_paquete', nombre);
     formData.append('salon_id', salonId);
-    formData.append('montaje_id', montajeId);
+    formData.append('tipo_montaje_id', montajeId);
     formData.append('subtotal', subtotal);
     formData.append('iva', iva);
     formData.append('total', total);
@@ -703,24 +706,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     try {
-      const response = await fetch(`/reservacion/montajes-salon/?salon_id=${salonId}`);
+      const response = await fetch(`/reservacion/tipos-montajes-salon/?salon_id=${salonId}`);
       const data = await response.json();
       
       this.dataset.costo = data.salon ? data.salon.costo : 0;
       
-      montajeSelect.innerHTML = '<option value="">-- Selecciona un montaje --</option>';
+      montajeSelect.innerHTML = '<option value="">-- Selecciona un tipo de montaje --</option>';
       
       if (data.montajes && data.montajes.length > 0) {
         data.montajes.forEach(m => {
           const option = document.createElement('option');
           option.value = m.id;
-          option.textContent = `${m.nombre} (Capacidad: ${m.capacidadIdeal}) - $${m.costo}`;
-          option.dataset.costo = m.costo;
+          option.textContent = `${m.nombre} (Cap. Ideal ${m.capacidadIdeal})`;
           montajeSelect.appendChild(option);
         });
         montajeSelect.disabled = false;
       } else {
-        montajeSelect.innerHTML = '<option value="">-- No hay montajes disponibles --</option>';
+        montajeSelect.innerHTML = '<option value="">-- No hay tipos de montajes disponibles --</option>';
       }
     } catch (error) {
       console.error('Error:', error);

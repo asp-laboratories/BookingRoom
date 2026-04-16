@@ -234,6 +234,21 @@ function obtenerError(info) {
     return 'Error desconocido. Revisa la consola (F12) para más detalles.';
 }
 
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
 async function crearReservacion() {
     const datos = datosReservacion();
     if (!datos) return false;
@@ -241,7 +256,8 @@ async function crearReservacion() {
     try {
         const respuesta = await fetch('/api/reservacion/', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')},
             body: JSON.stringify(datos)
         });
 

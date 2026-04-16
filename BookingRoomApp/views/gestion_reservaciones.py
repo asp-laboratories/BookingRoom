@@ -198,6 +198,28 @@ def mobiliarios_por_tipo(request):
 
 
 @csrf_exempt
+def montaje_por_capacidad_salon(request):
+    salonId = request.GET.get('salon_id')
+    if not salonId:
+        return JsonResponse({'montajes': []})
+    
+    try:
+        salon = models.Salon.objects.get(id=salonId)
+        tipos_montajes = models.TipoMontaje.objects.filter(capacidadIdeal__lte=salon.maxCapacidad)
+        lista = []
+        for tipo in tipos_montajes:
+            lista.append({
+                'id': tipo.id,
+                'nombre': tipo.nombre,
+                'capacidadIdeal': tipo.capacidadIdeal
+            })
+
+        return JsonResponse({'montajes': lista, 'salon': {'costo': str(salon.costo)}})
+    except models.Salon.DoesNotExist:
+        return JsonResponse({'error': 'Salón no encontrado'}, status=404)
+
+
+@csrf_exempt
 def montaje_por_salon(request):
     salonId = request.GET.get('salon_id')
     todos = request.GET.get('todos')
@@ -214,6 +236,10 @@ def montaje_por_salon(request):
                 'costo': str(m.costo),
                 'salon_nombre': m.salon.nombre
             })
+
+        if len(lista) == 0:
+            tipos_montaje = models.TipoMontaje.objects.prefetch_related()
+
         return JsonResponse({'montajes': lista})
     
     if not salonId:
