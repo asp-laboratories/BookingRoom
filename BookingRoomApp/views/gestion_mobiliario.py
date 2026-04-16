@@ -88,6 +88,8 @@ def actualizar_mobiliario(request, pk):
     if request.method == 'POST':
         try:
             mobiliario = get_object_or_404(models.Mobiliario, pk=pk)
+            stock_anterior = mobiliario.stock
+            
             if request.POST.get('nombre'):
                 mobiliario.nombre = request.POST.get('nombre')
             if request.POST.get('descripcion'):
@@ -95,7 +97,27 @@ def actualizar_mobiliario(request, pk):
             if request.POST.get('costo'):
                 mobiliario.costo = request.POST.get('costo')
             if request.POST.get('stock'):
-                mobiliario.stock = request.POST.get('stock')
+                nuevo_stock = int(request.POST.get('stock'))
+                diferencia = nuevo_stock - stock_anterior
+                mobiliario.stock = nuevo_stock
+                
+                # Sincronizar con InventarioMob
+                if diferencia != 0:
+                    estado_disp = models.EstadoMobil.objects.filter(codigo="DISP").first()
+                    if not estado_disp:
+                        estado_disp = models.EstadoMobil.objects.first()
+                    
+                    if estado_disp:
+                        inv_disp, created = models.InventarioMob.objects.get_or_create(
+                            mobiliario=mobiliario,
+                            estado_mobil=estado_disp,
+                            defaults={'cantidad': 0}
+                        )
+                        inv_disp.cantidad += diferencia
+                        if inv_disp.cantidad < 0:
+                            inv_disp.cantidad = 0
+                        inv_disp.save()
+
             if request.POST.get('tipo_movil'):
                 mobiliario.tipo_movil = models.TipoMobil.objects.get(pk=request.POST.get('tipo_movil'))
             

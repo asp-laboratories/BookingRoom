@@ -82,6 +82,8 @@ def actualizar_equipamiento(request, pk):
     if request.method == 'POST':
         try:
             equipamiento = get_object_or_404(models.Equipamiento, pk=pk)
+            stock_anterior = equipamiento.stock
+            
             if request.POST.get('nombre'):
                 equipamiento.nombre = request.POST.get('nombre')
             if request.POST.get('descripcion'):
@@ -89,7 +91,27 @@ def actualizar_equipamiento(request, pk):
             if request.POST.get('costo'):
                 equipamiento.costo = request.POST.get('costo')
             if request.POST.get('stock'):
-                equipamiento.stock = request.POST.get('stock')
+                nuevo_stock = int(request.POST.get('stock'))
+                diferencia = nuevo_stock - stock_anterior
+                equipamiento.stock = nuevo_stock
+                
+                # Sincronizar con InventarioEquipa
+                if diferencia != 0:
+                    estado_disp = models.EstadoEquipa.objects.filter(codigo="DISP").first()
+                    if not estado_disp:
+                        estado_disp = models.EstadoEquipa.objects.first()
+                    
+                    if estado_disp:
+                        inv_disp, created = models.InventarioEquipa.objects.get_or_create(
+                            equipamiento=equipamiento,
+                            estado_equipa=estado_disp,
+                            defaults={'cantidad': 0}
+                        )
+                        inv_disp.cantidad += diferencia
+                        if inv_disp.cantidad < 0:
+                            inv_disp.cantidad = 0
+                        inv_disp.save()
+
             if request.POST.get('tipo_equipa'):
                 equipamiento.tipo_equipa = models.TipoEquipa.objects.get(pk=request.POST.get('tipo_equipa'))
             
