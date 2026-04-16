@@ -551,6 +551,7 @@ class Encuesta(models.Model):
     servicios = models.IntegerField()
     salon = models.IntegerField()
     mobiliario = models.IntegerField()
+    comentario = models.TextField(blank=True, null=True)
     reservacion = models.ForeignKey(Reservacion, on_delete=models.PROTECT)
 
     class Meta:

@@ -1073,12 +1073,11 @@ class ChecklistUpdateView(APIView):
             print(f"DEBUG Backend: current_checklist después = {current_checklist}")
             reservacion.checklist_coordinador = current_checklist
             
-            # Calcular progreso: solo contar valores booleanos (excluir el item_9 que es automático)
+            # Calcular progreso: 14 items fijos del checklist
+            total_items = 14  # Total de items del checklist de coordinador
             boolean_values = [v for k, v in current_checklist.items() if isinstance(v, bool)]
-            if boolean_values:
-                completed = sum(1 for v in boolean_values if v == True)
-                total = len(boolean_values)
-                reservacion.progreso_checklist = completed / total if total > 0 else 0
+            completed = sum(1 for v in boolean_values if v == True)
+            reservacion.progreso_checklist = completed / total_items if total_items > 0 else 0
         else:
             # Mantener el checklist existente y actualizar
             current_checklist = dict(reservacion.checklist_almacenista) if reservacion.checklist_almacenista else {}
@@ -1093,12 +1092,12 @@ class ChecklistUpdateView(APIView):
             coord_checklist['item_9'] = True
             reservacion.checklist_coordinador = coord_checklist
             
-            # Recalcular progreso del coordinador (solo booleanos)
+            # Recalcular progreso del coordinador (14 items固定)
+            coord_checklist = dict(reservacion.checklist_coordinador) if reservacion.checklist_coordinador else {}
             boolean_values = [v for k, v in coord_checklist.items() if isinstance(v, bool)]
-            if boolean_values:
-                completed = sum(1 for v in boolean_values if v == True)
-                total = len(boolean_values)
-                reservacion.progreso_checklist = completed / total if total > 0 else 0
+            completed = sum(1 for v in boolean_values if v == True)
+            total_items = 14
+            reservacion.progreso_checklist = completed / total_items if total_items > 0 else 0
         
         reservacion.save()
         
