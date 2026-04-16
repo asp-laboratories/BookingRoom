@@ -1227,6 +1227,9 @@ class MisReservacionesView(APIView):
 
 class ReservacionProximaView(APIView):
     """API para obtener la reservación más próxima del cliente"""
+    # Estados activos válidos para mostrar como reservación próxima
+    estados_activos = ['SOLIC', 'PEN', 'CONF', 'CON', 'PROC', 'ENPRO', 'PAGAD']
+    
     def get(self, request):
         email = request.query_params.get('email')
         
@@ -1244,9 +1247,11 @@ class ReservacionProximaView(APIView):
         from django.utils import timezone
         from datetime import date
         
+        # Filtrar solo por estados activos y fecha futura
         reservacion = models.Reservacion.objects.filter(
             cliente=datos_cliente,
-            fechaEvento__gte=date.today()
+            fechaEvento__gte=date.today(),
+            estado_reserva__codigo__in=self.estados_activos
         ).select_related(
             'cliente__cuenta', 'cliente__tipo_cliente',
             'montaje__salon', 'montaje__tipo_montaje',
@@ -1457,18 +1462,24 @@ class AceptarSolicitudExtraView(APIView):
     """API para aceptar las solicitudes extra de una reservación - aumenta el precio"""
     def post(self, request, reservacion_id):
         from django.db import transaction
+        import logging
+        logger = logging.getLogger(__name__)
         
         try:
             reservacion = models.Reservacion.objects.select_related('montaje').get(pk=reservacion_id)
         except models.Reservacion.DoesNotExist:
+            logger.error(f'Reservación {reservacion_id} no encontrada')
             return Response({'error': 'Reservación no encontrada'}, status=404)
         
         mobiliarios_ids = request.data.get('mobiliarios_ids', [])
         equipamentos_ids = request.data.get('equipamentos_ids', [])
         
+        logger.info(f'Aceptando solicitud {reservacion_id}: mobs={mobiliarios_ids}, equips={equipamentos_ids}')
+        
         with transaction.atomic():
             # Aceptar mobiliarios extra
             total_mobiliarios = 0
+            mobs_aceptados = 0
             for mm_id in mobiliarios_ids:
                 try:
                     mm = models.MontajeMobiliario.objects.get(
@@ -1481,11 +1492,14 @@ class AceptarSolicitudExtraView(APIView):
                     # Calcular precio (cantidad * costo mobiliario)
                     if mm.mobiliario and mm.mobiliario.costo:
                         total_mobiliarios += mm.cantidad * mm.mobiliario.costo
+                    mobs_aceptados += 1
+                    logger.info(f'Mobiliario extra {mm_id} aceptado: {mm.cantidad} x ${mm.mobiliario.costo}')
                 except models.MontajeMobiliario.DoesNotExist:
-                    pass
+                    logger.warning(f'Mobiliario extra {mm_id} no encontrado o no es extra')
             
             # Aceptar equipamiento extra
             total_equipamiento = 0
+            equips_aceptados = 0
             for re_id in equipamentos_ids:
                 try:
                     re = models.ReservaEquipa.objects.get(
@@ -1497,11 +1511,16 @@ class AceptarSolicitudExtraView(APIView):
                     re.save(update_fields=['aceptado'])
                     if re.equipamiento and re.equipamiento.costo:
                         total_equipamiento += re.cantidad * re.equipamiento.costo
+                    equips_aceptados += 1
+                    logger.info(f'Equipamiento extra {re_id} aceptado: {re.cantidad} x ${re.equipamiento.costo}')
                 except models.ReservaEquipa.DoesNotExist:
-                    pass
+                    logger.warning(f'Equipamiento extra {re_id} no encontrado o no es extra')
+            
+            total_adicional = total_mobiliarios + total_equipamiento
+            logger.info(f'Totales: mobs=${total_mobiliarios}, equips=${total_equipamiento}, total=${total_adicional}')
             
             # Actualizar precio total de la reservación
-            if total_mobiliarios > 0 or total_equipamiento > 0:
+            if total_adicional > 0:
                 nuevo_subtotal = (reservacion.subtotal or 0) + total_mobiliarios + total_equipamiento
                 nuevo_iva = nuevo_subtotal * Decimal('0.16')
                 nuevo_total = nuevo_subtotal + nuevo_iva
@@ -1510,11 +1529,14 @@ class AceptarSolicitudExtraView(APIView):
                 reservacion.IVA = nuevo_iva
                 reservacion.total = nuevo_total
                 reservacion.save(update_fields=['subtotal', 'IVA', 'total'])
+                logger.info(f'Precio actualizado: subtotal={nuevo_subtotal}, iva={nuevo_iva}, total={nuevo_total}')
         
         return Response({
             'mensaje': 'Solicitudes aceptadas correctamente',
-            'total_adicional': float(total_mobiliarios + total_equipamiento),
-            'nuevo_total': float(reservacion.total)
+            'total_adicional': float(total_adicional),
+            'nuevo_total': float(reservacion.total) if reservacion.total else 0,
+            'mobiliarios_aceptados': mobs_aceptados,
+            'equipamientos_aceptados': equips_aceptados,
         })
 
 
@@ -1608,3 +1630,94 @@ class MisSolicitudesExtraView(APIView):
                 })
         
         return Response({'solicitudes': resultado})
+
+
+class ResumenEstadosEquipaView(APIView):
+    """API para obtener el resumen de estados de un equipamiento"""
+    def get(self, request, inventario_id):
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        try:
+            logger.info(f'Buscando InventarioEquipa con id={inventario_id}')
+            item_base = models.InventarioEquipa.objects.get(pk=inventario_id)
+            logger.info(f'Item base encontrado: equipamento_id={item_base.equipamiento.id}')
+            
+            # Usar el mismo patrón que la views web
+            filtro = models.InventarioEquipa.objects.filter(
+                equipamiento=item_base.equipamiento
+            )
+            logger.info(f'Items encontrados: {filtro.count()}')
+            
+            resumen = filtro.values('estado_equipa__nombre', 'estado_equipa__codigo', 'cantidad')
+            
+            resultado = []
+            total = 0
+            for item in resumen:
+                resultado.append({
+                    'estado_nombre': item['estado_equipa__nombre'],
+                    'estado_codigo': item['estado_equipa__codigo'],
+                    'cantidad': item['cantidad']
+                })
+                total += item['cantidad']
+            
+            logger.info(f'Resumen: {resultado}')
+            
+            return Response({
+                'status': 'success',
+                'nombre_equipo': item_base.equipamiento.nombre,
+                'data': resultado,
+                'total': total
+            })
+        except models.InventarioEquipa.DoesNotExist:
+            logger.error(f'InventarioEquipa no encontrado: {inventario_id}')
+            return Response({'error': 'Inventario no encontrado'}, status=404)
+        except Exception as e:
+            import traceback
+            logger.error(f'Error en ResumenEstadosEquipaView: {str(e)}\n{traceback.format_exc()}')
+            return Response({'error': str(e)}, status=500)
+
+
+class ResumenEstadosMobView(APIView):
+    """API para obtener el resumen de estados de un mobiliario"""
+    def get(self, request, inventario_id):
+        try:
+            item_base = models.InventarioMob.objects.get(pk=inventario_id)
+            resumen = models.InventarioMob.objects.filter(
+                mobiliario=item_base.mobiliario
+            ).values('estado_mobil__nombre', 'estado_mobil__codigo', 'cantidad')
+            
+            resultado = []
+            total = 0
+            for item in resumen:
+                resultado.append({
+                    'estado_nombre': item['estado_mobil__nombre'],
+                    'estado_codigo': item['estado_mobil__codigo'],
+                    'cantidad': item['cantidad']
+                })
+                total += item['cantidad']
+            
+            return Response({
+                'status': 'success',
+                'nombre_mob': item_base.mobiliario.nombre,
+                'data': resultado,
+                'total': total
+            })
+        except models.InventarioMob.DoesNotExist:
+            return Response({'error': 'Inventario no encontrado'}, status=404)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+
+
+class EstadosInventarioView(APIView):
+    """API para obtener los estados disponibles de mobiliarios y equipamiento"""
+    def get(self, request):
+        # Estados de mobiliarios
+        estados_mob = models.EstadoMobil.objects.all().values('codigo', 'nombre')
+        # Estados de equipamiento
+        estados_equipa = models.EstadoEquipa.objects.all().values('codigo', 'nombre')
+        
+        return Response({
+            'estados_mobiliario': list(estados_mob),
+            'estados_equipamiento': list(estados_equipa)
+        })

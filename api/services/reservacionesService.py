@@ -286,6 +286,52 @@ def cambio_estado_reservacion(original, estado_nuevo):
                 inventario.cantidad -= equipo.cantidad
                 inventario.save(update_fields=['cantidad'])
 
+        # cuando una reservación se finaliza (FIN), se mueven los mobiliarios y equipamientos a estado REVIS para revisión
+        elif texto_estado == 'FIN':
+            montaje = models.Montaje.objects.get(id=original.montaje.pk)
+            
+            # Eliminar registro de estado del salón
+            models.RegistrEstadSalon.objects.filter(salon_id=montaje.salon_id, estado_salon_id='RESV', fecha=original.fechaEvento).delete()
+
+            # Mover mobiliarios de RESV a REVIS (revisión pendiente)
+            mobiliarios = models.MontajeMobiliario.objects.filter(montaje_id=montaje.pk)
+            for mobiliario in mobiliarios:
+                mobil = models.Mobiliario.objects.get(id=mobiliario.mobiliario.pk)
+                
+                # Obtener inventario en RESV y mover a REVIS
+                inventario_resv = models.InventarioMob.objects.filter(mobiliario_id=mobil.pk, estado_mobil_id='RESV').first()
+                if inventario_resv and inventario_resv.cantidad > 0:
+                    # Reducir de RESV
+                    inventario_resv.cantidad -= mobiliario.cantidad
+                    inventario_resv.save(update_fields=['cantidad'])
+                    
+                    # Agregar o crear en REVIS
+                    inventario_revis, fue_creado = models.InventarioMob.objects.get_or_create(
+                        mobiliario_id=mobil.pk,
+                        estado_mobil_id='REVIS',
+                        defaults={'cantidad': 0}
+                    )
+                    inventario_revis.cantidad += mobiliario.cantidad
+                    inventario_revis.save(update_fields=['cantidad'])
+
+            # Mover equipamiento de RESV a REVIS
+            equipos = models.ReservaEquipa.objects.filter(reservacion_id=original.pk)
+            for equipo in equipos:
+                equipamiento = models.Equipamiento.objects.get(id=equipo.equipamiento.pk)
+                
+                inventario_resv = models.InventarioEquipa.objects.filter(equipamiento_id=equipamiento.pk, estado_equipa_id='RESV').first()
+                if inventario_resv and inventario_resv.cantidad > 0:
+                    inventario_resv.cantidad -= equipo.cantidad
+                    inventario_resv.save(update_fields=['cantidad'])
+                    
+                    inventario_revis, fue_creado = models.InventarioEquipa.objects.get_or_create(
+                        equipamiento_id=equipamiento.pk,
+                        estado_equipa_id='REVIS',
+                        defaults={'cantidad': 0}
+                    )
+                    inventario_revis.cantidad += equipo.cantidad
+                    inventario_revis.save(update_fields=['cantidad'])
+
 
             
 # para los casos de abajo es obligatorio poner el total final al llamar a la api con estos campos, esto para determinar
