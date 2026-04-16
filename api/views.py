@@ -1337,8 +1337,8 @@ class ReservacionesFechaView(APIView):
 
 class SolicitudesExtraView(APIView):
     """API para obtener las solicitudes extra (mobiliario, equipamiento y servicios) de reservaciones activas"""
-    # Estados activos: SOLIC (solicitud), PEN (pendiente), CONF/CON (confirmada), PROC (en proceso)
-    estados_activos = ['SOLIC', 'PEN', 'CONF', 'CON', 'PROC']
+    # Estados activos: SOLIC (solicitud), PEN (pendiente), CONF/CON (confirmada), PROC (en proceso), ENPRO (evento en curso)
+    estados_activos = ['SOLIC', 'PEN', 'CONF', 'CON', 'PROC', 'ENPRO']
     
     def get(self, request):
         reservaciones = models.Reservacion.objects.filter(
