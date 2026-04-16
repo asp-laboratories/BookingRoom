@@ -148,18 +148,31 @@ async function registrarPago() {
         () => ejecutarPago(data, csrfToken)
     );
 }
-
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
 async function ejecutarPago(data, csrfToken) {
     console.log('=== EJECUTANDO PAGO ===');
     console.log('Data:', data);
-    console.log('CSRF Token:', csrfToken);
+    console.log('CSRF Token:', getCookie('csrftoken'));
     console.log('Fetching to: /api/pago/');
     try {
         const respuesta = await fetch('/api/pago/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken || ''
+                'X-CSRFToken': getCookie('csrftoken') || ''
             },
             body: JSON.stringify(data),
             credentials: 'same-origin'

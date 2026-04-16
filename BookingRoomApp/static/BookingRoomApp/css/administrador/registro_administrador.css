@@ -336,6 +336,9 @@
   text-align: center;
   padding: 10px;
   border: 1px solid #ddd;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .administrador-tbody tr:nth-child(even) {

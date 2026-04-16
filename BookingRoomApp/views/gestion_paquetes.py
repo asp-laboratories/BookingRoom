@@ -64,6 +64,7 @@ def crear_paquete(request):
             
             nombre_paquete = data.get('nombre_paquete', '').strip()
             salon_id = data.get('salon_id')
+            tipo_montaje_id = data.get('tipo_montaje_id')
             montaje_id = data.get('montaje_id')
             subtotal = float(data.get('subtotal', 0))
             iva_porcentaje = float(data.get('iva', 16))
@@ -104,6 +105,9 @@ def crear_paquete(request):
                     defaults={'disposicion': True}
                 )
                 
+                montaje = models.Montaje.objects.create(salon_id=salon_id, tipo_montaje_id=tipo_montaje_id)
+                montaje_id = montaje.id
+
                 paquete = models.Reservacion.objects.create(
                     nombreEvento=nombre_paquete or 'Paquete sin nombre',
                     nombre_paquete=nombre_paquete,
@@ -339,7 +343,7 @@ def obtener_detalle_paquete(request, pk):
                     'nombre_paquete': paquete.nombre_paquete,
                     'salon_id': paquete.montaje.salon.id if paquete.montaje else None,
                     'salon_nombre': paquete.montaje.salon.nombre if paquete.montaje else None,
-                    'montaje_id': paquete.montaje.id if paquete.montaje else None,
+                    'tipo_montaje_id': paquete.montaje.tipo_montaje.id if paquete.montaje else None,
                     'montaje_nombre': paquete.montaje.tipo_montaje.nombre if paquete.montaje else None,
                     'subtotal': str(paquete.subtotal),
                     'iva': str(paquete.IVA),
