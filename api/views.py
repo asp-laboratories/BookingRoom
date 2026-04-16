@@ -1327,23 +1327,19 @@ class ReservacionesFechaView(APIView):
     def get(self, request):
         from django.utils.dateparse import parse_date
         
-        fecha_str = request.query_params.get('fecha')
+        fecha_str = request.query_params.get('fecha', '').strip()
         
-        if not fecha_str:
-            return Response({'error': 'Fecha no proporcionada'}, status=400)
-        
-        fecha = parse_date(fecha_str)
-        if not fecha:
-            return Response({'error': 'Formato de fecha inválido'}, status=400)
-        
-        reservaciones = models.Reservacion.objects.filter(
-            fechaEvento=fecha
-        ).exclude(
-            estado_reserva__codigo='CANCEL'
-        ).select_related(
+
+        reservaciones = models.Reservacion.objects.filter(es_paquete= False).exclude(estado_reserva__codigo='CANCEL').select_related(
             'montaje__salon', 'tipo_evento', 'cliente__cuenta'
         )
-        
+
+        if fecha_str:
+            fecha = parse_date(fecha_str)
+
+            if fecha:
+                reservaciones = reservaciones.filter(fechaEvento=fecha)
+
         resultado = []
         for r in reservaciones:
             resultado.append({
