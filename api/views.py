@@ -896,6 +896,8 @@ class DisponibilidadSalonesView(APIView):
     def get(self, request):
         from django.utils.dateparse import parse_date
         from datetime import date
+        import logging
+        logger = logging.getLogger(__name__)
         
         fecha_str = request.query_params.get('fecha')
         
@@ -906,17 +908,20 @@ class DisponibilidadSalonesView(APIView):
         if not fecha:
             return Response({'error': 'Formato de fecha inválido'}, status=400)
         
+        logger.info(f'Consultando disponibilidad para fecha: {fecha}')
+        
         # Obtener todos los salones
         salones = models.Salon.objects.all().select_related('estado_salon')
         
-        # Obtener los IDs de salones ocupados/reservados en esa fecha
+        # Obtener los IDs de salones con reservaciones CONFIRMADAS para esa fecha
+        # Solo estados CONF y CON bloquean el salón
         salon_ids_ocupados = set(
             models.Reservacion.objects.filter(
-                fechaEvento=fecha
-            ).exclude(
-                estado_reserva__codigo='CANCEL'
+                fechaEvento=fecha,
+                estado_reserva__codigo__in=['CONF', 'CON']
             ).values_list('montaje__salon_id', flat=True).distinct()
         )
+        logger.info(f'Salones con reservación confirmada: {salon_ids_ocupados}')
         
         # Obtener estados de salon para esa fecha (desde RegistrEstadSalon)
         estados_fecha = {}
@@ -925,28 +930,44 @@ class DisponibilidadSalonesView(APIView):
         ).select_related('salon', 'estado_salon')
         
         for reg in registros:
-            estados_fecha[reg.salon_id] = reg.estado_salon.codigo
+            estados_fecha[reg.salon_id] = {
+                'codigo': reg.estado_salon.codigo,
+                'nombre': reg.estado_salon.nombre
+            }
+        logger.info(f'Estados del día: {estados_fecha}')
         
         # Construir respuesta con disponibilidad
         resultado = []
         for salon in salones:
-            # Primero verificar si hay reservacion
+            # Verificar si hay reservación confirmada
             esta_ocupado = salon.id in salon_ids_ocupados
             
-            # Si no hay reservacion, verificar estado del salon en esa fecha
-            estado_codigo = estados_fecha.get(salon.id)
-            if estado_codigo:
-                if estado_codigo in ('OCUP', 'RESV'):
-                    esta_ocupado = True
-                estado_nombre = {
-                    'OCUP': 'Ocupado',
-                    'RESV': 'Reservado',
-                    'LIMPI': 'En Limpieza',
-                    'MANTE': 'Mantenimiento',
-                    'DISP': 'Disponible',
-                }.get(estado_codigo, 'Disponible')
+            # Obtener estado del día o estado default del salón
+            estado_data = estados_fecha.get(salon.id)
+            
+            if estado_data:
+                estado_codigo = estado_data['codigo']
+                estado_nombre = estado_data['nombre']
             else:
-                estado_nombre = 'Ocupado' if esta_ocupado else 'Disponible'
+                # Usar estado default del salón si no hay registro para esa fecha
+                estado_codigo = salon.estado_salon.codigo if salon.estado_salon else 'DISP'
+                estado_nombre = salon.estado_salon.nombre if salon.estado_salon else 'Disponible'
+            
+            # Si el salón tiene reservación confirmada, forzar estado Ocupado
+            if esta_ocupado:
+                estado_nombre = 'Ocupado'
+                estado_codigo = 'OCUP'
+            
+            # LÓGICA DE DISPONIBILIDAD ESTRICTA
+            # 1. No está ocupado por una reservación
+            # 2. Solo es disponible si el código es 'DIS' (o 'DISP')
+            # CUALQUIER otro estado (LIMPI, OCUP, NODIS, MANTE) bloquea el salón
+            
+            disponible = not esta_ocupado
+            
+            # Si el código no es de disponibilidad, bloquear
+            if estado_codigo not in ['DIS', 'DISP']:
+                disponible = False
             
             resultado.append({
                 'id': salon.id,
@@ -957,8 +978,8 @@ class DisponibilidadSalonesView(APIView):
                 'precio': float(salon.costo) if salon.costo else 0,
                 'estado': estado_nombre,
                 'reservado': esta_ocupado,
+                'disponible': disponible,
             })
-        
         return Response(resultado)
         # === CÓDIGO COMENTADO - Available for reference ===
         # Original: devolvía salones con su estado (no reservaciones)

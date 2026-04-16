@@ -138,11 +138,11 @@
         <div class="paquetes-precios-grid">
           <div class="paquetes-campo">
             <label class="paquetes-label">Subtotal</label>
-            <input type="number" class="paquetes-input" id="paquete-subtotal" placeholder="0.00" step="0.01" />
+            <input type="text" class="paquetes-input" id="paquete-subtotal" placeholder="Ingresa el subtotal" autocomplete="off" />
           </div>
           <div class="paquetes-campo">
             <label class="paquetes-label">IVA (%)</label>
-            <input type="number" class="paquetes-input" id="paquete-iva" placeholder="16" value="16" />
+            <input type="text" class="paquetes-input" id="paquete-iva" placeholder="16" value="16" autocomplete="off" />
           </div>
           <div class="paquetes-campo">
             <label class="paquetes-label">Total</label>
@@ -205,7 +205,6 @@
         <div class="paquetes-item-acciones">
           <button class="btn-accion btn-ver" onclick="verPaquete({{ item.paquete.id }})">Ver</button>
           <button class="btn-accion btn-editar" onclick="editarPaquete({{ item.paquete.id }})">Editar</button>
-          <button class="btn-accion btn-duplicar" onclick="duplicarPaquete({{ item.paquete.id }})">Duplicar</button>
           <button class="btn-accion btn-eliminar" onclick="eliminarPaquete({{ item.paquete.id }})">Eliminar</button>
         </div>
       </div>
@@ -260,11 +259,11 @@
         </div>
         <div class="form-grupo">
           <label>Subtotal</label>
-          <input type="number" id="editar-subtotal" class="form-input" step="0.01" />
+          <input type="text" id="editar-subtotal" class="form-input editable" placeholder="Ingresa el subtotal" />
         </div>
         <div class="form-grupo">
           <label>IVA (%)</label>
-          <input type="number" id="editar-iva" class="form-input" step="0.01" />
+          <input type="text" id="editar-iva" class="form-input editable" placeholder="16" />
         </div>
         <div class="form-grupo">
           <label>Total</label>
@@ -307,6 +306,19 @@
 .form-input:focus {
   outline: none;
   border-color: var(--color-primario);
+}
+
+.form-input {
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  background: white !important;
+}
+
+#editar-subtotal, #editar-iva {
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  background: white !important;
+  cursor: text !important;
 }
 
 dialog.modal-paquete {

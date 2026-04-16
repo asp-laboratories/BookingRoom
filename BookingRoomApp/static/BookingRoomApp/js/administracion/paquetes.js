@@ -520,6 +520,20 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('editar-iva').value = paquete.iva || '16';
         document.getElementById('editar-total').value = paquete.total || '0';
         
+        // Forzar habilitación de inputs
+        setTimeout(() => {
+          const subtotalInput = document.getElementById('editar-subtotal');
+          const ivaInput = document.getElementById('editar-iva');
+          subtotalInput.removeAttribute('readonly');
+          subtotalInput.removeAttribute('disabled');
+          subtotalInput.style.pointerEvents = 'auto';
+          subtotalInput.style.opacity = '1';
+          ivaInput.removeAttribute('readonly');
+          ivaInput.removeAttribute('disabled');
+          ivaInput.style.pointerEvents = 'auto';
+          ivaInput.style.opacity = '1';
+        }, 100);
+        
         const salonSelect = document.getElementById('editar-salon');
         salonSelect.value = paquete.salon_id || '';
         

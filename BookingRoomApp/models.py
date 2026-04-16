@@ -63,7 +63,7 @@ class Cuenta(models.Model):
     nombre_usuario = models.CharField(max_length=100)
     correo_electronico = models.EmailField(unique=True)
     firebase_uid = models.CharField(max_length=255, unique=True, null=True, blank=True)
-    estado_cuenta = models.ForeignKey(EstadoCuenta, on_delete=models.PROTECT)
+    estado_cuenta = models.ForeignKey(EstadoCuenta, on_delete=models.CASCADE)
     # === IMAGEN DE PERFIL (comentado para revisión) ===
     # Descomentar después de ejecutar migraciones
     # imagen_url = models.URLField(null=True, blank=True, help_text="URL de la imagen de perfil en Firebase Storage")
@@ -85,8 +85,8 @@ class Trabajador(models.Model):
     apelidoMaterno = models.CharField(max_length=150, blank=True, null=True)
     telefono = models.CharField(max_length=15)
     correo_electronico = models.EmailField(unique=True)
-    rol = models.ForeignKey(Rol, on_delete=models.PROTECT)
-    cuenta = models.ForeignKey(Cuenta, on_delete=models.PROTECT)
+    rol = models.ForeignKey(Rol, on_delete=models.CASCADE)
+    cuenta = models.ForeignKey(Cuenta, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'trabajador'
@@ -108,8 +108,8 @@ class DatosCliente(models.Model):
     dir_colonia = models.CharField(max_length=150)
     dir_calle = models.CharField(max_length=150)
     dir_numero = models.CharField( max_length=50)
-    tipo_cliente = models.ForeignKey(TipoCliente, on_delete=models.PROTECT)
-    cuenta = models.ForeignKey(Cuenta, null=True, blank=True, on_delete=models.PROTECT)
+    tipo_cliente = models.ForeignKey(TipoCliente, on_delete=models.CASCADE)
+    cuenta = models.ForeignKey(Cuenta, null=True, blank=True, on_delete=models.CASCADE)
     # TODO: Actualizar - Campo para saber si el cliente tiene cuenta en la app
     # registrado_desde_app = models.BooleanField(null=True, blank=True, default=None)
 
@@ -298,7 +298,7 @@ class Salon(models.Model):
     dimenAlto = models.DecimalField(max_digits=10, decimal_places=2)
     metrosCuadrados = models.DecimalField(max_digits=10, decimal_places=2)
     maxCapacidad = models.IntegerField()
-    estado_salon = models.ForeignKey(EstadoSalon, on_delete=models.PROTECT)
+    estado_salon = models.ForeignKey(EstadoSalon, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'salon'
@@ -311,8 +311,8 @@ class Salon(models.Model):
 
 class Montaje(models.Model):
     costo = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    salon = models.ForeignKey(Salon, on_delete=models.PROTECT)
-    tipo_montaje = models.ForeignKey(TipoMontaje, on_delete=models.PROTECT)
+    salon = models.ForeignKey(Salon, on_delete=models.CASCADE)
+    tipo_montaje = models.ForeignKey(TipoMontaje, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'montaje'
@@ -328,7 +328,7 @@ class Servicio(models.Model):
     descripcion = models.CharField(max_length=550)
     costo = models.DecimalField(max_digits=10, decimal_places=2)
     disposicion = models.BooleanField()
-    tipo_servicio = models.ForeignKey(TipoServicio, on_delete=models.PROTECT)
+    tipo_servicio = models.ForeignKey(TipoServicio, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'servicio'
@@ -351,11 +351,11 @@ class Reservacion(models.Model):
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     IVA = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    cliente = models.ForeignKey(DatosCliente, on_delete=models.PROTECT, null=True, blank=True)
-    montaje = models.ForeignKey(Montaje, on_delete=models.PROTECT, null=True, blank=True)
-    estado_reserva = models.ForeignKey(EstadoReserva, on_delete=models.PROTECT)
-    tipo_evento = models.ForeignKey(TipoEvento, on_delete=models.PROTECT)
-    trabajador = models.ForeignKey(Trabajador, on_delete=models.PROTECT, null=True, blank=True)
+    cliente = models.ForeignKey(DatosCliente, on_delete=models.CASCADE, null=True, blank=True)
+    montaje = models.ForeignKey(Montaje, on_delete=models.CASCADE, null=True, blank=True)
+    estado_reserva = models.ForeignKey(EstadoReserva, on_delete=models.CASCADE)
+    tipo_evento = models.ForeignKey(TipoEvento, on_delete=models.CASCADE)
+    trabajador = models.ForeignKey(Trabajador, on_delete=models.CASCADE, null=True, blank=True)
     es_paquete = models.BooleanField(default=False)
     nombre_paquete = models.CharField(max_length=100, blank=True, default="")
     
@@ -399,7 +399,7 @@ class Mobiliario(models.Model):
     descripcion = models.CharField(max_length=550)
     costo = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.IntegerField()
-    tipo_movil = models.ForeignKey(TipoMobil, on_delete=models.PROTECT)
+    tipo_movil = models.ForeignKey(TipoMobil, on_delete=models.CASCADE)
     descripcion_mob = models.ManyToManyField(CaracterMobil)
 
     class Meta:
@@ -415,8 +415,8 @@ class MontajeMobiliario(models.Model):
     cantidad = models.IntegerField()
     extra = models.BooleanField(default=False, blank=True, null=True)
     completado = models.BooleanField(default=False, blank=True, null=True)
-    montaje = models.ForeignKey(Montaje, on_delete=models.PROTECT)
-    mobiliario = models.ForeignKey(Mobiliario, on_delete=models.PROTECT)
+    montaje = models.ForeignKey(Montaje, on_delete=models.CASCADE)
+    mobiliario = models.ForeignKey(Mobiliario, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'montaje_mobiliario'
@@ -432,7 +432,7 @@ class Equipamiento(models.Model):
     descripcion = models.CharField(max_length=550)
     costo = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.IntegerField()
-    tipo_equipa = models.ForeignKey(TipoEquipa, on_delete=models.PROTECT)
+    tipo_equipa = models.ForeignKey(TipoEquipa, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'equipamiento'
@@ -444,8 +444,8 @@ class Equipamiento(models.Model):
 
 
 class InventarioEquipa(models.Model):
-    equipamiento = models.ForeignKey(Equipamiento, on_delete=models.PROTECT)
-    estado_equipa = models.ForeignKey(EstadoEquipa, on_delete=models.PROTECT)
+    equipamiento = models.ForeignKey(Equipamiento, on_delete=models.CASCADE)
+    estado_equipa = models.ForeignKey(EstadoEquipa, on_delete=models.CASCADE)
     cantidad = models.IntegerField()
 
     class Meta:
@@ -465,8 +465,8 @@ class InventarioEquipa(models.Model):
 
 
 class InventarioMob(models.Model):
-    mobiliario = models.ForeignKey(Mobiliario, on_delete=models.PROTECT)
-    estado_mobil = models.ForeignKey(EstadoMobil, on_delete=models.PROTECT)
+    mobiliario = models.ForeignKey(Mobiliario, on_delete=models.CASCADE)
+    estado_mobil = models.ForeignKey(EstadoMobil, on_delete=models.CASCADE)
     cantidad = models.IntegerField()
 
     class Meta:
@@ -487,8 +487,8 @@ class InventarioMob(models.Model):
 
 class ReservaServicio(models.Model):
     extra = models.BooleanField(default=False, blank=True, null=True)
-    reservacion = models.ForeignKey(Reservacion, on_delete=models.PROTECT)
-    servicio = models.ForeignKey(Servicio, on_delete=models.PROTECT)
+    reservacion = models.ForeignKey(Reservacion, on_delete=models.CASCADE)
+    servicio = models.ForeignKey(Servicio, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'reserva_servicio'
@@ -503,8 +503,8 @@ class ReservaEquipa(models.Model):
     cantidad = models.IntegerField()
     extra = models.BooleanField(default=False, blank=True, null=True)
     completado = models.BooleanField(default=False, blank=True, null=True)
-    reservacion = models.ForeignKey(Reservacion, on_delete=models.PROTECT)
-    equipamiento = models.ForeignKey(Equipamiento, on_delete=models.PROTECT)
+    reservacion = models.ForeignKey(Reservacion, on_delete=models.CASCADE)
+    equipamiento = models.ForeignKey(Equipamiento, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'reserva_equipa'
@@ -517,8 +517,8 @@ class ReservaEquipa(models.Model):
 
 class RegistrEstadReserva(models.Model):
     fecha = models.DateField(auto_now=True, null=True, blank=True)
-    reservacion = models.ForeignKey(Reservacion, on_delete=models.PROTECT)
-    estado_reserva = models.ForeignKey(EstadoReserva, on_delete=models.PROTECT)
+    reservacion = models.ForeignKey(Reservacion, on_delete=models.CASCADE)
+    estado_reserva = models.ForeignKey(EstadoReserva, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'registr_esta_reserva'
@@ -531,8 +531,8 @@ class RegistrEstadReserva(models.Model):
 
 class RegistrEstadSalon(models.Model):
     fecha = models.DateField(null=True, blank=True, default=timezone.now)
-    salon = models.ForeignKey(Salon, on_delete=models.PROTECT)
-    estado_salon = models.ForeignKey(EstadoSalon, on_delete=models.PROTECT)
+    salon = models.ForeignKey(Salon, on_delete=models.CASCADE)
+    estado_salon = models.ForeignKey(EstadoSalon, on_delete=models.CASCADE)
     # Campo para especificar la fecha fin del estado (para estados limitados en el tiempo)
     # fecha_fin = models.DateField(null=True, blank=True, help_text="Fecha fin del estado (opcional)")
 
@@ -552,7 +552,7 @@ class Encuesta(models.Model):
     salon = models.IntegerField()
     mobiliario = models.IntegerField()
     comentario = models.TextField(blank=True, null=True)
-    reservacion = models.ForeignKey(Reservacion, on_delete=models.PROTECT)
+    reservacion = models.ForeignKey(Reservacion, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'encuesta'
@@ -570,9 +570,9 @@ class Pago(models.Model):
     fecha = models.DateField(auto_now=True)
     hora = models.TimeField(auto_now=True)
     no_pago = models.IntegerField()
-    reservacion = models.ForeignKey(Reservacion, on_delete=models.PROTECT)
-    concepto_pago = models.ForeignKey(ConceptoPago, on_delete=models.PROTECT)
-    metodo_pago = models.ForeignKey(MetodoPago, on_delete=models.PROTECT)
+    reservacion = models.ForeignKey(Reservacion, on_delete=models.CASCADE)
+    concepto_pago = models.ForeignKey(ConceptoPago, on_delete=models.CASCADE)
+    metodo_pago = models.ForeignKey(MetodoPago, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'pago'
