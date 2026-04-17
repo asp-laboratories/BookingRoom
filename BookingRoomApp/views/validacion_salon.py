@@ -7,7 +7,9 @@ from datetime import datetime
 def verificar_salon_disponible(request):
     """
     Verifica la disponibilidad de salones para una fecha específica.
-    Similar a la lógica de Flutter: SalonService.getSalonesDisponibles()
+    Usa la misma lógica que la API de Flutter: SalonService.getSalonesDisponibles()
+    - Solo DIS y DISP son disponibles
+    - Cualquier otro código (LIMPI, NODIS, MANTE, RESV, OCUP) bloquea el salón
     """
     fecha_str = request.GET.get('fecha')
     
@@ -25,55 +27,51 @@ def verificar_salon_disponible(request):
             'message': 'Formato de fecha inválido'
         })
     
-    # Obtener todos los salones con su estado
     salones = models.Salon.objects.select_related('estado_salon').all()
     
-    # Obtener reservaciones confirmadas para esa fecha
-    reservaciones_fecha = models.Reservacion.objects.filter(
-        fechaEvento=fecha_evento,
-        estado_reserva__codigo__in=['CONF', 'CON']
-    ).values_list('montaje__salon_id', flat=True)
+    salon_ids_ocupados = set(
+        models.Reservacion.objects.filter(
+            fechaEvento=fecha_evento,
+            estado_reserva__codigo__in=['CONF', 'CON']
+        ).values_list('montaje__salon_id', flat=True).distinct()
+    )
     
-    # Obtener registros de estado de salon para esa fecha
-    registros_estado = models.RegistrEstadSalon.objects.filter(
+    estados_fecha = {}
+    registros = models.RegistrEstadSalon.objects.filter(
         fecha=fecha_evento
-    ).values_list('salon_id', 'estado_salon__codigo', 'estado_salon__nombre')
+    ).select_related('salon', 'estado_salon')
     
-    # Crear diccionario de estado por salon
-    estado_salon_fecha = {}
-    for salon_id, codigo, nombre in registros_estado:
-        estado_salon_fecha[salon_id] = {'codigo': codigo, 'nombre': nombre}
+    for reg in registros:
+        estados_fecha[reg.salon_id] = {
+            'codigo': reg.estado_salon.codigo,
+            'nombre': reg.estado_salon.nombre
+        }
     
     salones_data = []
     for salon in salones:
-        # Verificar si el salón está reservado en esa fecha
-        reservado = salon.id in reservaciones_fecha
+        esta_ocupado = salon.id in salon_ids_ocupados
         
-        # Verificar estado del salón en la tabla registr_esta_salon
-        registro_estado = estado_salon_fecha.get(salon.id, None)
+        estado_data = estados_fecha.get(salon.id)
         
-        # Verificar si el estado del salón bloquea su uso
-        estado_salon_nombre = salon.estado_salon.nombre if salon.estado_salon else ''
-        
-        # Si hay un registro de estado para esa fecha, usarlo
-        if registro_estado:
-            estado_en_fecha = registro_estado['nombre']
-            codigo_estado = registro_estado['codigo']
+        if estado_data:
+            estado_en_fecha = estado_data['nombre']
+            codigo_estado = estado_data['codigo']
         else:
-            estado_en_fecha = estado_salon_nombre
-            codigo_estado = salon.estado_salon.codigo if salon.estado_salon else ''
+            estado_en_fecha = salon.estado_salon.nombre if salon.estado_salon else 'Disponible'
+            codigo_estado = salon.estado_salon.codigo if salon.estado_salon else 'DIS'
         
-        # Disponible si: no reservado Y el estado no es de los bloqueados
-        # Estados bloqueados: Reservado, Ocupado, En Limpieza, Mantenimiento (case-insensitive)
-        estados_bloqueados = ['reservado', 'ocupado', 'en limpieza', 'mantenimiento']
-        disponible = not reservado and estado_en_fecha.lower() not in estados_bloqueados and codigo_estado != 'OCUP'
+        if esta_ocupado:
+            estado_en_fecha = 'Ocupado'
+            codigo_estado = 'OCUP'
+        
+        disponible = not esta_ocupado and codigo_estado in ['DIS', 'DISP']
         
         salones_data.append({
             'id': salon.id,
             'nombre': salon.nombre,
             'estado_salon': estado_en_fecha,
             'codigo_estado': codigo_estado,
-            'reservado': reservado,
+            'reservado': esta_ocupado,
             'disponible': disponible,
             'max_capacidad': salon.maxCapacidad
         })

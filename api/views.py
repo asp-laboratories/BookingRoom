@@ -1391,7 +1391,7 @@ class SolicitudesExtraView(APIView):
                         'nombre': rs.servicio.nombre,
                         'descripcion': rs.servicio.descripcion,
                         'precio': float(rs.servicio.costo) if rs.servicio.costo else 0,
-                        'completado': False,
+                        'completado': rs.completado or False,
                     })
             
             if mobiliarios_extra or equipamentos_extra or servicios_extra:
@@ -1469,11 +1469,11 @@ class AceptarSolicitudExtraView(APIView):
         
         mobiliarios_ids = request.data.get('mobiliarios_ids', [])
         equipamentos_ids = request.data.get('equipamentos_ids', [])
+        servicios_ids = request.data.get('servicios_ids', [])
         
-        logger.info(f'Aceptando solicitud {reservacion_id}: mobs={mobiliarios_ids}, equips={equipamentos_ids}')
+        logger.info(f'Aceptando solicitud {reservacion_id}: mobs={mobiliarios_ids}, equips={equipamentos_ids}, servs={servicios_ids}')
         
         with transaction.atomic():
-            # Aceptar mobiliarios extra
             total_mobiliarios = 0
             mobs_aceptados = 0
             for mm_id in mobiliarios_ids:
@@ -1483,9 +1483,8 @@ class AceptarSolicitudExtraView(APIView):
                         montaje=reservacion.montaje,
                         extra=True
                     )
-                    mm.aceptado = True
-                    mm.save(update_fields=['aceptado'])
-                    # Calcular precio (cantidad * costo mobiliario)
+                    mm.completado = True
+                    mm.save(update_fields=['completado'])
                     if mm.mobiliario and mm.mobiliario.costo:
                         total_mobiliarios += mm.cantidad * mm.mobiliario.costo
                     mobs_aceptados += 1
@@ -1493,7 +1492,7 @@ class AceptarSolicitudExtraView(APIView):
                 except models.MontajeMobiliario.DoesNotExist:
                     logger.warning(f'Mobiliario extra {mm_id} no encontrado o no es extra')
             
-            # Aceptar equipamiento extra
+            # Aceptar equipamiento extra (marcar como completados)
             total_equipamiento = 0
             equips_aceptados = 0
             for re_id in equipamentos_ids:
@@ -1503,8 +1502,8 @@ class AceptarSolicitudExtraView(APIView):
                         reservacion=reservacion,
                         extra=True
                     )
-                    re.aceptado = True
-                    re.save(update_fields=['aceptado'])
+                    re.completado = True
+                    re.save(update_fields=['completado'])
                     if re.equipamiento and re.equipamiento.costo:
                         total_equipamiento += re.cantidad * re.equipamiento.costo
                     equips_aceptados += 1
@@ -1512,12 +1511,31 @@ class AceptarSolicitudExtraView(APIView):
                 except models.ReservaEquipa.DoesNotExist:
                     logger.warning(f'Equipamiento extra {re_id} no encontrado o no es extra')
             
-            total_adicional = total_mobiliarios + total_equipamiento
-            logger.info(f'Totales: mobs=${total_mobiliarios}, equips=${total_equipamiento}, total=${total_adicional}')
+            # Aceptar servicios extra (marcar como completados)
+            total_servicios = 0
+            servs_aceptados = 0
+            for rs_id in servicios_ids:
+                try:
+                    rs = models.ReservaServicio.objects.get(
+                        pk=rs_id,
+                        reservacion=reservacion,
+                        extra=True
+                    )
+                    rs.completado = True
+                    rs.save(update_fields=['completado'])
+                    if rs.servicio and rs.servicio.costo:
+                        total_servicios += rs.servicio.costo
+                    servs_aceptados += 1
+                    logger.info(f'Servicio extra {rs_id} aceptado: ${rs.servicio.costo}')
+                except models.ReservaServicio.DoesNotExist:
+                    logger.warning(f'Servicio extra {rs_id} no encontrado o no es extra')
+            
+            total_adicional = total_mobiliarios + total_equipamiento + total_servicios
+            logger.info(f'Totales: mobs=${total_mobiliarios}, equips=${total_equipamiento}, servs=${total_servicios}, total=${total_adicional}')
             
             # Actualizar precio total de la reservación
             if total_adicional > 0:
-                nuevo_subtotal = (reservacion.subtotal or 0) + total_mobiliarios + total_equipamiento
+                nuevo_subtotal = (reservacion.subtotal or 0) + total_adicional
                 nuevo_iva = nuevo_subtotal * Decimal('0.16')
                 nuevo_total = nuevo_subtotal + nuevo_iva
                 
@@ -1533,6 +1551,7 @@ class AceptarSolicitudExtraView(APIView):
             'nuevo_total': float(reservacion.total) if reservacion.total else 0,
             'mobiliarios_aceptados': mobs_aceptados,
             'equipamientos_aceptados': equips_aceptados,
+            'servicios_aceptados': servs_aceptados,
         })
 
 

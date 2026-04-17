@@ -115,6 +115,13 @@ def crear_reservacion(datos, confirmar_inventario=True):
 
         models.RegistrEstadReserva.objects.create(reservacion_id=reservacion.pk, estado_reserva_id="PEN")
 
+        # Crear el registro de estado del salón para bloquearlo
+        models.RegistrEstadSalon.objects.get_or_create(
+            salon_id=salon_id,
+            fecha=fecha_evento,
+            defaults={'estado_salon_id': 'RESV'}
+        )
+
         return reservacion
 
 
@@ -192,12 +199,11 @@ def cambio_estado_reservacion(original, estado_nuevo):
             #se guarda el salon y el registro de estados del salon
             montaje = models.Montaje.objects.get(id=original.montaje.pk)
 
-            # para verficiar q el salon no este ocupado ese mismo dia
-            control = models.RegistrEstadSalon.objects.filter(salon_id=montaje.salon_id, fecha=original.fechaEvento).exists()
-            if control:
-                raise Exception("El salon ya se encuentra ocupado ese dia")
-            models.RegistrEstadSalon.objects.create(salon_id=montaje.salon_id, estado_salon_id='RESV', fecha=original.fechaEvento)
-
+            # para verficiar q el salon no este ocupado ese mismo dia por otro
+            control = models.RegistrEstadSalon.objects.filter(salon_id=montaje.salon_id, fecha=original.fechaEvento)
+            if not control.exists():
+                models.RegistrEstadSalon.objects.create(salon_id=montaje.salon_id, estado_salon_id='RESV', fecha=original.fechaEvento)
+            
             # se cambian los estados de los mobiliarios (esto por medio de su inventario)
             mobiliarios = models.MontajeMobiliario.objects.filter(montaje_id=montaje.pk)
             for mobiliario in mobiliarios:

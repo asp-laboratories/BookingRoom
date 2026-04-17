@@ -487,6 +487,7 @@ class InventarioMob(models.Model):
 
 class ReservaServicio(models.Model):
     extra = models.BooleanField(default=False, blank=True, null=True)
+    completado = models.BooleanField(default=False, blank=True, null=True)
     reservacion = models.ForeignKey(Reservacion, on_delete=models.CASCADE)
     servicio = models.ForeignKey(Servicio, on_delete=models.CASCADE)
 
