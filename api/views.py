@@ -9,6 +9,8 @@ from . import serializers
 from .services import montajeService, reservacionesService
 from decimal import Decimal
 import json
+from django.utils import timezone
+from datetime import datetime
 
 try:
     import firebase_admin
@@ -123,22 +125,28 @@ class SalonViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         
-        from django.utils import timezone
-        fecha_hoy = timezone.now().date()
+        fecha_str = request.query_params.get('fecha', '').strip()
+        if fecha_str:
+            try:
+                fecha_consultada = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+            except ValueError:
+                fecha_consultada = timezone.now().date()
+        else:
+            fecha_consultada = timezone.now().date()
         
         data = serializer.data
         for i, salon_data in enumerate(data):
             salon = queryset[i]
             
             # Obtener el registro de HOY
-            registro_hoy = models.RegistrEstadSalon.objects.filter(
+            fecha_ragistro = models.RegistrEstadSalon.objects.filter(
                 salon=salon,
-                fecha=fecha_hoy
+                fecha=fecha_consultada
             ).select_related('estado_salon').first()
             
-            if registro_hoy:
-                salon_data['estado'] = registro_hoy.estado_salon.nombre
-                salon_data['estado_codigo'] = registro_hoy.estado_salon.codigo
+            if fecha_ragistro:
+                salon_data['estado'] = fecha_ragistro.estado_salon.nombre
+                salon_data['estado_codigo'] = fecha_ragistro.estado_salon.codigo
             else:
                 # Si no hay registro hoy, usar estado actual del salon
                 if salon.estado_salon:
@@ -153,85 +161,58 @@ class SalonViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         import logging
         from django.utils import timezone
-        from datetime import datetime
         
         logger = logging.getLogger(__name__)
-        
         salon = self.get_object()
-        print(f"DEBUG UPDATE: salon={salon.nombre}, old estado={salon.estado_salon}")
+        
         nuevo_estado_input = request.data.get('estado_salon')
         fecha_input = request.data.get('fecha')
-        print(f"DEBUG UPDATE: nuevo_estado_input={nuevo_estado_input}")
-        print(f"DEBUG UPDATE: fecha_input={fecha_input}")
         
-        # Procesar la fecha
         if fecha_input:
             try:
-                fecha_registro = datetime.fromisoformat(fecha_input.replace('Z', '+00:00')).date()
-            except:
-                fecha_registro = timezone.now().date()
+                fecha_limpia = fecha_input.split('T')[0] if 'T' in fecha_input else fecha_input
+                fecha_registro = datetime.strptime(fecha_limpia, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({'error': 'Formato de fecha inválido. Usa YYYY-MM-DD'}, status=400)
         else:
             fecha_registro = timezone.now().date()
         
-        fecha_hoy = timezone.now().date()
-        
         if nuevo_estado_input:
-            # Mapeo de códigos Flutter a códigos DB
             codigo_map = {
-                'DISP': 'DIS',
-                'LIM': 'LIMPI',
-                'LIMPIEZA': 'LIMPI',
-                'NODISP': 'NODIS',
-                'RESV': 'RESV',
-                'DISPONIBLE': 'DIS',
-                'NO_DISPONIBLE': 'NODIS',
-                'RESERVADO': 'RESV',
-                'MANTE': 'MANTE',
-                'MANTENIMIENTO': 'MANTE',
-                'OCUP': 'OCUP',
-                'OCUPADO': 'OCUP',
+                'DISP': 'DIS', 'DISPONIBLE': 'DIS',
+                'LIM': 'LIMPI', 'LIMPIEZA': 'LIMPI',
+                'NODISP': 'NODIS', 'NO_DISPONIBLE': 'NODIS',
+                'RESV': 'RESV', 'RESERVADO': 'RESV',
+                'MANTE': 'MANTE', 'MANTENIMIENTO': 'MANTE',
+                'OCUP': 'OCUP', 'OCUPADO': 'OCUP',
             }
             
             codigo_buscar = codigo_map.get(nuevo_estado_input.upper(), nuevo_estado_input.upper())
-            print(f"DEBUG UPDATE: codigo_buscar={codigo_buscar}")
             
-            # Verificar si se intenta cambiar a Limpieza y el salon está ocupado/reservado hoy
             if codigo_buscar == 'LIMPI':
-                registro_hoy = models.RegistrEstadSalon.objects.filter(
+                registro_fecha_solicitada = models.RegistrEstadSalon.objects.filter(
                     salon=salon,
-                    fecha=fecha_hoy
+                    fecha=fecha_registro
                 ).select_related('estado_salon').first()
                 
-                if registro_hoy and registro_hoy.estado_salon.codigo in ('RESV', 'OCUP'):
+                if registro_fecha_solicitada and registro_fecha_solicitada.estado_salon.codigo in ('RESV', 'OCUP'):
                     return Response(
-                        {'error': 'No se puede cambiar a Limpieza: salon ocupado/reservado hoy'},
+                        {'error': f'No se puede poner en limpieza: el salón está ocupado/reservado para el {fecha_registro}'},
                         status=400
                     )
             
             try:
                 nuevo_estado = models.EstadoSalon.objects.get(codigo=codigo_buscar)
-                print(f"DEBUG UPDATE: nuevo_estado encontrado={nuevo_estado.nombre} (codigo={nuevo_estado.codigo})")
                 
                 salon.estado_salon = nuevo_estado
                 salon.save()
-                print(f"DEBUG UPDATE: salon.save() completado")
                 
-                # Verificar estados existentes
-                todos_estados = models.EstadoSalon.objects.all()
-                print(f"DEBUG UPDATE: Todos los estados en DB: {[(e.nombre, e.codigo) for e in todos_estados]}")
-                
-                registro = models.RegistrEstadSalon.objects.create(
+                models.RegistrEstadSalon.objects.create(
                     salon=salon,
                     estado_salon=nuevo_estado,
                     fecha=fecha_registro
                 )
-                print(f"DEBUG UPDATE: registro creado id={registro.id}, fecha={fecha_registro}")
                 
-                # Verificar que se creó
-                ultimos = models.RegistrEstadSalon.objects.filter(salon=salon).order_by('-id')[:3]
-                print(f"DEBUG UPDATE: Últimos registros para salon {salon.id}: {[(r.estado_salon.nombre, str(r.fecha)) for r in ultimos]}")
-                
-                # Devolver en formato consistente con list
                 return Response({
                     'id': salon.id,
                     'nombre': salon.nombre,
@@ -240,22 +221,10 @@ class SalonViewSet(viewsets.ModelViewSet):
                 })
                     
             except models.EstadoSalon.DoesNotExist:
-                # Si no existe el código, buscar cualquier estado disponible
-                nuevo_estado = models.EstadoSalon.objects.first()
-                if nuevo_estado:
-                    salon.estado_salon = nuevo_estado
-                    salon.save()
-                    models.RegistrEstadSalon.objects.create(
-                        salon=salon,
-                        estado_salon=nuevo_estado
-                    )
-                    return Response({
-                        'id': salon.id,
-                        'nombre': salon.nombre,
-                        'estado': nuevo_estado.nombre,
-                        'estado_codigo': nuevo_estado.codigo,
-                    })
-                return Response({'error': 'No hay estados de salón configurados'}, status=400)
+                return Response(
+                    {'error': f'El código de estado "{codigo_buscar}" no existe en la base de datos de Django. Verifica el diccionario de traducción.'}, 
+                    status=400
+                )
         
         return super().update(request, *args, **kwargs)
 

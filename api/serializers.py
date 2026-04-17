@@ -982,6 +982,8 @@ class PaqueteSerializer(serializers.ModelSerializer):
     salon_ubicacion = serializers.CharField(source='montaje.salon.ubicacion', read_only=True)
     montaje_nombre = serializers.CharField(source='montaje.tipo_montaje.nombre', read_only=True)
     montaje_id = serializers.IntegerField(source='montaje.id', read_only=True)
+
+    tipo_montaje_id = serializers.IntegerField(source='montaje.tipo_montaje.id', read_only=True)
     
     servicios = serializers.SerializerMethodField()
     equipamentos = serializers.SerializerMethodField()
@@ -994,7 +996,7 @@ class PaqueteSerializer(serializers.ModelSerializer):
             'subtotal', 'IVA', 'total',
             'salon_id', 'salon_nombre', 'salon_precio', 'salon_capacidad',
             'salon_metros', 'salon_ubicacion',
-            'montaje_id', 'montaje_nombre',
+            'montaje_id', 'montaje_nombre', 'tipo_montaje_id',
             'servicios', 'equipamentos', 'mobiliarios',
         ]
     
