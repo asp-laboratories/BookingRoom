@@ -1,6 +1,7 @@
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Q
 from rest_framework import viewsets, generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -147,14 +148,16 @@ class SalonViewSet(viewsets.ModelViewSet):
             if fecha_ragistro:
                 salon_data['estado'] = fecha_ragistro.estado_salon.nombre
                 salon_data['estado_codigo'] = fecha_ragistro.estado_salon.codigo
+                salon_data['fecha'] = fecha_ragistro.fecha.isoformat()
             else:
-                # Si no hay registro hoy, usar estado actual del salon
+                # Si no hay registro para esa fecha, usar estado actual del salon
                 if salon.estado_salon:
                     salon_data['estado'] = salon.estado_salon.nombre
                     salon_data['estado_codigo'] = salon.estado_salon.codigo
                 else:
                     salon_data['estado'] = 'Disponible'
                     salon_data['estado_codigo'] = 'DIS'
+                salon_data['fecha'] = fecha_consultada.isoformat()
         
         return Response(data)
 
@@ -204,9 +207,6 @@ class SalonViewSet(viewsets.ModelViewSet):
             try:
                 nuevo_estado = models.EstadoSalon.objects.get(codigo=codigo_buscar)
                 
-                salon.estado_salon = nuevo_estado
-                salon.save()
-                
                 models.RegistrEstadSalon.objects.create(
                     salon=salon,
                     estado_salon=nuevo_estado,
@@ -218,6 +218,7 @@ class SalonViewSet(viewsets.ModelViewSet):
                     'nombre': salon.nombre,
                     'estado': nuevo_estado.nombre,
                     'estado_codigo': nuevo_estado.codigo,
+                    'fecha': fecha_registro.isoformat(),
                 })
                     
             except models.EstadoSalon.DoesNotExist:
@@ -783,13 +784,22 @@ def api_signup(request):
 
             if not FIREBASE_ENABLED:
                 logger.warning("Signup: Firebase no configurado")
-                return JsonResponse({'error': 'Firebase no configurado'}, status=500)
+                return JsonResponse({'error': 'Firebase no configurado en el servidor'}, status=500)
+
+            if not token or len(token) == 0:
+                logger.warning("Signup: Token vacío")
+                return JsonResponse({'error': 'Token de autenticación vacío'}, status=400)
 
             if len(token) > 10000:
                 logger.warning("Signup: Token inválido (muy largo)")
-                return JsonResponse({'error': 'Token inválido'}, status=400)
+                return JsonResponse({'error': 'Token de autenticación inválido'}, status=400)
 
-            decoded = auth.verify_id_token(token)
+            try:
+                decoded = auth.verify_id_token(token)
+            except Exception as e:
+                logger.error(f"Signup: Error al verificar token: {str(e)}")
+                return JsonResponse({'error': f'Error al verificar token: {str(e)}'}, status=400)
+
             firebase_uid = decoded['uid']
             email = decoded.get('email', '')
             display_name = decoded.get('name', '')
@@ -802,7 +812,7 @@ def api_signup(request):
 
             # Verificar si la cuenta ya existe
             cuenta_existente = models.Cuenta.objects.filter(
-                models.Q(firebase_uid=firebase_uid) | models.Q(correo_electronico=email)
+                Q(firebase_uid=firebase_uid) | Q(correo_electronico=email)
             ).first()
             
             if cuenta_existente:
