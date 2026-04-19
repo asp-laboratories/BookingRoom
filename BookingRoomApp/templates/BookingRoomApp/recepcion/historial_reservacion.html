@@ -17,90 +17,209 @@
 {% include "BookingRoomApp/includes/alert-exito.html" %}
 
 <div class="historial-container">
-  <h2 class="historial-titulo">Historial de reservaciones</h2>
+  <h2 class="historial-titulo">Historial</h2>
 
-  <form method="GET" action="" class="historial-fila">
-    <input
-      type="text"
-      placeholder="Buscar por nombre del evento o cliente"
-      class="historial-input"
-      name="nombre"
-      value="{{ nombre|default:'' }}"
-    />
+  <div class="tabs-container">
+    <button class="tab-btn {% if tab == 'reservaciones' or not tab %}active{% endif %}" data-tab="reservaciones" onclick="cambiarTab('reservaciones')">Reservaciones</button>
+    <button class="tab-btn {% if tab == 'clientes' %}active{% endif %}" data-tab="clientes" onclick="cambiarTab('clientes')">Clientes</button>
+  </div>
 
-    <select name="estado" id="filtro-estado" class="historial-input">
-      <option value="">Todos los estados</option>
-      {% for est in estados %}
-      <option value="{{ est.codigo }}">{{ est.nombre }}</option>
+  {% if tab == 'clientes' %}
+  <div id="tab-clientes" class="tab-content">
+    <form method="GET" action="" class="historial-fila">
+      <input type="hidden" name="tab" value="clientes" />
+      <input
+        type="text"
+        placeholder="Buscar por nombre, RFC o correo"
+        class="historial-input"
+        name="busqueda"
+        value="{{ busqueda|default:'' }}"
+      />
+
+      <select name="tipo" id="filtro-tipo" class="historial-input">
+        <option value="todos">Todos los tipos</option>
+        <option value="fis" {% if tipo_filtro == 'fis' %}selected{% endif %}>Persona física</option>
+        <option value="mor" {% if tipo_filtro == 'mor' %}selected{% endif %}>Persona moral</option>
+      </select>
+
+      <button type="submit" class="historial-btn">Buscar</button>
+      <a href="{% url 'historial_reservacion' %}?tab=clientes">
+        <button type="button" class="historial-btn">Limpiar</button></a
+      >
+    </form>
+
+    <div class="administrador-tablita">
+      <table class="administrador-tabla">
+        <thead class="administrador-thead">
+          <tr>
+            <th class="administrador-th">RFC</th>
+            <th class="administrador-th">Nombre completo</th>
+            <th class="administrador-th">Correo</th>
+            <th class="administrador-th">Teléfono</th>
+            <th class="administrador-th">Tipo</th>
+            <th class="administrador-th">Reservaciones</th>
+            <th class="administrador-th">Acción</th>
+          </tr>
+        </thead>
+
+        <tbody class="administrador-tbody">
+          {% for cliente in clientes %}
+          <tr class="cliente-row" data-pk="{{ cliente.id }}" onclick="abrirEditarCliente({{ cliente.id }})">
+            <td class="administrador-td">{{cliente.rfc}}</td>
+            <td class="administrador-td">{{cliente.nombre}} {{cliente.apellidoPaterno}} {{cliente.apelidoMaterno|default:'' }}</td>
+            <td class="administrador-td">{{cliente.correo_electronico}}</td>
+            <td class="administrador-td">{{cliente.telefono}}</td>
+            <td class="administrador-td">{{cliente.tipo_cliente.nombre}}</td>
+            <td class="administrador-td">{{cliente.total_reservaciones}}</td>
+            <td class="administrador-td">
+              <button class="historial-btn editar-cliente-btn" data-pk="{{ cliente.id }}">Editar</button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="administrador-td">No hay clientes</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div id="tab-reservaciones" class="tab-content">
+    <form method="GET" action="" class="historial-fila">
+      <input type="hidden" name="tab" value="reservaciones" />
+      <input
+        type="text"
+        placeholder="Buscar por nombre del evento o cliente"
+        class="historial-input"
+        name="nombre"
+        value="{{ nombre|default:'' }}"
+      />
+
+      <select name="estado" id="filtro-estado" class="historial-input">
+        <option value="">Todos los estados</option>
+        {% for est in estados %}
+        <option value="{{ est.codigo }}">{{ est.nombre }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="historial-btn">Buscar</button>
+      <a href="{% url 'historial_reservacion' %}?tab=reservaciones">
+        <button type="button" class="historial-btn">Limpiar</button></a
+      >
+    </form>
+
+    <div class="administrador-tablita">
+
+    <table class="administrador-tabla">
+      <thead class="administrador-thead">
+        <tr>
+          <th class="administrador-th">Número</th>
+          <th class="administrador-th">Nombre del evento</th>
+          <th class="administrador-th">Cliente</th>
+          <th class="administrador-th">Fecha de evento</th>
+          <th class="administrador-th">Horario</th>
+          <th class="administrador-th">Salón</th>
+          <th class="administrador-th">Estado</th>
+          <th class="administrador-th">Acción</th>
+        </tr>
+      </thead>
+
+      <tbody class="administrador-tbody">
+        {% for reservacion in reservaciones %}
+        <tr>
+          <td class="administrador-td">{{reservacion.id}}</td>
+          <td class="administrador-td">{{reservacion.nombreEvento}}</td>
+          <td class="administrador-td">{{reservacion.cliente.nombre}}</td>
+          <td class="administrador-td">{{reservacion.fechaEvento}}</td>
+          <td class="administrador-td">
+            {{reservacion.horaInicio}} - {{reservacion.horaFin}}
+          </td>
+          <td class="administrador-td">{{reservacion.montaje.salon.nombre}}</td>
+          <td class="administrador-td">{{reservacion.estado_reserva.nombre}}</td>
+
+          <td class="administrador-td">
+            <button
+              class="historial-btn ver-pagos"
+              data-pk="{{ reservacion.id }}"
+            >
+              Ver pagos
+            </button>
+            <button
+              class="historial-btn ver-beo"
+              data-pk="{{ reservacion.id }}"
+            >
+              Ver BEO
+            </button>
+
+            <button
+              class="historial-btn editar-reservacion"
+              data-pk="{{ reservacion.id }}"
+            >
+              Editar
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="administrador-td">No hay reservaciones</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  {% endif %}
+</div>
+
+<dialog id="modalEditarCliente" class="modal-editar">
+  <div class="modal-editar-content">
+    <span class="historial-close" onclick="cerrarEditarCliente()">×</span>
+
+    <h3 class="titulo-modal-pago campos-modal-pago">
+      <b>EDITAR CLIENTE</b>
+    </h3>
+
+    <input type="hidden" id="edit-cliente-id" />
+
+    <label>Nombre</label>
+    <input type="text" id="edit-cliente-nombre" />
+
+    <label>Apellido paterno</label>
+    <input type="text" id="edit-cliente-apellido-paterno" />
+
+    <label>Apellido materno</label>
+    <input type="text" id="edit-cliente-apellido-materno" />
+
+    <label>Correo</label>
+    <input type="text" id="edit-cliente-correo" />
+
+    <label>Teléfono</label>
+    <input type="text" id="edit-cliente-telefono" />
+
+    <label>RFC</label>
+    <input type="text" id="edit-cliente-rfc" />
+
+    <label>Nombre fiscal</label>
+    <input type="text" id="edit-cliente-nombre-fiscal" />
+
+    <label>Tipo de cliente</label>
+    <select id="edit-cliente-tipo">
+      {% for tipo in tipos_cliente %}
+      <option value="{{ tipo.codigo }}">{{ tipo.nombre }}</option>
+      {% empty %}
+      <option value="FIS">Persona física</option>
+      <option value="MOR">Persona moral</option>
       {% endfor %}
     </select>
 
-    <button type="submit" class="historial-btn">Buscar</button>
-    <a href="{% url 'historial_reservacion' %}"
-      ><button type="button" class="historial-btn">Limpiar</button></a
-    >
-  </form>
-
-  <div class="administrador-tablita">
-
-  <table class="administrador-tabla">
-    <thead class="administrador-thead">
-      <tr>
-        <th class="administrador-th">Número</th>
-        <th class="administrador-th">Nombre del evento</th>
-        <th class="administrador-th">Cliente</th>
-        <th class="administrador-th">Fecha de evento</th>
-        <th class="administrador-th">Horario</th>
-        <th class="administrador-th">Salón</th>
-        <th class="administrador-th">Estado</th>
-        <th class="administrador-th">Acción</th>
-      </tr>
-    </thead>
-
-    <tbody class="administrador-tbody">
-      {% for reservacion in reservaciones %}
-      <tr>
-        <td class="administrador-td">{{reservacion.id}}</td>
-        <td class="administrador-td">{{reservacion.nombreEvento}}</td>
-        <td class="administrador-td">{{reservacion.cliente.nombre}}</td>
-        <td class="administrador-td">{{reservacion.fechaEvento}}</td>
-        <td class="administrador-td">
-          {{reservacion.horaInicio}} - {{reservacion.horaFin}}
-        </td>
-        <td class="administrador-td">{{reservacion.montaje.salon.nombre}}</td>
-        <td class="administrador-td">{{reservacion.estado_reserva.nombre}}</td>
-
-        <td class="administrador-td">
-          <button
-            class="historial-btn ver-pagos"
-            data-pk="{{ reservacion.id }}"
-          >
-            Ver pagos
-          </button>
-          <button
-            class="historial-btn ver-beo"
-            data-pk="{{ reservacion.id }}"
-          >
-            Ver BEO
-          </button>
-
-          <button
-            class="historial-btn editar-reservacion"
-            data-pk="{{ reservacion.id }}"
-          >
-            Editar
-          </button>
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="8" class="administrador-td">No hay reservaciones</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <div class="modal-botones">
+      <button class="btn-modal btn-aceptar" id="btn-guardar-cliente">Guardar cambios</button>
+      <button class="btn-modal btn-denegar" onclick="cerrarEditarCliente()">
+        Cancelar
+      </button>
+    </div>
   </div>
-</div>
+</dialog>
 
 <div id="modalPagos" class="historial-modal">
   <div class="historial-modal-content historial-modal-pagos">
@@ -130,80 +249,17 @@
       <b>EDITAR RESERVACIÓN</b>
     </h3>
 
-    <details open>
-      <summary>
-        <h4 class="titulo-modal-pago campos-modal-pago">Datos del cliente</h4>
-      </summary>
+    <label>Nombre del evento</label>
+    <input type="text" id="edit-evento-nombre">
 
-      <label>Nombre</label>
-      <input type="text" id="edit-cliente-nombre">
-
-      <label>Apellido paterno</label>
-      <input type="text" id="edit-cliente-apellido-paterno">
-
-      <label>Apellido materno</label>
-      <input type="text" id="edit-cliente-apellido-materno">
-
-      <label>Correo</label>
-      <input type="text" id="edit-cliente-correo">
-
-      <label>Teléfono</label>
-      <input type="text" id="edit-cliente-telefono">
-
-      <label>RFC</label>
-      <input type="text" id="edit-cliente-rfc">
-
-      <label>Nombre fiscal</label>
-      <input type="text" id="edit-cliente-nombre-fiscal">
-    </details>
-
-    <details open>
-      <summary>
-        <h4 class="titulo-modal-pago campos-modal-pago">Datos del evento</h4>
-      </summary>
-
-      <label>Nombre del evento</label>
-      <input type="text" id="edit-evento-nombre">
-
-      <label>Descripción</label>
-      <input type="text" id="edit-evento-descripcion">
-
-      <label>Fecha</label>
-      <input type="date" id="edit-evento-fecha">
-
-      <label>Hora de inicio</label>
-      <input type="time" id="edit-evento-hora-inicio">
-
-      <label>Hora de fin</label>
-      <input type="time" id="edit-evento-hora-fin">
-
-      <label>Cambiar estado</label>
-      <select id="edit-evento-estado">
-        {% for est in estados %}
-        <option value="{{ est.codigo }}">{{ est.nombre }}</option>
-        {% endfor %}
-      </select>
-
-      <label>Asistentes</label>
-      <input type="number" id="edit-evento-asistentes">
-    </details>
-
-    <details open>
-      <summary>
-        <h4 class="titulo-modal-pago campos-modal-pago">Espacio físico</h4>
-      </summary>
-
-      <label>Salón</label>
-      <input type="text" id="edit-salon-nombre" disabled>
-
-      <label>Montaje</label>
-      <input type="text" id="edit-salon-montaje" disabled>
-    </details>
+    <label>Descripción</label>
+    <textarea id="edit-evento-descripcion" rows="3"></textarea>
 
     <div class="modal-botones">
       <button class="btn-modal btn-aceptar" id="btn-guardar-edicion">Guardar cambios</button>
+      <button class="btn-modal btn-cancelar-reservacion" id="btn-cancelar-reservacion">Cancelar reservación</button>
       <button class="btn-modal btn-denegar" onclick="cerrarEditar()">
-        Cancelar
+        Cerrar
       </button>
     </div>
   </div>

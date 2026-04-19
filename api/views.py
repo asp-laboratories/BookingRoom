@@ -444,12 +444,17 @@ class BuscarReservacionView(APIView):
         
         pagos_count = models.Pago.objects.filter(reservacion=reservacion).count()
         ultimo_pago = models.Pago.objects.filter(reservacion=reservacion).order_by('-no_pago').first()
-        
+
         if ultimo_pago:
             saldo = ultimo_pago.saldo
         else:
             saldo = reservacion.total
-        
+
+        primer_pago_concepto = None
+        if pagos_count > 0:
+            primer_pago = models.Pago.objects.filter(reservacion=reservacion).order_by('no_pago').first()
+            primer_pago_concepto = primer_pago.concepto_pago if primer_pago else None
+
         return Response({
             'id': reservacion.id,
             'cliente': reservacion.cliente.nombre,
@@ -459,6 +464,7 @@ class BuscarReservacionView(APIView):
             'total': str(reservacion.total),
             'saldo_restante': str(saldo),
             'pagos_count': pagos_count,
+            'primer_pago_concepto': primer_pago_concepto,
             'estado': reservacion.estado_reserva.nombre
         })
 

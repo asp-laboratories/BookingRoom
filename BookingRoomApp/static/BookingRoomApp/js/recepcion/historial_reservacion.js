@@ -14,6 +14,128 @@ function cerrarDetalleCompleto() {
     document.getElementById("modalDetalleCompleto").close();
 }
 
+function cerrarEditar() {
+    window.modalEditar.close();
+}
+
+function cambiarTab(tab) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', tab);
+    window.location.href = url.toString();
+}
+
+function cerrarEditarCliente() {
+    document.getElementById("modalEditarCliente").close();
+}
+
+let clienteOriginales = {};
+
+async function abrirEditarCliente(pk) {
+    try {
+        const response = await fetch(`/api/datos-cliente/${pk}/`);
+        if (!response.ok) throw new Error("Error al obtener datos");
+
+        const data = await response.json();
+
+        document.getElementById("edit-cliente-id").value = data.id;
+        document.getElementById("edit-cliente-nombre").value = data.nombre || "";
+        document.getElementById("edit-cliente-apellido-paterno").value = data.apellidoPaterno || "";
+        document.getElementById("edit-cliente-apellido-materno").value = data.apelidoMaterno || "";
+        document.getElementById("edit-cliente-correo").value = data.correo_electronico || "";
+        document.getElementById("edit-cliente-telefono").value = data.telefono || "";
+        document.getElementById("edit-cliente-rfc").value = data.rfc || "";
+        document.getElementById("edit-cliente-nombre-fiscal").value = data.nombre_fiscal || "";
+
+        const tipoSelect = document.getElementById("edit-cliente-tipo");
+        for (let option of tipoSelect.options) {
+            if (option.value === data.tipo_cliente_codigo) {
+                option.selected = true;
+                break;
+            }
+        }
+
+        clienteOriginales = {
+            nombre: data.nombre || "",
+            apellidoPaterno: data.apellidoPaterno || "",
+            apelidoMaterno: data.apelidoMaterno || "",
+            correo: data.correo_electronico || "",
+            telefono: data.telefono || "",
+            rfc: data.rfc || "",
+            nombreFiscal: data.nombre_fiscal || "",
+            tipo: data.tipo_cliente_codigo || ""
+        };
+
+        document.getElementById("modalEditarCliente").showModal();
+    } catch (error) {
+        console.error("Error:", error);
+        mostrarToastExito("No se pudieron cargar los datos del cliente", "error");
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll(".editar-cliente-btn").forEach(function(btn) {
+        btn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            const pk = this.dataset.pk;
+            abrirEditarCliente(pk);
+        });
+    });
+
+    document.querySelectorAll(".cliente-row").forEach(function(row) {
+        row.addEventListener("click", function() {
+            const pk = this.dataset.pk;
+            abrirEditarCliente(pk);
+        });
+    });
+
+    var btnGuardarCliente = document.getElementById("btn-guardar-cliente");
+    if (btnGuardarCliente) {
+        btnGuardarCliente.addEventListener("click", async function() {
+            var clienteId = document.getElementById("edit-cliente-id").value;
+
+            var valoresActuales = {
+                nombre: document.getElementById("edit-cliente-nombre").value,
+                apellidoPaterno: document.getElementById("edit-cliente-apellido-paterno").value,
+                apelidoMaterno: document.getElementById("edit-cliente-apellido-materno").value,
+                correo: document.getElementById("edit-cliente-correo").value,
+                telefono: document.getElementById("edit-cliente-telefono").value,
+                rfc: document.getElementById("edit-cliente-rfc").value,
+                nombre_fiscal: document.getElementById("edit-cliente-nombre-fiscal").value,
+                tipo_cliente: document.getElementById("edit-cliente-tipo").value
+            };
+
+            var formData = new FormData();
+            formData.append("cliente_id", clienteId);
+
+            for (var campo in valoresActuales) {
+                formData.append(campo, valoresActuales[campo]);
+            }
+
+            try {
+                var response = await fetch("/recepcion/historial/", {
+                    method: "POST",
+                    body: formData
+                });
+
+                var data = await response.json();
+
+                if (data.success) {
+                    mostrarToastExito(data.message, "success");
+                    document.getElementById("modalEditarCliente").close();
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    mostrarToastExito(data.message, "error");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                mostrarToastExito("No se pudieron guardar los cambios", "error");
+            }
+        });
+    }
+});
+
  document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".ver-pagos").forEach((btn) => {
       btn.addEventListener("click", function () {
@@ -46,7 +168,7 @@ function cerrarDetalleCompleto() {
       btn.addEventListener("click", async function () {
         const pk = this.dataset.pk;
         try {
-            const response = await fetch(`/home/${pk}/json/`);
+const response = await fetch(`/home/${pk}/json/`);
             if (!response.ok) throw new Error("Error al obtener datos");
             
             const data = await response.json();
@@ -88,8 +210,8 @@ function cerrarDetalleCompleto() {
 
             // Equipamientos
             const equipamientosSpan = document.getElementById('detalle-equipamientos-lista');
-            if (equipamientosSpan && data.equipamientos && data.equipamientos.length > 0) {
-                equipamientosSpan.innerHTML = data.equipamientos.map(e => `<span class="item-lista">• ${e.nombre} (x${e.cantidad})</span>`).join('');
+            if (equipamientosSpan && data.equipamentos && data.equipamentos.length > 0) {
+                equipamientosSpan.innerHTML = data.equipamentos.map(e => `<span class="item-lista">• ${e.nombre} (x${e.cantidad})</span>`).join('');
             } else if (equipamientosSpan) {
                 equipamientosSpan.textContent = 'No hay equipamientos';
             }
@@ -118,62 +240,18 @@ function cerrarDetalleCompleto() {
 
           const data = await response.json();
 
-          document.getElementById("edit-cliente-nombre").value =
-            data.cliente.nombre || "";
-          document.getElementById("edit-cliente-apellido-paterno").value =
-            data.cliente.apellido_paterno || "";
-          document.getElementById("edit-cliente-apellido-materno").value =
-            data.cliente.apellido_materno || "";
-          document.getElementById("edit-cliente-correo").value =
-            data.cliente.correo || "";
-          document.getElementById("edit-cliente-telefono").value =
-            data.cliente.telefono || "";
-          document.getElementById("edit-cliente-rfc").value =
-            data.cliente.rfc || "";
-          document.getElementById("edit-cliente-nombre-fiscal").value =
-            data.cliente.nombre_fiscal || "";
-
           document.getElementById("edit-evento-nombre").value =
             data.nombre_evento || "";
           document.getElementById("edit-evento-descripcion").value =
             data.descripcion || "";
-          document.getElementById("edit-evento-fecha").value = data.fecha || "";
-          document.getElementById("edit-evento-hora-inicio").value =
-            data.hora_inicio || "";
-          document.getElementById("edit-evento-hora-fin").value =
-            data.hora_fin || "";
-          document.getElementById("edit-evento-asistentes").value =
-            data.asistentes || "";
-
-          const estadoSelect = document.getElementById("edit-evento-estado");
-          for (let option of estadoSelect.options) {
-            if (option.textContent === data.estado) {
-              option.selected = true;
-              break;
-            }
-          }
-
-          document.getElementById("edit-salon-nombre").value = data.salon || "";
-          document.getElementById("edit-salon-montaje").value = data.montaje || "";
 
           valoresOriginales = {
-            cliente_nombre: data.cliente.nombre || "",
-            cliente_apellido_paterno: data.cliente.apellido_paterno || "",
-            cliente_apellido_materno: data.cliente.apellido_materno || "",
-            cliente_correo: data.cliente.correo || "",
-            cliente_telefono: data.cliente.telefono || "",
-            cliente_rfc: data.cliente.rfc || "",
-            cliente_nombre_fiscal: data.cliente.nombre_fiscal || "",
             evento_nombre: data.nombre_evento || "",
             evento_descripcion: data.descripcion || "",
-            evento_fecha: data.fecha || "",
-            evento_hora_inicio: data.hora_inicio || "",
-            evento_hora_fin: data.hora_fin || "",
-            evento_asistentes: data.asistentes || "",
-            evento_estado: data.estado || "",
           };
 
           document.getElementById("btn-guardar-edicion").dataset.pk = pk;
+          document.getElementById("btn-cancelar-reservacion").dataset.pk = pk;
 
           window.modalEditar.showModal();
         } catch (error) {
@@ -187,20 +265,8 @@ function cerrarDetalleCompleto() {
       const pk = this.dataset.pk;
 
       const valoresActuales = {
-        cliente_nombre: document.getElementById("edit-cliente-nombre").value,
-        cliente_apellido_paterno: document.getElementById("edit-cliente-apellido-paterno").value,
-        cliente_apellido_materno: document.getElementById("edit-cliente-apellido-materno").value,
-        cliente_correo: document.getElementById("edit-cliente-correo").value,
-        cliente_telefono: document.getElementById("edit-cliente-telefono").value,
-        cliente_rfc: document.getElementById("edit-cliente-rfc").value,
-        cliente_nombre_fiscal: document.getElementById("edit-cliente-nombre-fiscal").value,
         evento_nombre: document.getElementById("edit-evento-nombre").value,
         evento_descripcion: document.getElementById("edit-evento-descripcion").value,
-        evento_fecha: document.getElementById("edit-evento-fecha").value,
-        evento_hora_inicio: document.getElementById("edit-evento-hora-inicio").value,
-        evento_hora_fin: document.getElementById("edit-evento-hora-fin").value,
-        evento_asistentes: document.getElementById("edit-evento-asistentes").value,
-        evento_estado: document.getElementById("edit-evento-estado").selectedOptions[0].textContent,
       };
 
       const formData = new FormData();
@@ -283,7 +349,7 @@ async function abrirModalDetalleCompleto(pk) {
             serviciosSpan.textContent = 'No hay servicios';
         }
         
-        document.getElementById('detalle-equipamientos-lista').textContent = 'Consultar en detalle';
+        document.getElementById('detalle-equipamientos-lista').textContent = 'No hay equipamientos';
         
         document.getElementById('detalle-total-iva').textContent = `$${data.iva || '0.00'}`;
         document.getElementById('detalle-total-subtotal').textContent = `$${data.subtotal || '0.00'}`;
@@ -352,7 +418,7 @@ window.onclick = function(event) {
       });
     });
 
-    let valoresOriginales = {};
+let valoresOriginales = {};
 
     document.querySelectorAll(".editar-reservacion").forEach((btn) => {
       btn.addEventListener("click", async function () {
@@ -364,62 +430,18 @@ window.onclick = function(event) {
 
           const data = await response.json();
 
-          document.getElementById("edit-cliente-nombre").value =
-            data.cliente.nombre || "";
-          document.getElementById("edit-cliente-apellido-paterno").value =
-            data.cliente.apellido_paterno || "";
-          document.getElementById("edit-cliente-apellido-materno").value =
-            data.cliente.apellido_materno || "";
-          document.getElementById("edit-cliente-correo").value =
-            data.cliente.correo || "";
-          document.getElementById("edit-cliente-telefono").value =
-            data.cliente.telefono || "";
-          document.getElementById("edit-cliente-rfc").value =
-            data.cliente.rfc || "";
-          document.getElementById("edit-cliente-nombre-fiscal").value =
-            data.cliente.nombre_fiscal || "";
-
           document.getElementById("edit-evento-nombre").value =
             data.nombre_evento || "";
           document.getElementById("edit-evento-descripcion").value =
             data.descripcion || "";
-          document.getElementById("edit-evento-fecha").value = data.fecha || "";
-          document.getElementById("edit-evento-hora-inicio").value =
-            data.hora_inicio || "";
-          document.getElementById("edit-evento-hora-fin").value =
-            data.hora_fin || "";
-          document.getElementById("edit-evento-asistentes").value =
-            data.asistentes || "";
-
-          const estadoSelect = document.getElementById("edit-evento-estado");
-          for (let option of estadoSelect.options) {
-            if (option.textContent === data.estado) {
-              option.selected = true;
-              break;
-            }
-          }
-
-          document.getElementById("edit-salon-nombre").value = data.salon || "";
-          document.getElementById("edit-salon-montaje").value = data.montaje || "";
 
           valoresOriginales = {
-            cliente_nombre: data.cliente.nombre || "",
-            cliente_apellido_paterno: data.cliente.apellido_paterno || "",
-            cliente_apellido_materno: data.cliente.apellido_materno || "",
-            cliente_correo: data.cliente.correo || "",
-            cliente_telefono: data.cliente.telefono || "",
-            cliente_rfc: data.cliente.rfc || "",
-            cliente_nombre_fiscal: data.cliente.nombre_fiscal || "",
             evento_nombre: data.nombre_evento || "",
             evento_descripcion: data.descripcion || "",
-            evento_fecha: data.fecha || "",
-            evento_hora_inicio: data.hora_inicio || "",
-            evento_hora_fin: data.hora_fin || "",
-            evento_asistentes: data.asistentes || "",
-            evento_estado: data.estado || "",
           };
 
           document.getElementById("btn-guardar-edicion").dataset.pk = pk;
+          document.getElementById("btn-cancelar-reservacion").dataset.pk = pk;
 
           window.modalEditar.showModal();
         } catch (error) {
@@ -433,20 +455,8 @@ window.onclick = function(event) {
       const pk = this.dataset.pk;
 
       const valoresActuales = {
-        cliente_nombre: document.getElementById("edit-cliente-nombre").value,
-        cliente_apellido_paterno: document.getElementById("edit-cliente-apellido-paterno").value,
-        cliente_apellido_materno: document.getElementById("edit-cliente-apellido-materno").value,
-        cliente_correo: document.getElementById("edit-cliente-correo").value,
-        cliente_telefono: document.getElementById("edit-cliente-telefono").value,
-        cliente_rfc: document.getElementById("edit-cliente-rfc").value,
-        cliente_nombre_fiscal: document.getElementById("edit-cliente-nombre-fiscal").value,
         evento_nombre: document.getElementById("edit-evento-nombre").value,
         evento_descripcion: document.getElementById("edit-evento-descripcion").value,
-        evento_fecha: document.getElementById("edit-evento-fecha").value,
-        evento_hora_inicio: document.getElementById("edit-evento-hora-inicio").value,
-        evento_hora_fin: document.getElementById("edit-evento-hora-fin").value,
-        evento_asistentes: document.getElementById("edit-evento-asistentes").value,
-        evento_estado: document.getElementById("edit-evento-estado").selectedOptions[0].textContent,
       };
 
       const formData = new FormData();
@@ -494,3 +504,31 @@ window.onclick = function(event) {
   function cerrarEditar() {
     window.modalEditar.close();
   }
+
+document.getElementById("btn-cancelar-reservacion")?.addEventListener("click", async function () {
+    const pk = this.dataset.pk;
+    if (!pk) return;
+
+    if (!confirm("¿Estás seguro de cancelar esta reservación? Se liberarán el salón, mobiliario, equipamiento y servicios asignados.")) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/home/${pk}/cancelar/`, {
+            method: "POST",
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            mostrarToastExito(data.message, "success");
+            window.modalEditar.close();
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            mostrarToastExito(data.message, "error");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        mostrarToastExito("No se pudo cancelar la reservación", "error");
+    }
+});

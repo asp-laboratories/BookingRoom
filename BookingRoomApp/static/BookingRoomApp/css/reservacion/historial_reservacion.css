@@ -292,7 +292,8 @@ dialog.modal-editar::backdrop {
 }
 
 .modal-editar-content input,
-.modal-editar-content select {
+.modal-editar-content select,
+.modal-editar-content textarea {
   width: 100%;
   padding: 8px;
   border: 1px solid #ccc;
@@ -350,4 +351,85 @@ dialog.modal-editar::backdrop {
 
 .modal-editar-content .btn-denegar:hover {
   background-color: #bb2d3b;
+}
+
+.modal-editar-content .btn-cancelar-reservacion {
+  background-color: #dc3545;
+  color: white;
+  flex: 1;
+}
+
+.modal-editar-content .btn-cancelar-reservacion:hover {
+  background-color: #bb2d3b;
+}
+
+.tabs-container {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--color-primario);
+}
+
+.tab-btn {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #666;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+}
+
+.tab-btn:hover {
+  color: var(--color-primario);
+}
+
+.tab-btn.active {
+  color: var(--color-primario);
+  border-bottom-color: var(--color-primario);
+}
+
+.tab-content {
+  display: block;
+}
+
+.radio-group {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.radio-label input[type="radio"] {
+  width: auto;
+  margin: 0;
+}
+
+.cliente-row {
+  cursor: pointer;
+}
+
+.cliente-row:hover {
+  background-color: #f5f5f5;
+}
+
+.historial-fila {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.historial-fila .historial-input {
+  width: auto;
+  flex: 1;
 } 

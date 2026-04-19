@@ -102,8 +102,9 @@ class TrabajadorSerializer(serializers.ModelSerializer):
 
 class DatosClienteSerializer(serializers.ModelSerializer):
     tipo_cliente_nombre = serializers.CharField(source='tipo_cliente.nombre', read_only=True)
+    tipo_cliente_codigo = serializers.CharField(source='tipo_cliente.codigo', read_only=True)
     cuenta_nombre = serializers.CharField(source='cuenta.nombre_usuario', read_only=True)
-    
+
     class Meta:
         model = models.DatosCliente
         fields = '__all__'
@@ -186,16 +187,20 @@ class PagoSerializer(serializers.ModelSerializer):
     no_empleado = serializers.SerializerMethodField()
     cliente_nombre = serializers.SerializerMethodField()
     mobiliarios = serializers.SerializerMethodField()
-    
+    salon_costo = serializers.SerializerMethodField()
+    servicios_detalle = serializers.SerializerMethodField()
+    equipamentos_detalle = serializers.SerializerMethodField()
+
     class Meta:
         model = models.Pago
         fields = ['nota', 'monto', 'saldo', 'no_pago', 'reservacion', 'concepto_pago', 'metodo_pago', 'fecha', 'hora',
-                  'subtotal', 'iva', 'total', 'fecha_evento', 'hora_inicio', 'hora_fin', 
+                  'subtotal', 'iva', 'total', 'fecha_evento', 'hora_inicio', 'hora_fin',
                   'salon', 'montaje', 'servicios', 'lista_equipamentos', 'atendido_por',
-                  'no_empleado', 'cliente_nombre', 'mobiliarios']
-        read_only_fields = ['fecha', 'hora', 'no_pago', 'saldo', 'subtotal', 'iva', 'total', 
-                            'fecha_evento', 'hora_inicio', 'hora_fin', 'salon', 'montaje', 
-                            'servicios', 'lista_equipamentos', 'atendido_por', 'no_empleado', 'cliente_nombre', 'mobiliarios']
+                  'no_empleado', 'cliente_nombre', 'mobiliarios', 'salon_costo', 'servicios_detalle', 'equipamentos_detalle']
+        read_only_fields = ['fecha', 'hora', 'no_pago', 'saldo', 'subtotal', 'iva', 'total',
+                            'fecha_evento', 'hora_inicio', 'hora_fin', 'salon', 'montaje',
+                            'servicios', 'lista_equipamentos', 'atendido_por', 'no_empleado', 'cliente_nombre', 'mobiliarios',
+                            'salon_costo', 'servicios_detalle', 'equipamentos_detalle']
     
     def get_subtotal(self, obj):
         try:
@@ -295,11 +300,50 @@ class PagoSerializer(serializers.ModelSerializer):
         try:
             if obj.reservacion and obj.reservacion.montaje:
                 mobs = obj.reservacion.montaje.montajemobiliario_set.all()
-                return [{'tipo': m.mobiliario.nombre, 'cantidad': m.cantidad} for m in mobs]
+                return [{
+                    'tipo': m.mobiliario.nombre,
+                    'cantidad': m.cantidad,
+                    'precio_unitario': float(m.mobiliario.costo) if m.mobiliario.costo else 0,
+                    'costo_total': float(m.mobiliario.costo * m.cantidad) if m.mobiliario.costo else 0
+                } for m in mobs]
         except Exception as e:
             print('Error get_mobiliarios:', e)
         return []
-    
+
+    def get_salon_costo(self, obj):
+        try:
+            if obj.reservacion and obj.reservacion.montaje and obj.reservacion.montaje.salon:
+                return str(obj.reservacion.montaje.salon.costo) if obj.reservacion.montaje.salon.costo else '0.00'
+        except Exception as e:
+            print('Error get_salon_costo:', e)
+        return '0.00'
+
+    def get_servicios_detalle(self, obj):
+        try:
+            if obj.reservacion:
+                servicios = obj.reservacion.reservaservicio_set.all()
+                return [{
+                    'nombre': s.servicio.nombre,
+                    'costo': float(s.servicio.costo) if s.servicio.costo else 0,
+                    'cantidad': 1
+                } for s in servicios]
+        except Exception as e:
+            print('Error get_servicios_detalle:', e)
+        return []
+
+    def get_equipamentos_detalle(self, obj):
+        try:
+            if obj.reservacion:
+                equips = obj.reservacion.reservaequipa_set.all()
+                return [{
+                    'nombre': e.equipamiento.nombre,
+                    'costo': float(e.equipamiento.costo) if e.equipamiento.costo else 0,
+                    'cantidad': e.cantidad
+                } for e in equips]
+        except Exception as e:
+            print('Error get_equipamentos_detalle:', e)
+        return []
+
     def create(self, validated_data):
         concepto_codigo = validated_data.pop('concepto_pago', None)
         metodo_codigo = validated_data.pop('metodo_pago', None)
@@ -682,6 +726,9 @@ class ReservacionDetalleSerializer(serializers.ModelSerializer):
     servicios = serializers.SerializerMethodField()
     equipamentos = serializers.SerializerMethodField()
     mobiliarios = serializers.SerializerMethodField()
+    salon_costo = serializers.SerializerMethodField()
+    servicios_detalle = serializers.SerializerMethodField()
+    equipamentos_detalle = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Reservacion
@@ -689,8 +736,8 @@ class ReservacionDetalleSerializer(serializers.ModelSerializer):
             'id', 'nombreEvento', 'descripEvento', 'fechaReservacion', 'fechaEvento',
             'horaInicio', 'horaFin', 'estimaAsistentes', 'subtotal', 'IVA', 'total',
             'cliente_datos', 'montaje_datos', 'tipo_evento_datos', 'estado_reserva_datos',
-            'servicios', 'equipamentos', 'mobiliarios',
-            'cliente', 'montaje', 'tipo_evento', 'estado_reserva'
+            'servicios', 'equipamentos', 'mobiliarios', 'servicios_detalle', 'equipamentos_detalle',
+            'salon_costo', 'cliente', 'montaje', 'tipo_evento', 'estado_reserva'
         ]
     
     def get_cliente_datos(self, obj):
@@ -757,6 +804,24 @@ class ReservacionDetalleSerializer(serializers.ModelSerializer):
     
     def get_mobiliarios(self, obj):
         return []
+
+    def get_servicios_detalle(self, obj):
+        return list(obj.reservaservicio_set.select_related('servicio').values(
+            'id', 'servicio__nombre', 'servicio__costo', 'completado'
+        ))
+
+    def get_equipamentos_detalle(self, obj):
+        return list(obj.reservaequipa_set.select_related('equipamiento').values(
+            'id', 'cantidad', 'equipamiento__nombre', 'equipamiento__costo', 'completado'
+        ))
+
+    def get_salon_costo(self, obj):
+        try:
+            if obj.montaje and obj.montaje.salon:
+                return float(obj.montaje.salon.costo) if obj.montaje.salon.costo else 0
+        except Exception as e:
+            print('Error get_salon_costo:', e)
+        return 0
 
 
 class ReservacionCoordinadorSerializer(serializers.ModelSerializer):

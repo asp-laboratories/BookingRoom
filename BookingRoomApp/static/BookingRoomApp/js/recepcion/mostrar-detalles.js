@@ -56,16 +56,16 @@ async function abrirModalDetalleCompleto(pk) {
       serviciosSpan.textContent = "No hay servicios";
     }
 
-    const equipamientosSpan = document.getElementById(prefix + "equipamientos-lista");
-    if (data.equipamientos && data.equipamientos.length > 0) {
-      equipamientosSpan.textContent = data.equipamientos.map(e => `${e.nombre} (x${e.cantidad})`).join(", ");
+    const equipamentosSpan = document.getElementById(prefix + "equipamientos-lista");
+    if (data.equipamentos && data.equipamentos.length > 0) {
+      equipamentosSpan.innerHTML = data.equipamentos.map(e => `<span class="item-lista">• ${e.nombre} (x${e.cantidad})</span>`).join('');
     } else {
-      equipamientosSpan.textContent = "No hay equipamientos";
+      equipamentosSpan.textContent = "No hay equipamientos";
     }
 
     const mobiliarioSpan = document.getElementById(prefix + "mobiliario-lista");
     if (data.mobiliarios && data.mobiliarios.length > 0) {
-      mobiliarioSpan.textContent = data.mobiliarios.map(m => `${m.nombre} (x${m.cantidad})`).join(", ");
+      mobiliarioSpan.innerHTML = data.mobiliarios.map(m => `<span class="item-lista">• ${m.nombre} (x${m.cantidad})</span>`).join('');
     } else {
       mobiliarioSpan.textContent = "No hay mobiliario";
     }
@@ -80,7 +80,6 @@ async function abrirModalDetalleCompleto(pk) {
       `$${data.subtotal}`;
     document.getElementById(prefix + "total-total").textContent = `$${data.total}`;
 
-    // Guardar el ID para los botones
     document.getElementById('modalDetalleCompleto').dataset.reservacionId = pk;
     document.getElementById('modalDetalleCompleto').dataset.estadoActual = data.estado_codigo;
 
@@ -91,7 +90,12 @@ async function abrirModalDetalleCompleto(pk) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("click", async function (e) {
+  const btn = e.target.closest(".ver-detalles");
+  if (!btn) return;
+
+  const pk = btn.dataset.pk;
+  const prefix = "modal-";
 
   try {
     const response = await fetch(`/home/${pk}/json/`);
@@ -134,22 +138,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const equipamientosSpan = document.getElementById(prefix + "equipamientos-lista");
-    if (data.equipamientos && data.equipamientos.length > 0) {
-      equipamientosSpan.textContent = data.equipamientos.map(e => `${e.nombre} (x${e.cantidad})`).join(", ");
+    if (data.equipamentos && data.equipamentos.length > 0) {
+      equipamientosSpan.innerHTML = data.equipamentos.map(e => `<span class="item-lista">• ${e.nombre} (x${e.cantidad})</span>`).join('');
     } else {
       equipamientosSpan.textContent = "No hay equipamientos";
     }
 
     const mobiliarioSpan = document.getElementById(prefix + "mobiliario-lista");
     if (data.mobiliarios && data.mobiliarios.length > 0) {
-      mobiliarioSpan.textContent = data.mobiliarios.map(m => `${m.nombre} (x${m.cantidad})`).join(", ");
+      mobiliarioSpan.innerHTML = data.mobiliarios.map(m => `<span class="item-lista">• ${m.nombre} (x${m.cantidad})</span>`).join('');
     } else {
       mobiliarioSpan.textContent = "No hay mobiliario";
-    }
-
-    const descripcionInput = document.getElementById("modal-evento-descripcion-input");
-    if (descripcionInput) {
-      descripcionInput.value = data.descripcion || "";
     }
 
     document.getElementById(prefix + "total-iva").textContent = `$${data.iva}`;
@@ -157,88 +156,11 @@ document.addEventListener("DOMContentLoaded", function () {
       `$${data.subtotal}`;
     document.getElementById(prefix + "total-total").textContent = `$${data.total}`;
 
-    // Guardar el ID para los botones
-    document.getElementById('modalDetalleCompleto').dataset.reservacionId = pk;
-    document.getElementById('modalDetalleCompleto').dataset.estadoActual = data.estado_codigo;
-
     document.getElementById('modalDetalleCompleto').showModal();
   } catch (error) {
     console.error("Error:", error);
-    alert("No se pude cargar los detalles de la reservación");
+    alert("No se pudo cargar los detalles de la reservación");
   }
-
-  document.addEventListener("click", async function (e) {
-    const btn = e.target.closest(".ver-detalles");
-    if (!btn) return;
-    
-    const pk = btn.dataset.pk;
-    const prefix = "modal-";
-    
-    try {
-      const response = await fetch(`/home/${pk}/json/`);
-      if (!response.ok) throw new Error("Error al obtener datos");
-
-      const data = await response.json();
-
-      document.getElementById(prefix + "titulo-evento").textContent =
-        data.nombre_evento || "Orden de banquete de evento (BEO)";
-
-      document.getElementById(prefix + "cliente-nombre").textContent =
-        `${data.cliente.nombre} ${data.cliente.apellido_paterno} ${data.cliente.apellido_materno}`;
-      document.getElementById(prefix + "cliente-correo").textContent =
-        data.cliente.correo;
-      document.getElementById(prefix + "cliente-telefono").textContent =
-        data.cliente.telefono;
-      document.getElementById(prefix + "cliente-rfc").textContent = data.cliente.rfc;
-      document.getElementById(prefix + "cliente-nombre-fiscal").textContent =
-        data.cliente.nombre_fiscal;
-
-      document.getElementById(prefix + "evento-nombre").textContent =
-        data.nombre_evento;
-      document.getElementById(prefix + "evento-descripcion").textContent =
-        data.descripcion || "Sin descripción";
-      document.getElementById(prefix + "evento-fecha").textContent = data.fecha;
-      document.getElementById(prefix + "evento-horario").textContent =
-        `${data.hora_inicio} - ${data.hora_fin}`;
-      document.getElementById(prefix + "evento-estado").textContent = data.estado;
-      document.getElementById(prefix + "evento-asistentes").textContent =
-        data.asistentes;
-
-      document.getElementById(prefix + "salon-nombre").textContent = data.salon;
-      document.getElementById(prefix + "salon-montaje").textContent = data.montaje;
-
-      const serviciosSpan = document.getElementById(prefix + "servicios-lista");
-      if (data.servicios && data.servicios.length > 0) {
-        serviciosSpan.textContent = data.servicios.join(", ");
-      } else {
-        serviciosSpan.textContent = "No hay servicios";
-      }
-
-      const equipamientosSpan = document.getElementById(prefix + "equipamientos-lista");
-      if (data.equipamientos && data.equipamientos.length > 0) {
-        equipamientosSpan.textContent = data.equipamientos.map(e => `${e.nombre} (x${e.cantidad})`).join(", ");
-      } else {
-        equipamientosSpan.textContent = "No hay equipamientos";
-      }
-
-      const mobiliarioSpan = document.getElementById(prefix + "mobiliario-lista");
-      if (data.mobiliarios && data.mobiliarios.length > 0) {
-        mobiliarioSpan.textContent = data.mobiliarios.map(m => `${m.nombre} (x${m.cantidad})`).join(", ");
-      } else {
-        mobiliarioSpan.textContent = "No hay mobiliario";
-      }
-
-      document.getElementById(prefix + "total-iva").textContent = `$${data.iva}`;
-      document.getElementById(prefix + "total-subtotal").textContent =
-        `$${data.subtotal}`;
-      document.getElementById(prefix + "total-total").textContent = `$${data.total}`;
-
-      document.getElementById('modalDetalleCompleto').showModal();
-    } catch (error) {
-      console.error("Error:", error);
-      alert("No se pudo cargar los detalles de la reservación");
-    }
-  });
 });
 
 // Funciones para confirmar y cancelar reservaciones

@@ -69,7 +69,7 @@ function añadirEquipamiento() {
     </div>
     <div class="reservacion-campo">
       <label class="reservacion-label">Cantidad</label>
-      <input type="number" class="reservacion-input" name="equipamiento_cantidad_${contadorEquipamientos}" value="1" min="1" />
+      <input type="number" class="reservacion-input cantidad-input" name="equipamiento_cantidad_${contadorEquipamientos}" value="1" min="1" />
     </div>
   `;
   contenedor.appendChild(nuevoPair);
@@ -312,6 +312,7 @@ async function cargarMobiliariosPorTipo(tipo, mobiliarioSelect) {
         option.value = mobiliario.id;
         option.textContent = `${mobiliario.nombre} - $${mobiliario.costo} (Stock: ${mobiliario.stock})`;
         option.dataset.costo = mobiliario.costo;
+        option.dataset.stock = mobiliario.stock || 0;
 
         if (yaSeleccionados.includes(String(mobiliario.id))) {
           option.disabled = true;
@@ -385,5 +386,42 @@ document.addEventListener("DOMContentLoaded", function () {
     select.addEventListener("change", function () {
       cargarMobiliariosPorTipo(this, this.closest(".mobil-pair").querySelector(".mobiliario-select"));
     });
+  });
+
+  // Validar cantidad no exceda stock
+  document.addEventListener("input", function(e) {
+    if (e.target.classList.contains("cantidad-input")) {
+      const pair = e.target.closest(".equipo-pair") || e.target.closest(".mobil-pair");
+      if (!pair) return;
+
+      const select = pair.querySelector(".equipamiento-select") || pair.querySelector(".mobiliario-select");
+      const option = select?.selectedOptions[0];
+      const stock = option ? parseInt(option.dataset?.stock || 0) : 0;
+
+      if (stock > 0 && parseInt(e.target.value) > stock) {
+        e.target.value = stock;
+        mostrarToastExito(`La cantidad maxima es ${stock}`, "warning");
+      }
+      if (parseInt(e.target.value) < 1) {
+        e.target.value = 1;
+      }
+    }
+  });
+
+  // Cuando cambia la seleccion del dropdown, ajustar cantidad maxima
+  document.addEventListener("change", function(e) {
+    if (e.target.classList.contains("equipamiento-select") || e.target.classList.contains("mobiliario-select")) {
+      const pair = e.target.closest(".equipo-pair") || e.target.closest(".mobil-pair");
+      if (!pair) return;
+
+      const cantidadInput = pair.querySelector(".cantidad-input");
+      const option = e.target.selectedOptions[0];
+      const stock = option ? parseInt(option.dataset?.stock || 0) : 0;
+
+      if (stock > 0 && parseInt(cantidadInput.value) > stock) {
+        cantidadInput.value = stock;
+        mostrarToastExito(`La cantidad maxima para este item es ${stock}`, "warning");
+      }
+    }
   });
 });

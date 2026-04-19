@@ -46,8 +46,8 @@ async function abrirModalDetalleCompleto(pk) {
 
         // Equipamientos
         const equipamientosSpan = document.getElementById('detalle-equipamientos-lista');
-        if (data.equipamientos && data.equipamientos.length > 0) {
-            equipamientosSpan.innerHTML = data.equipamientos.map(e => `<span class="item-lista">• ${e.nombre} (x${e.cantidad})</span>`).join('');
+        if (data.equipamentos && data.equipamentos.length > 0) {
+            equipamientosSpan.innerHTML = data.equipamentos.map(e => `<span class="item-lista">• ${e.nombre} (x${e.cantidad})</span>`).join('');
         } else {
             equipamientosSpan.textContent = 'No hay equipamientos';
         }

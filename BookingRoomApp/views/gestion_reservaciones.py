@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.db import transaction
 from django.urls import reverse
 from django.contrib import messages
+from django.utils.decorators import method_decorator
 from BookingRoomApp import models
 from BookingRoomApp.views import get_cuenta_and_rol
 
@@ -17,33 +18,112 @@ class HistorialReservacionViw(generic.View):
         cuenta, rol = get_cuenta_and_rol(request)
         if not cuenta:
             return HttpResponseRedirect(reverse("login"))
-        
+
+        tab = request.GET.get('tab', 'reservaciones')
+
+        if tab == 'clientes':
+            return self._get_clientes(request, rol)
+        else:
+            return self._get_reservaciones(request, rol)
+
+    def _get_reservaciones(self, request, rol):
         reservaciones = models.Reservacion.objects.select_related(
             "cliente", "estado_reserva", "montaje__salon",
         ).filter(es_paquete=False).exclude(estado_reserva__codigo='SOLIC')
         estados = models.EstadoReserva.objects.all()
         reservacion_total = models.Reservacion.objects.filter(es_paquete=False).count()
+        tipos_cliente = models.TipoCliente.objects.all()
 
         nombre = request.GET.get('nombre', '')
         estado_filtro = request.GET.get('estado', '')
-        
+
         if nombre:
             reservaciones = reservaciones.filter(
                 Q(nombreEvento__icontains=nombre) |
                 Q(cliente__nombre__icontains=nombre)
             )
-        
+
         if estado_filtro:
             reservaciones = reservaciones.filter(estado_reserva__codigo=estado_filtro)
 
         return render(request, self.template_name, {
             "reservaciones": reservaciones.order_by('-id').all(),
             "estados": estados,
+            "tipos_cliente": tipos_cliente,
             "rol": rol,
             "nombre": nombre,
             "estado_filtro": estado_filtro,
-            "reservacion_total": reservacion_total
+            "reservacion_total": reservacion_total,
+            "tab": "reservaciones"
         })
+
+    def _get_clientes(self, request, rol):
+        from django.db.models import Count
+
+        clientes = models.DatosCliente.objects.select_related('tipo_cliente').annotate(
+            total_reservaciones=Count('reservacion')
+        )
+
+        busqueda = request.GET.get('busqueda', '')
+        tipo_filtro = request.GET.get('tipo', '')
+
+        if busqueda:
+            clientes = clientes.filter(
+                Q(nombre__icontains=busqueda) |
+                Q(rfc__icontains=busqueda) |
+                Q(correo_electronico__icontains=busqueda)
+            )
+
+        if tipo_filtro and tipo_filtro != 'todos':
+            clientes = clientes.filter(tipo_cliente__codigo=tipo_filtro.upper())
+
+        tipos_cliente = models.TipoCliente.objects.all()
+
+        return render(request, self.template_name, {
+            "clientes": clientes.order_by('-id').all(),
+            "tipos_cliente": tipos_cliente,
+            "rol": rol,
+            "busqueda": busqueda,
+            "tipo_filtro": tipo_filtro,
+            "tab": "clientes"
+        })
+
+    @method_decorator(csrf_exempt)
+    def post(self, request):
+        cuenta, rol = get_cuenta_and_rol(request)
+        if not cuenta:
+            return JsonResponse({'success': False, 'message': 'No autorizado'})
+
+        cliente_id = request.POST.get('cliente_id')
+        if not cliente_id:
+            return JsonResponse({'success': False, 'message': 'ID de cliente requerido'})
+
+        try:
+            cliente = models.DatosCliente.objects.get(pk=cliente_id)
+        except models.DatosCliente.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Cliente no encontrado'})
+
+        cliente.nombre = request.POST.get('nombre', cliente.nombre)
+        cliente.apellidoPaterno = request.POST.get('apellidoPaterno', cliente.apellidoPaterno)
+        cliente.apelidoMaterno = request.POST.get('apelidoMaterno', cliente.apelidoMaterno) or None
+        cliente.correo_electronico = request.POST.get('correo', cliente.correo_electronico)
+        cliente.telefono = request.POST.get('telefono', cliente.telefono)
+        cliente.rfc = request.POST.get('rfc', cliente.rfc)
+        cliente.nombre_fiscal = request.POST.get('nombre_fiscal', cliente.nombre_fiscal)
+
+        tipo_codigo = request.POST.get('tipo_cliente')
+        if tipo_codigo:
+            try:
+                tipo = models.TipoCliente.objects.get(codigo=tipo_codigo)
+                cliente.tipo_cliente = tipo
+            except models.TipoCliente.DoesNotExist:
+                pass
+
+        try:
+            cliente.save()
+            return JsonResponse({'success': True, 'message': 'Cliente actualizado correctamente'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': f'Error al guardar: {str(e)}'})
 
 
 class ReservacionView(generic.View):
@@ -334,7 +414,7 @@ def reservacion_detalle_json(request, pk):
             "rfc": reserva.cliente.rfc, "nombre_fiscal": reserva.cliente.nombre_fiscal,
         },
         "servicios": servicios,
-        "equipamientos": equipamientos_formatted,
+        "equipamentos": equipamientos_formatted,
         "mobiliarios": mobiliario,
     })
 
@@ -397,13 +477,63 @@ def confirmar_reservacion(request, pk):
 def cancelar_reservacion(request, pk):
     if request.method == 'POST':
         try:
-            reserva = get_object_or_404(models.Reservacion, pk=pk)
-            
-            # Cancelar la reservación
-            reserva.estado_reserva = models.EstadoReserva.objects.get(codigo='CAN')
-            reserva.save()
-            
-            return JsonResponse({'success': True, 'message': 'Reservación cancelada'})
+            with transaction.atomic():
+                reservacion = models.Reservacion.objects.select_related(
+                    'montaje__salon'
+                ).get(pk=pk)
+
+                fecha_evento = reservacion.fechaEvento
+
+                if reservacion.montaje and reservacion.montaje.salon and fecha_evento:
+                    salon = reservacion.montaje.salon
+                    models.RegistrEstadSalon.objects.filter(
+                        salon=salon,
+                        fecha=fecha_evento
+                    ).delete()
+
+                models.ReservaServicio.objects.filter(reservacion=reservacion).delete()
+
+                reserva_equipas = models.ReservaEquipa.objects.filter(reservacion=reservacion)
+                for re in reserva_equipas:
+                    inventario = models.InventarioEquipa.objects.filter(
+                        equipamiento=re.equipamiento,
+                        estado_equipa__codigo='DISP'
+                    ).first()
+                    if inventario:
+                        inventario.cantidad += re.cantidad
+                        inventario.save()
+                    else:
+                        inventario = models.InventarioEquipa.objects.filter(
+                            equipamiento=re.equipamiento
+                        ).first()
+                        if inventario:
+                            inventario.cantidad += re.cantidad
+                            inventario.save()
+                    re.delete()
+
+                if reservacion.montaje:
+                    montaje_mobs = models.MontajeMobiliario.objects.filter(montaje=reservacion.montaje)
+                    for mm in montaje_mobs:
+                        inventario = models.InventarioMob.objects.filter(
+                            mobiliario=mm.mobiliario,
+                            estado_mobil__codigo='DISP'
+                        ).first()
+                        if inventario:
+                            inventario.cantidad += mm.cantidad
+                            inventario.save()
+                        else:
+                            inventario = models.InventarioMob.objects.filter(
+                                mobiliario=mm.mobiliario
+                            ).first()
+                            if inventario:
+                                inventario.cantidad += mm.cantidad
+                                inventario.save()
+                        mm.delete()
+
+                reservacion.estado_reserva = models.EstadoReserva.objects.get(codigo='CAN')
+                reservacion.save()
+
+            return JsonResponse({'success': True, 'message': 'Reservación cancelada y recursos liberados'})
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
     return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
@@ -416,41 +546,12 @@ def actualizar_reservacion(request, pk):
     if request.method == 'POST':
         try:
             with transaction.atomic():
-                reservacion = models.Reservacion.objects.select_related('cliente').get(pk=pk)
-                cliente = reservacion.cliente
-
-                if request.POST.get('cliente_nombre'):
-                    cliente.nombre = request.POST.get('cliente_nombre')
-                if request.POST.get('cliente_apellido_paterno'):
-                    cliente.apellidoPaterno = request.POST.get('cliente_apellido_paterno')
-                if request.POST.get('cliente_apellido_materno'):
-                    cliente.apelidoMaterno = request.POST.get('cliente_apellido_materno')
-                if request.POST.get('cliente_correo'):
-                    cliente.correo_electronico = request.POST.get('cliente_correo')
-                if request.POST.get('cliente_telefono'):
-                    cliente.telefono = request.POST.get('cliente_telefono')
-                if request.POST.get('cliente_rfc'):
-                    cliente.rfc = request.POST.get('cliente_rfc')
-                if request.POST.get('cliente_nombre_fiscal'):
-                    cliente.nombre_fiscal = request.POST.get('cliente_nombre_fiscal')
-                cliente.save()
+                reservacion = models.Reservacion.objects.get(pk=pk)
 
                 if request.POST.get('evento_nombre'):
                     reservacion.nombreEvento = request.POST.get('evento_nombre')
                 if request.POST.get('evento_descripcion'):
                     reservacion.descripEvento = request.POST.get('evento_descripcion')
-                if request.POST.get('evento_fecha'):
-                    reservacion.fechaEvento = request.POST.get('evento_fecha')
-                if request.POST.get('evento_hora_inicio'):
-                    reservacion.horaInicio = request.POST.get('evento_hora_inicio')
-                if request.POST.get('evento_hora_fin'):
-                    reservacion.horaFin = request.POST.get('evento_hora_fin')
-                if request.POST.get('evento_asistentes'):
-                    reservacion.estimaAsistentes = request.POST.get('evento_asistentes')
-
-                estado_codigo = request.POST.get('evento_estado', '')
-                if estado_codigo:
-                    reservacion.estado_reserva = models.EstadoReserva.objects.get(codigo=estado_codigo)
 
                 reservacion.save()
 

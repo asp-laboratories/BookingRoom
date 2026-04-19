@@ -53,14 +53,16 @@ async function buscarReservacion() {
             
             document.querySelector('[data-field="monto"]').value = montoSugerido.toFixed(2);
 
-            if(saldo==0){
+if(saldo==0){
                 document.querySelector('[data-field="saldo"]').value = "El pago esta compleado";
             }
 
+            const pagosCount = datos.pagos_count || 0;
+            const primerPagoConcepto = datos.primer_pago_concepto || null;
+
+            aplicarValidacionConcepto(saldo, pagosCount, primerPagoConcepto);
 
 
-
-            
         } else {
             const error = await respuesta.json();
             alert(error.error || 'Error al buscar reservación');
@@ -78,6 +80,118 @@ function limpiarCampos() {
         const el = document.querySelector(`[data-field="${campo}"]`);
         if (el) el.value = '';
     });
+
+    const montoInput = document.querySelector('[data-field="monto"]');
+    if (montoInput) {
+        montoInput.value = '';
+        montoInput.disabled = false;
+    }
+
+    const radioAbono = document.querySelector('input[value="ABONO"]');
+    if (radioAbono) {
+        radioAbono.checked = true;
+        radioAbono.disabled = false;
+    }
+    const radioUnico = document.querySelector('input[value="UNICO"]');
+    if (radioUnico) radioUnico.disabled = false;
+    const radioLiqui = document.querySelector('input[value="LIQUI"]');
+    if (radioLiqui) radioLiqui.disabled = false;
+}
+
+function aplicarValidacionConcepto(saldo, pagosCount, primerPagoConcepto) {
+    const montoInput = document.querySelector('[data-field="monto"]');
+    const radioUnico = document.querySelector('input[value="UNICO"]');
+    const radioLiqui = document.querySelector('input[value="LIQUI"]');
+    const radioAbono = document.querySelector('input[value="ABONO"]');
+
+    if (!montoInput || !radioUnico || !radioLiqui || !radioAbono) return;
+
+    radioUnico.disabled = false;
+    radioLiqui.disabled = false;
+    radioAbono.disabled = false;
+    montoInput.disabled = false;
+
+    if (saldo <= 0) {
+        radioUnico.disabled = true;
+        radioLiqui.disabled = true;
+        radioAbono.disabled = true;
+        montoInput.disabled = true;
+        montoInput.value = '0.00';
+        return;
+    }
+
+    if (pagosCount === 0) {
+        radioLiqui.disabled = true;
+        radioAbono.checked = true;
+    } else {
+        radioAbono.checked = true;
+    }
+
+    radioUnico.onclick = function() {
+        if (radioUnico.checked) {
+            montoInput.value = saldo.toFixed(2);
+            montoInput.disabled = true;
+        }
+    };
+
+    radioLiqui.onclick = function() {
+        if (radioLiqui.checked) {
+            montoInput.value = saldo.toFixed(2);
+            montoInput.disabled = true;
+        }
+    };
+
+    radioAbono.onclick = function() {
+        if (radioAbono.checked) {
+            montoInput.disabled = false;
+            if (pagosCount === 0) {
+                montoInput.value = Math.ceil(saldo / 2).toFixed(2);
+            } else {
+                montoInput.value = '';
+            }
+        }
+    };
+
+    const conceptoActual = document.querySelector('input[name="concepto"]:checked')?.value;
+
+    if (conceptoActual === 'UNICO') {
+        montoInput.value = saldo.toFixed(2);
+        montoInput.disabled = true;
+    } else if (conceptoActual === 'LIQUI') {
+        montoInput.value = saldo.toFixed(2);
+        montoInput.disabled = true;
+    } else if (conceptoActual === 'ABONO') {
+        montoInput.disabled = false;
+        if (pagosCount === 0) {
+            montoInput.value = Math.ceil(saldo / 2).toFixed(2);
+        } else {
+            montoInput.value = '';
+        }
+    }
+}
+
+function validarMontoEnRegistro() {
+    const montoInput = document.querySelector('[data-field="monto"]');
+    const saldoField = document.querySelector('[data-field="saldo"]');
+
+    if (!montoInput || montoInput.disabled) return true;
+
+    let saldo = 0;
+    const saldoTexto = saldoField?.value || '';
+    const match = saldoTexto.match(/([0-9]+\.?[0-9]*)/);
+    if (match) {
+        saldo = parseFloat(match[1]);
+    }
+
+    const monto = parseFloat(montoInput?.value) || 0;
+    const concepto = document.querySelector('input[name="concepto"]:checked')?.value;
+
+    if (concepto === 'ABONO' && monto >= saldo) {
+        alert('Para abono, el monto debe ser menor al saldo restante');
+        return false;
+    }
+
+    return true;
 }
 
 async function registrarPago() {
@@ -90,6 +204,10 @@ async function registrarPago() {
 
     if (!reservaId) {
         alert('Primero busque una reservación válida');
+        return;
+    }
+
+    if (!validarMontoEnRegistro()) {
         return;
     }
 
@@ -226,35 +344,42 @@ async function ejecutarPago(data, csrfToken) {
             if (compMobiliarios) {
                 const mobiliarios = datosPago.mobiliarios;
                 if (mobiliarios && mobiliarios.length > 0) {
-                    compMobiliarios.innerHTML = mobiliarios.map(m => 
-                        `<div><span class="label">${m.tipo}:</span> ${m.cantidad} pza(s)</div>`
+                    compMobiliarios.innerHTML = mobiliarios.map(m =>
+                        `<div><span class="label">${m.tipo}:</span> ${m.cantidad} pza(s) - $${m.precio_unitario.toFixed(2)}/pza - Total: $${m.costo_total.toFixed(2)}</div>`
                     ).join('');
                 } else {
                     compMobiliarios.innerHTML = '<span style="color: #666;">Sin mobiliario</span>';
                 }
             }
-            
+
             // Espacio rentado
             const compSalon = document.getElementById('comp-salon');
             const compMontaje = document.getElementById('comp-montaje');
-            
-            if (compSalon) compSalon.textContent = datosPago.salon || '—';
+            const salonCosto = datosPago.salon_costo || '0.00';
+
+            if (compSalon) compSalon.textContent = (datosPago.salon || '—') + ' - $' + parseFloat(salonCosto).toFixed(2);
             if (compMontaje) compMontaje.textContent = datosPago.montaje || '—';
-            
+
             // Servicios y Equipamientos
             const compServicios = document.getElementById('comp-servicios');
             const compEquipamientos = document.getElementById('comp-equipamientos');
-            
+
             if (compServicios) {
-                if (datosPago.servicios && datosPago.servicios.length > 0) {
-                    compServicios.innerHTML = datosPago.servicios.map(s => `<span class="item-lista">• ${s}</span>`).join('');
+                const serviciosDetalle = datosPago.servicios_detalle || [];
+                if (serviciosDetalle.length > 0) {
+                    compServicios.innerHTML = serviciosDetalle.map(s =>
+                        `<span class="item-lista">• ${s.nombre} - $${s.costo.toFixed(2)}</span>`
+                    ).join('');
                 } else {
                     compServicios.innerHTML = '<span style="color: #666;">Sin servicios</span>';
                 }
             }
             if (compEquipamientos) {
-                if (datosPago.lista_equipamentos && datosPago.lista_equipamentos.length > 0) {
-                    compEquipamientos.innerHTML = datosPago.lista_equipamentos.map(e => `<span class="item-lista">• ${e}</span>`).join('');
+                const equipsDetalle = datosPago.equipamentos_detalle || [];
+                if (equipsDetalle.length > 0) {
+                    compEquipamientos.innerHTML = equipsDetalle.map(e =>
+                        `<span class="item-lista">• ${e.nombre} x${e.cantidad} - $${e.costo.toFixed(2)}/pza - Total: $${(e.costo * e.cantidad).toFixed(2)}</span>`
+                    ).join('');
                 } else {
                     compEquipamientos.innerHTML = '<span style="color: #666;">Sin equipamentos</span>';
                 }
