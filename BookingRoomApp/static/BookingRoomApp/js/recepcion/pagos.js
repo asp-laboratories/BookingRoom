@@ -120,10 +120,16 @@ function aplicarValidacionConcepto(saldo, pagosCount, primerPagoConcepto) {
         return;
     }
 
-    if (pagosCount === 0) {
+    // Si ya hay 2 pagos, solo LIQUI está disponible
+    if (pagosCount >= 2) {
+        radioAbono.disabled = true;
+        radioLiqui.checked = true;
+    } else if (pagosCount === 0) {
+        // Primer pago: LIQUI deshabilitado
         radioLiqui.disabled = true;
         radioAbono.checked = true;
     } else {
+        // Ya se hizo un pago (segundo pago posible)
         radioAbono.checked = true;
     }
 
@@ -141,16 +147,6 @@ function aplicarValidacionConcepto(saldo, pagosCount, primerPagoConcepto) {
         }
     };
 
-    const radioExtr = document.querySelector('input[value="EXTR"]');
-    if (radioExtr) {
-        radioExtr.onclick = function() {
-            if (radioExtr.checked) {
-                montoInput.value = saldo.toFixed(2);
-                montoInput.disabled = true;
-            }
-        };
-    }
-
     radioAbono.onclick = function() {
         if (radioAbono.checked) {
             montoInput.disabled = false;
@@ -167,7 +163,7 @@ function aplicarValidacionConcepto(saldo, pagosCount, primerPagoConcepto) {
     if (conceptoActual === 'UNICO') {
         montoInput.value = saldo.toFixed(2);
         montoInput.disabled = true;
-    } else if (conceptoActual === 'LIQUI' || conceptoActual === 'EXTR') {
+    } else if (conceptoActual === 'LIQUI') {
         montoInput.value = saldo.toFixed(2);
         montoInput.disabled = true;
     } else if (conceptoActual === 'ABONO') {

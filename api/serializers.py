@@ -982,6 +982,7 @@ class ReservacionFormularioSerializer(serializers.ModelSerializer):
     cliente_nombre_fiscal = serializers.CharField(source='cliente.nombre_fiscal', read_only=True)
     salon_id = serializers.IntegerField(source='montaje.salon.id', read_only=True)
     salon_nombre = serializers.CharField(source='montaje.salon.nombre', read_only=True)
+    salon_costo = serializers.SerializerMethodField()
     tipo_montaje_id = serializers.IntegerField(source='montaje.tipo_montaje.id', read_only=True)
     tipo_montaje_nombre = serializers.CharField(source='montaje.tipo_montaje.nombre', read_only=True)
     
@@ -996,7 +997,7 @@ class ReservacionFormularioSerializer(serializers.ModelSerializer):
             'id', 'nombreEvento', 'descripEvento', 'fechaEvento', 'horaInicio', 'horaFin',
             'estimaAsistentes', 'subtotal', 'IVA', 'total',
             'cliente_rfc', 'cliente_nombre', 'cliente_apellido', 'cliente_correo', 'cliente_telefono', 'cliente_nombre_fiscal',
-            'salon_id', 'salon_nombre', 'tipo_montaje_id', 'tipo_montaje_nombre',
+            'salon_id', 'salon_nombre', 'salon_costo', 'tipo_montaje_id', 'tipo_montaje_nombre',
             'tipo_evento',
             'cliente', 'servicios', 'equipamentos', 'mobiliarios'
         ]
@@ -1009,17 +1010,40 @@ class ReservacionFormularioSerializer(serializers.ModelSerializer):
         }
     
     def get_servicios(self, obj):
-        return list(obj.reservaservicio_set.values_list('servicio__nombre', flat=True))
+        return [
+            {
+                'nombre': rs.servicio.nombre,
+                'costo': float(rs.servicio.costo) if rs.servicio.costo else 0
+            }
+            for rs in obj.reservaservicio_set.select_related('servicio').all()
+        ]
     
     def get_equipamentos(self, obj):
         return [
-            re.equipamiento.nombre for re in obj.reservaequipa_set.all()
+            {
+                'nombre': re.equipamiento.nombre,
+                'cantidad': re.cantidad,
+                'costo': float(re.equipamiento.costo) if re.equipamiento.costo else 0
+            }
+            for re in obj.reservaequipa_set.select_related('equipamiento').all()
         ]
     
     def get_mobiliarios(self, obj):
-        return [
-            mm.mobiliario.nombre for mm in obj.montaje.montajemobiliario_set.all()
-        ]
+        if obj.montaje:
+            return [
+                {
+                    'nombre': mm.mobiliario.nombre,
+                    'cantidad': mm.cantidad,
+                    'costo': float(mm.mobiliario.costo) if mm.mobiliario.costo else 0
+                }
+                for mm in obj.montaje.montajemobiliario_set.select_related('mobiliario').all()
+            ]
+        return []
+
+    def get_salon_costo(self, obj):
+        if obj.montaje and obj.montaje.salon:
+            return float(obj.montaje.salon.costo) if obj.montaje.salon.costo else 0
+        return 0
 
 
 class ReservacionProgresoSerializer(serializers.Serializer):

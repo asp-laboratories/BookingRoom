@@ -371,29 +371,37 @@ def reservacion_detalle_json(request, pk):
         pk=pk,
     )
 
-    # Servicios: lista de nombres
-    servicios = list(reserva.reservaservicio_set.values_list("servicio__nombre", flat=True))
+    # Servicios: lista con nombre y costo
+    servicios = list(reserva.reservaservicio_set.select_related('servicio').values(
+        'servicio__nombre', 'servicio__costo'
+    ))
+    servicios_formatted = [
+        {'nombre': s['servicio__nombre'], 'costo': float(s['servicio__costo']) if s['servicio__costo'] else 0}
+        for s in servicios
+    ]
     
-    # Equipamientos: lista con nombre y cantidad
+    # Equipamientos: lista con nombre, cantidad y costo
     equipamientos = list(reserva.reservaequipa_set.select_related('equipamiento').values(
-        'equipamiento__nombre', 'cantidad'
+        'equipamiento__nombre', 'cantidad', 'equipamiento__costo'
     ))
     # Formatear equipamientos para el frontend
     equipamientos_formatted = [
-        {'nombre': eq['equipamiento__nombre'], 'cantidad': eq['cantidad']}
+        {'nombre': eq['equipamiento__nombre'], 'cantidad': eq['cantidad'], 'costo': float(eq['equipamiento__costo']) if eq['equipamiento__costo'] else 0}
         for eq in equipamientos
     ]
 
-    # Mobiliarios: lista con nombre y cantidad
+    # Mobiliarios: lista con nombre, cantidad y costo
     mobiliario = []
     if reserva.montaje:
         mobiliario_qs = models.MontajeMobiliario.objects.filter(
             montaje=reserva.montaje
-        ).select_related('mobiliario').values('mobiliario__nombre', 'cantidad')
+        ).select_related('mobiliario').values('mobiliario__nombre', 'cantidad', 'mobiliario__costo')
         mobiliario = [
-            {'nombre': mob['mobiliario__nombre'], 'cantidad': mob['cantidad']}
+            {'nombre': mob['mobiliario__nombre'], 'cantidad': mob['cantidad'], 'costo': float(mob['mobiliario__costo']) if mob['mobiliario__costo'] else 0}
             for mob in mobiliario_qs
         ]
+
+    salon_costo = float(reserva.montaje.salon.costo) if reserva.montaje and reserva.montaje.salon and reserva.montaje.salon.costo else 0
 
     return JsonResponse({
         "id": reserva.pk, "nombre_evento": reserva.nombreEvento,
@@ -403,6 +411,7 @@ def reservacion_detalle_json(request, pk):
         "estado": reserva.estado_reserva.nombre, "estado_codigo": reserva.estado_reserva.codigo,
         "asistentes": reserva.estimaAsistentes,
         "salon": reserva.montaje.salon.nombre if reserva.montaje and reserva.montaje.salon else "N/A",
+        "salon_costo": salon_costo,
         "montaje": reserva.montaje.tipo_montaje.nombre if reserva.montaje and reserva.montaje.tipo_montaje else "N/A",
         "tipo_evento": reserva.tipo_evento.nombre if reserva.tipo_evento else "N/A",
         "subtotal": str(reserva.subtotal), "iva": str(reserva.IVA), "total": str(reserva.total),
@@ -413,7 +422,7 @@ def reservacion_detalle_json(request, pk):
             "correo": reserva.cliente.correo_electronico, "telefono": reserva.cliente.telefono,
             "rfc": reserva.cliente.rfc, "nombre_fiscal": reserva.cliente.nombre_fiscal,
         },
-        "servicios": servicios,
+        "servicios": servicios_formatted,
         "equipamentos": equipamientos_formatted,
         "mobiliarios": mobiliario,
     })
@@ -462,12 +471,12 @@ def confirmar_reservacion(request, pk):
             if descripcion:
                 reserva.descripEvento = descripcion
 
-            # Confirmar la reservación
-            reserva.estado_reserva = models.EstadoReserva.objects.get(codigo='CON')
+            # Confirmar la reservación como PENDIENTE
+            reserva.estado_reserva = models.EstadoReserva.objects.get(codigo='PEN')
             reserva.trabajador = trabajador
             reserva.save()
 
-            return JsonResponse({'success': True, 'message': 'Reservación confirmada'})
+            return JsonResponse({'success': True, 'message': 'Reservación enviada a pendientes'})
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
     return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)

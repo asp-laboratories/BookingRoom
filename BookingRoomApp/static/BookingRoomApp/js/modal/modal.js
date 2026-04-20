@@ -70,11 +70,12 @@ window.onclick = function(event) {
             data.asistentes;
 
           document.getElementById(prefix + "salon-nombre").textContent = data.salon;
+          document.getElementById(prefix + "salon-costo").textContent = data.salon_costo ? `$${data.salon_costo}` : '-';
           document.getElementById(prefix + "salon-montaje").textContent = data.montaje;
 
           const serviciosSpan = document.getElementById(prefix + "servicios-lista");
           if (data.servicios && data.servicios.length > 0) {
-            serviciosSpan.textContent = data.servicios.join(", ");
+            serviciosSpan.innerHTML = data.servicios.map(s => `<span class="item-lista">• ${s.nombre} - $${s.costo}</span>`).join('');
           } else {
             serviciosSpan.textContent = "No hay servicios";
           }

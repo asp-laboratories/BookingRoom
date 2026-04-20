@@ -191,11 +191,12 @@ const response = await fetch(`/home/${pk}/json/`);
             document.getElementById('detalle-evento-asistentes').textContent = data.asistentes || '-';
             
             document.getElementById('detalle-salon-nombre').textContent = data.salon || '-';
+            document.getElementById('detalle-salon-costo').textContent = data.salon_costo ? `$${data.salon_costo}` : '-';
             document.getElementById('detalle-salon-montaje').textContent = data.montaje || '-';
             
             const serviciosSpan = document.getElementById('detalle-servicios-lista');
             if (data.servicios && data.servicios.length > 0) {
-                serviciosSpan.innerHTML = data.servicios.map(s => `<span class="item-lista">• ${s}</span>`).join('');
+                serviciosSpan.innerHTML = data.servicios.map(s => `<span class="item-lista">• ${s.nombre} - $${s.costo}</span>`).join('');
             } else {
                 serviciosSpan.textContent = 'No hay servicios';
             }
@@ -203,7 +204,7 @@ const response = await fetch(`/home/${pk}/json/`);
             // Mobiliarios
             const mobiliariosSpan = document.getElementById('detalle-mobiliario-lista');
             if (mobiliariosSpan && data.mobiliarios && data.mobiliarios.length > 0) {
-                mobiliariosSpan.innerHTML = data.mobiliarios.map(m => `<span class="item-lista">• ${m.nombre} (x${m.cantidad})</span>`).join('');
+                mobiliariosSpan.innerHTML = data.mobiliarios.map(m => `<span class="item-lista">• ${m.nombre} (${m.cantidad}) - $${m.costo}</span>`).join('');
             } else if (mobiliariosSpan) {
                 mobiliariosSpan.textContent = 'No hay mobiliarios';
             }
@@ -211,7 +212,7 @@ const response = await fetch(`/home/${pk}/json/`);
             // Equipamientos
             const equipamientosSpan = document.getElementById('detalle-equipamientos-lista');
             if (equipamientosSpan && data.equipamentos && data.equipamentos.length > 0) {
-                equipamientosSpan.innerHTML = data.equipamentos.map(e => `<span class="item-lista">• ${e.nombre} (x${e.cantidad})</span>`).join('');
+                equipamientosSpan.innerHTML = data.equipamentos.map(e => `<span class="item-lista">• ${e.nombre} (${e.cantidad}) - $${e.costo}</span>`).join('');
             } else if (equipamientosSpan) {
                 equipamientosSpan.textContent = 'No hay equipamientos';
             }
@@ -340,16 +341,18 @@ async function abrirModalDetalleCompleto(pk) {
         document.getElementById('detalle-evento-asistentes').textContent = data.asistentes || '-';
         
         document.getElementById('detalle-salon-nombre').textContent = data.salon || '-';
+        document.getElementById('detalle-salon-costo').textContent = data.salon_costo ? `$${data.salon_costo}` : '-';
         document.getElementById('detalle-salon-montaje').textContent = data.montaje || '-';
         
         const serviciosSpan = document.getElementById('detalle-servicios-lista');
         if (data.servicios && data.servicios.length > 0) {
-            serviciosSpan.innerHTML = data.servicios.map(s => `<span class="item-lista">• ${s}</span>`).join('');
+            serviciosSpan.innerHTML = data.servicios.map(s => `<span class="item-lista">• ${s.nombre} - $${s.costo}</span>`).join('');
         } else {
             serviciosSpan.textContent = 'No hay servicios';
         }
         
         document.getElementById('detalle-equipamientos-lista').textContent = 'No hay equipamientos';
+        document.getElementById('detalle-mobiliario-lista').textContent = 'No hay mobiliario';
         
         document.getElementById('detalle-total-iva').textContent = `$${data.iva || '0.00'}`;
         document.getElementById('detalle-total-subtotal').textContent = `$${data.subtotal || '0.00'}`;

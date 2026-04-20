@@ -98,6 +98,10 @@
           <span id="solicitud-salon-nombre">-</span>
         </div>
         <div class="fila-dato">
+          <label>Costo:</label>
+          <span id="solicitud-salon-costo">-</span>
+        </div>
+        <div class="fila-dato">
           <label>Montaje:</label>
           <span id="solicitud-montaje-nombre">-</span>
         </div>
@@ -153,7 +157,7 @@
   </div>
 
   <div class="modal-botones">
-    <button class="btn-modal btn-aceptar" id="solicitud-btn-confirmar" onclick="abrirConfirmarModalDesdeSolicitud()">Confirmar</button>
+    <button class="btn-modal btn-aceptar" id="solicitud-btn-confirmar" onclick="abrirConfirmarModalDesdeSolicitud()">Enviar a Pendientes</button>
     <button class="btn-modal btn-denegar" id="solicitud-btn-cancelar" onclick="abrirCancelarModalDesdeSolicitud()">
       Cancelar
     </button>
@@ -196,25 +200,26 @@ async function cargarDetallesSolicitud(pk) {
         document.getElementById('solicitud-evento-asistentes').textContent = data.estimaAsistentes || '-';
         
         document.getElementById('solicitud-salon-nombre').textContent = data.salon_nombre || '-';
+        document.getElementById('solicitud-salon-costo').textContent = data.salon_costo ? `$${data.salon_costo}` : '-';
         document.getElementById('solicitud-montaje-nombre').textContent = data.tipo_montaje_nombre || '-';
         
         // Cargar servicios
         if (data.servicios && data.servicios.length > 0) {
-            document.getElementById('solicitud-servicios-lista').innerHTML = data.servicios.map(s => `<span class="item-lista">• ${s}</span>`).join('');
+            document.getElementById('solicitud-servicios-lista').innerHTML = data.servicios.map(s => `<span class="item-lista">• ${s.nombre} - $${s.costo}</span>`).join('');
         } else {
             document.getElementById('solicitud-servicios-lista').textContent = 'No hay servicios';
         }
 
         // Cargar equipamientos
         if (data.equipamentos && data.equipamentos.length > 0) {
-            document.getElementById('solicitud-equipamientos-lista').innerHTML = data.equipamentos.map(e => `<span class="item-lista">• ${e}</span>`).join('');
+            document.getElementById('solicitud-equipamientos-lista').innerHTML = data.equipamentos.map(e => `<span class="item-lista">• ${e.nombre} (${e.cantidad}) - $${e.costo}</span>`).join('');
         } else {
             document.getElementById('solicitud-equipamientos-lista').textContent = 'No hay equipamientos';
         }
 
         // Cargar mobiliario
         if (data.mobiliarios && data.mobiliarios.length > 0) {
-            document.getElementById('solicitud-mobiliario-lista').innerHTML = data.mobiliarios.map(m => `<span class="item-lista">• ${m}</span>`).join('');
+            document.getElementById('solicitud-mobiliario-lista').innerHTML = data.mobiliarios.map(m => `<span class="item-lista">• ${m.nombre} (${m.cantidad}) - $${m.costo}</span>`).join('');
         } else {
             document.getElementById('solicitud-mobiliario-lista').textContent = 'No hay mobiliario';
         }
@@ -243,7 +248,7 @@ async function confirmarSolicitud() {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
             },
-            body: JSON.stringify({ estado: 'CON' })
+            body: JSON.stringify({ estado: 'PEN' })
         });
         
         const data = await response.json();
@@ -297,8 +302,8 @@ function abrirConfirmarModalDesdeSolicitud() {
     const pk = solicitudIdActual;
     const descripcion = document.getElementById('solicitud-descripcion-input').value;
     if (pk) {
-        document.getElementById('modal-confirmar-titulo').textContent = 'Confirmar Reservación';
-        document.getElementById('modal-confirmar-mensaje').textContent = '¿Estás seguro de que quieres confirmar esta reservación? El trabajador actual será asignado como responsable.';
+        document.getElementById('modal-confirmar-titulo').textContent = 'Enviar a Pendientes';
+        document.getElementById('modal-confirmar-mensaje').textContent = '¿Estás seguro de que quieres enviar esta reservación a pendientes?';
         document.getElementById('modal-confirmar-btn').onclick = function() {
             confirmarReservacionDesdeSolicitud(pk, descripcion);
         };
