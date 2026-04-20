@@ -453,7 +453,7 @@ class BuscarReservacionView(APIView):
         primer_pago_concepto = None
         if pagos_count > 0:
             primer_pago = models.Pago.objects.filter(reservacion=reservacion).order_by('no_pago').first()
-            primer_pago_concepto = primer_pago.concepto_pago if primer_pago else None
+            primer_pago_concepto = primer_pago.concepto_pago.codigo if primer_pago and primer_pago.concepto_pago else None
 
         return Response({
             'id': reservacion.id,
