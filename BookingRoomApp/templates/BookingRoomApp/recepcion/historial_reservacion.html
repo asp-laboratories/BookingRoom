@@ -12,6 +12,15 @@
 .historial-container .administrador-tablita {
     max-height: 700px;
 }
+.accion-botones {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.accion-botones .historial-btn {
+    width: 100%;
+    min-width: 80px;
+}
 </style>
 
 {% include "BookingRoomApp/includes/alert-exito.html" %}
@@ -99,7 +108,9 @@
       <select name="estado" id="filtro-estado" class="historial-input">
         <option value="">Todos los estados</option>
         {% for est in estados %}
+        {% if est.codigo != 'PLANT' %}
         <option value="{{ est.codigo }}">{{ est.nombre }}</option>
+        {% endif %}
         {% endfor %}
       </select>
 
@@ -138,7 +149,7 @@
           <td class="administrador-td">{{reservacion.montaje.salon.nombre}}</td>
           <td class="administrador-td">{{reservacion.estado_reserva.nombre}}</td>
 
-          <td class="administrador-td">
+          <td class="administrador-td accion-botones">
             <button
               class="historial-btn ver-pagos"
               data-pk="{{ reservacion.id }}"

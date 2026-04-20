@@ -477,9 +477,9 @@ class ListarReservacionesView(APIView):
 class LlenarCalendarioReservaciones(APIView):
     def get(self, request):
         from datetime import datetime, date
-        # Excluir solicitudes (SOLIC y PEN)
+        # Excluir solicitudes, pendientes y canceladas
         reservaciones = models.Reservacion.objects.exclude(
-            estado_reserva__codigo__in=['SOLIC', 'PEN']
+            estado_reserva__codigo__in=['SOLIC', 'PEN', 'CANCEL', 'CAN']
         ).exclude(
             es_paquete=True
         ).exclude(
@@ -1213,6 +1213,10 @@ class MisReservacionesView(APIView):
         
         resultado = []
         for r in reservaciones:
+            estado_codigo = r.estado_reserva.codigo if r.estado_reserva else None
+            estado_nombre = r.estado_reserva.nombre if r.estado_reserva else None
+            salon_nombre = r.montaje.salon.nombre if r.montaje and r.montaje.salon else None
+            montaje_nombre = r.montaje.tipo_montaje.nombre if r.montaje and r.montaje.tipo_montaje else None
             resultado.append({
                 'id': r.id,
                 'nombre': r.nombreEvento,
@@ -1221,10 +1225,10 @@ class MisReservacionesView(APIView):
                 'hora_inicio': r.horaInicio.isoformat() if r.horaInicio else None,
                 'hora_fin': r.horaFin.isoformat() if r.horaFin else None,
                 'asistentes': r.estimaAsistentes,
-                'estado_codigo': r.estado_reserva.codigo,
-                'estado_nombre': r.estado_reserva.nombre,
-                'salon_nombre': r.montaje.salon.nombre if r.montaje else None,
-                'montaje_nombre': r.montaje.tipo_montaje.nombre if r.montaje and r.montaje.tipo_montaje else None,
+                'estado_codigo': estado_codigo,
+                'estado_nombre': estado_nombre,
+                'salon_nombre': salon_nombre,
+                'montaje_nombre': montaje_nombre,
                 'total': float(r.total) if r.total else 0,
             })
         

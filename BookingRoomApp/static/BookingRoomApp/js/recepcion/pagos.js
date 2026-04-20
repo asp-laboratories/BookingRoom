@@ -141,6 +141,16 @@ function aplicarValidacionConcepto(saldo, pagosCount, primerPagoConcepto) {
         }
     };
 
+    const radioExtr = document.querySelector('input[value="EXTR"]');
+    if (radioExtr) {
+        radioExtr.onclick = function() {
+            if (radioExtr.checked) {
+                montoInput.value = saldo.toFixed(2);
+                montoInput.disabled = true;
+            }
+        };
+    }
+
     radioAbono.onclick = function() {
         if (radioAbono.checked) {
             montoInput.disabled = false;
@@ -157,7 +167,7 @@ function aplicarValidacionConcepto(saldo, pagosCount, primerPagoConcepto) {
     if (conceptoActual === 'UNICO') {
         montoInput.value = saldo.toFixed(2);
         montoInput.disabled = true;
-    } else if (conceptoActual === 'LIQUI') {
+    } else if (conceptoActual === 'LIQUI' || conceptoActual === 'EXTR') {
         montoInput.value = saldo.toFixed(2);
         montoInput.disabled = true;
     } else if (conceptoActual === 'ABONO') {

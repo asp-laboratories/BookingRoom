@@ -495,39 +495,37 @@ def cancelar_reservacion(request, pk):
 
                 reserva_equipas = models.ReservaEquipa.objects.filter(reservacion=reservacion)
                 for re in reserva_equipas:
+                    # Primero intentar liberar de RESV, luego de OCUP
                     inventario = models.InventarioEquipa.objects.filter(
                         equipamiento=re.equipamiento,
-                        estado_equipa__codigo='DISP'
+                        estado_equipa__codigo='RESV'
                     ).first()
+                    if not inventario:
+                        inventario = models.InventarioEquipa.objects.filter(
+                            equipamiento=re.equipamiento,
+                            estado_equipa__codigo='OCUP'
+                        ).first()
                     if inventario:
                         inventario.cantidad += re.cantidad
                         inventario.save()
-                    else:
-                        inventario = models.InventarioEquipa.objects.filter(
-                            equipamiento=re.equipamiento
-                        ).first()
-                        if inventario:
-                            inventario.cantidad += re.cantidad
-                            inventario.save()
                     re.delete()
 
                 if reservacion.montaje:
-                    montaje_mobs = models.MontajeMobiliario.objects.filter(montaje=reservacion.montaje)
-                    for mm in montaje_mobs:
+                    montage_mobs = models.MontajeMobiliario.objects.filter(montaje=reservacion.montaje)
+                    for mm in montage_mobs:
+                        # Primero intentar liberar de RESV, luego de OCUP
                         inventario = models.InventarioMob.objects.filter(
                             mobiliario=mm.mobiliario,
-                            estado_mobil__codigo='DISP'
+                            estado_mobil__codigo='RESV'
                         ).first()
+                        if not inventario:
+                            inventario = models.InventarioMob.objects.filter(
+                                mobiliario=mm.mobiliario,
+                                estado_mobil__codigo='OCUP'
+                            ).first()
                         if inventario:
                             inventario.cantidad += mm.cantidad
                             inventario.save()
-                        else:
-                            inventario = models.InventarioMob.objects.filter(
-                                mobiliario=mm.mobiliario
-                            ).first()
-                            if inventario:
-                                inventario.cantidad += mm.cantidad
-                                inventario.save()
                         mm.delete()
 
                 reservacion.estado_reserva = models.EstadoReserva.objects.get(codigo='CAN')
