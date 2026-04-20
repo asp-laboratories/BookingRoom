@@ -400,11 +400,12 @@ class MetodoPagoSerializer(serializers.ModelSerializer):
 
 class ServicioSerializer(serializers.ModelSerializer):
     tipo_servicio = serializers.StringRelatedField()
+    tipo_servicio_id = serializers.IntegerField(source='tipo_servicio.id', read_only=True)
     costo = serializers.IntegerField()
-    
+
     class Meta:
         model = models.Servicio
-        fields = ['id', 'nombre', 'descripcion', 'costo', 'tipo_servicio']
+        fields = ['id', 'nombre', 'descripcion', 'costo', 'tipo_servicio', 'tipo_servicio_id']
 
 
 class EstadoReservaSerializer(serializers.ModelSerializer):
