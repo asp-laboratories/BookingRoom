@@ -28,19 +28,20 @@
     <div class="modal-div modal-div-1">
       <h3 class="titulo-info-cliente">Información del cliente</h3>
 
-      <div class="datos">
-        <div class="fila-dato">
-          <label>Nombre completo:</label>
-          <span id="{{ id_prefix|default:'' }}cliente-nombre">-</span>
-        </div>
-        <div class="fila-dato">
-          <label>Correo electrónico:</label>
-          <span id="{{ id_prefix|default:'' }}cliente-correo">-</span>
-        </div>
-        <div class="fila-dato">
-          <label>Teléfono:</label>
-          <span id="{{ id_prefix|default:'' }}cliente-telefono">-</span>
-        </div>
+      <div class="fila-dato fila-dato-columna">
+        <label>Nombre completo:</label>
+        <span id="{{ id_prefix|default:'' }}cliente-nombre">-</span>
+      </div>
+      <div class="fila-dato fila-dato-columna">
+        <label>Correo electrónico:</label>
+        <span id="{{ id_prefix|default:'' }}cliente-correo">-</span>
+      </div>
+      ...
+      <div class="fila-dato fila-dato-columna">
+        <label>Nombre fiscal:</label>
+        <span id="{{ id_prefix|default:'' }}cliente-nombre-fiscal">-</span>
+      </div>
+
         <div class="fila-dato">
           <label>RFC:</label>
           <span id="{{ id_prefix|default:'' }}cliente-rfc">-</span>
@@ -58,7 +59,7 @@
           <label>Nombre:</label>
           <span id="{{ id_prefix|default:'' }}evento-nombre">-</span>
         </div>
-        <div class="fila-dato">
+        <div class="fila-dato fila-dato-columna">
           <label>Descripción:</label>
           <span id="{{ id_prefix|default:'' }}evento-descripcion">-</span>
         </div>
@@ -117,19 +118,19 @@
         <span id="{{ id_prefix|default:'' }}mobiliario-lista">Consultar en detalle</span>
       </div>
     </div> {% endcomment %}
-    <div class="modal-div modal-div-7">
+    <div class="modal-div modal-div-8">
       <h3 class="titulo-seccion-modal">Totales</h3>
-      <div class="datos">
+      <div class="datos" style="background: transparent;">
         <div class="fila-dato">
-          <span>IVA:</span>
-          <span id="{{ id_prefix|default:'' }}total-iva">$0.00</span>
-        </div>
-        <div class="fila-dato">
-          <span>Subtotal:</span>
+          <label>Subtotal:</label>
           <span id="{{ id_prefix|default:'' }}total-subtotal">$0.00</span>
         </div>
         <div class="fila-dato">
-          <span>Total:</span>
+          <label>IVA:</label>
+          <span id="{{ id_prefix|default:'' }}total-iva">$0.00</span>
+        </div>
+        <div class="fila-dato">
+          <label>Total:</label>
           <span id="{{ id_prefix|default:'' }}total-total">$0.00</span>
         </div>
       </div>
@@ -143,7 +144,7 @@
   </div>
 
   {% if mostrar_botones|default:True %}
-  <div class="modal-botones">
+  <div class="modal-botones" style="display: none;">
     <button class="btn-modal btn-aceptar" id="detalle-btn-confirmar" onclick="abrirConfirmarModalDesdeDetalle()">Confirmar</button>
     <button class="btn-modal btn-denegar" id="detalle-btn-cancelar" onclick="abrirCancelarModalDesdeDetalle()">
       Cancelar

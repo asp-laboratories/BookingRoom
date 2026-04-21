@@ -39,11 +39,11 @@
     <div class="modal-div modal-div-1">
       <h3 class="titulo-info-cliente">Información del cliente</h3>
       <div class="datos">
-        <div class="fila-dato">
+        <div class="fila-dato fila-dato-columna">
           <label>Nombre completo:</label>
           <span id="solicitud-cliente-nombre">-</span>
         </div>
-        <div class="fila-dato">
+        <div class="fila-dato fila-dato-columna">
           <label>Correo electrónico:</label>
           <span id="solicitud-cliente-correo">-</span>
         </div>
@@ -55,12 +55,13 @@
           <label>RFC:</label>
           <span id="solicitud-cliente-rfc">-</span>
         </div>
-        <div class="fila-dato">
+        <div class="fila-dato fila-dato-columna">
           <label>Nombre fiscal:</label>
           <span id="solicitud-cliente-nombre-fiscal">-</span>
         </div>
       </div>
     </div>
+
     <div class="modal-div modal-div-2">
       <h3 class="titulo-seccion-modal">Información del evento</h3>
       <div class="datos">
@@ -68,7 +69,7 @@
           <label>Nombre:</label>
           <span id="solicitud-evento-nombre">-</span>
         </div>
-        <div class="fila-dato">
+        <div class="fila-dato fila-dato-columna">
           <label>Descripción:</label>
           <span id="solicitud-evento-descripcion">-</span>
         </div>
@@ -90,6 +91,7 @@
         </div>
       </div>
     </div>
+
     <div class="modal-div modal-div-3">
       <h3 class="titulo-seccion-modal">Salón y Montaje</h3>
       <div class="datos">
@@ -103,30 +105,28 @@
         </div>
       </div>
     </div>
-        <div class="modal-div modal-div-8">
+
+    <div class="modal-div modal-div-8">
       <h3 class="titulo-seccion-modal">Mobiliario</h3>
       <div class="datos">
         <span id="solicitud-mobiliario-lista">No hay mobiliario</span>
       </div>
     </div>
+
     <div class="modal-div modal-div-4">
       <h3 class="titulo-seccion-modal">Servicios</h3>
       <div class="datos">
         <span id="solicitud-servicios-lista">No hay servicios</span>
       </div>
     </div>
+
     <div class="modal-div modal-div-5">
       <h3 class="titulo-seccion-modal">Equipamientos</h3>
       <div class="datos">
         <span id="solicitud-equipamientos-lista">No hay equipamientos</span>
       </div>
     </div>
-    {% comment %} <div class="modal-div modal-div-8">
-      <h3 class="titulo-seccion-modal">Mobiliario</h3>
-      <div class="datos">
-        <span id="solicitud-mobiliario-lista">No hay mobiliario</span>
-      </div>
-    </div> {% endcomment %}
+
     <div class="modal-div modal-div-8">
       <h3 class="titulo-seccion-modal">Totales</h3>
       <div class="datos" style="background: transparent;">
@@ -144,7 +144,8 @@
         </div>
       </div>
     </div>
-    <div class="modal-div modal-div-8"  style="background: transparent;">
+
+    <div class="modal-div modal-div-8" style="background: transparent;">
       <h3 class="titulo-seccion-modal">Descripción del Evento</h3>
       <div class="datos" style="background: transparent;">
         <textarea id="solicitud-descripcion-input" class="descripcion-textarea" placeholder="Ingresa la descripción del evento..."></textarea>
@@ -153,9 +154,9 @@
   </div>
 
   <div class="modal-botones">
-    <button class="btn-modal btn-aceptar" id="solicitud-btn-confirmar" onclick="abrirConfirmarModalDesdeSolicitud()">Enviar a Pendientes</button>
-    <button class="btn-modal btn-denegar" id="solicitud-btn-cancelar" onclick="abrirCancelarModalDesdeSolicitud()">
-      Cancelar
+    <button class="btn-modal btn-aceptar" id="solicitud-btn-confirmar">Enviar a Pendientes</button>
+    <button class="btn-modal btn-denegar" id="solicitud-btn-cancelar" onclick="document.getElementById('modalSolicitud').close()">
+      Cerrar
     </button>
   </div>
 </dialog>
@@ -229,37 +230,11 @@ async function cargarDetallesSolicitud(pk) {
         document.getElementById('modalSolicitud').showModal();
     } catch (error) {
         console.error('Error al cargar detalles:', error);
-        mostrarToastExito('Error al cargar detalles de la solicitud', 'error');
-    }
-}
-
-async function confirmarSolicitud() {
-    if (!solicitudIdActual) return;
-    
-    try {
-        const response = await fetch(`/api/reservacion/${solicitudIdActual}/cambiar-estado/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({ estado: 'PEN' })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            document.getElementById('modalSolicitud').close();
-            mostrarToastExito('Solicitud confirmada correctamente', 'success');
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
+        if (typeof mostrarToastExito === 'function') {
+            mostrarToastExito('Error al cargar detalles de la solicitud', 'error');
         } else {
-            mostrarToastExito(data.error || 'Error al confirmar', 'error');
+            alert('Error al cargar detalles de la solicitud');
         }
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarToastExito('Error al confirmar la solicitud', 'error');
     }
 }
 
@@ -279,6 +254,7 @@ function getCookie(name) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Escuchar botones de "ver detalles"
     document.querySelectorAll('.ver-detalles-solicitud').forEach(btn => {
         btn.addEventListener('click', function() {
             const pk = this.dataset.pk;
@@ -286,35 +262,34 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-document.getElementById('solicitud-btn-confirmar').addEventListener('click', function() {
-        if (solicitudIdActual) {
-            abrirConfirmarModalDesdeSolicitud();
-        }
-    });
+    // Botón confirmar
+    const btnConfirmar = document.getElementById('solicitud-btn-confirmar');
+    if (btnConfirmar) {
+        btnConfirmar.addEventListener('click', function() {
+            if (solicitudIdActual) {
+                abrirConfirmarModalDesdeSolicitud();
+            }
+        });
+    }
 });
 
 function abrirConfirmarModalDesdeSolicitud() {
     const pk = solicitudIdActual;
     const descripcion = document.getElementById('solicitud-descripcion-input').value;
     if (pk) {
-        document.getElementById('modal-confirmar-titulo').textContent = 'Enviar a Pendientes';
-        document.getElementById('modal-confirmar-mensaje').textContent = '¿Estás seguro de que quieres enviar esta reservación a pendientes?';
-        document.getElementById('modal-confirmar-btn').onclick = function() {
-            confirmarReservacionDesdeSolicitud(pk, descripcion);
-        };
-        document.getElementById('modal-confirmar').showModal();
-    }
-}
-
-function abrirCancelarModalDesdeSolicitud() {
-    const pk = solicitudIdActual;
-    if (pk) {
-        document.getElementById('modal-cancelar-titulo').textContent = 'Cancelar Reservación';
-        document.getElementById('modal-cancelar-mensaje').textContent = '¿Estás seguro de que quieres cancelar esta reservación? Esta acción no se puede deshacer.';
-        document.getElementById('modal-cancelar-btn').onclick = function() {
-            cancelarReservacionDesdeSolicitud(pk);
-        };
-        document.getElementById('modal-cancelar').showModal();
+        const modalConfirmar = document.getElementById('modal-confirmar');
+        if (modalConfirmar) {
+            document.getElementById('modal-confirmar-titulo').textContent = 'Enviar a Pendientes';
+            document.getElementById('modal-confirmar-mensaje').textContent = '¿Estás seguro de que quieres enviar esta reservación a pendientes?';
+            document.getElementById('modal-confirmar-btn').onclick = function() {
+                confirmarReservacionDesdeSolicitud(pk, descripcion);
+            };
+            modalConfirmar.showModal();
+        } else {
+            if (confirm('¿Estás seguro de que quieres enviar esta reservación a pendientes?')) {
+                confirmarReservacionDesdeSolicitud(pk, descripcion);
+            }
+        }
     }
 }
 
@@ -335,7 +310,8 @@ async function confirmarReservacionDesdeSolicitud(pk, descripcion) {
         
         if (data.success) {
             alert('Reservación confirmada correctamente');
-            document.getElementById('modal-confirmar').close();
+            const modalConfirmar = document.getElementById('modal-confirmar');
+            if (modalConfirmar) modalConfirmar.close();
             document.getElementById('modalSolicitud').close();
             location.reload();
         } else {
@@ -344,31 +320,6 @@ async function confirmarReservacionDesdeSolicitud(pk, descripcion) {
     } catch (error) {
         console.error('Error:', error);
         alert('No se pudo confirmar la reservación');
-    }
-}
-
-async function cancelarReservacionDesdeSolicitud(pk) {
-    try {
-        const response = await fetch(`/home/${pk}/cancelar/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            alert('Reservación cancelada correctamente');
-            document.getElementById('modal-cancelar').close();
-            document.getElementById('modalSolicitud').close();
-            location.reload();
-        } else {
-            alert('Error: ' + data.message);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('No se pudo cancelar la reservación');
     }
 }
 </script>

@@ -13,11 +13,11 @@
       <h3 class="titulo-info-cliente">Información del cliente</h3>
 
       <div class="datos">
-        <div class="fila-dato">
+        <div class="fila-dato fila-dato-columna">
           <label>Nombre completo:</label>
           <span id="detalle-cliente-nombre">-</span>
         </div>
-        <div class="fila-dato">
+        <div class="fila-dato fila-dato-columna">
           <label>Correo electrónico:</label>
           <span id="detalle-cliente-correo">-</span>
         </div>
@@ -29,7 +29,7 @@
           <label>RFC:</label>
           <span id="detalle-cliente-rfc">-</span>
         </div>
-        <div class="fila-dato">
+        <div class="fila-dato fila-dato-columna">
           <label>Nombre fiscal:</label>
           <span id="detalle-cliente-nombre-fiscal">-</span>
         </div>
@@ -42,7 +42,7 @@
           <label>Nombre:</label>
           <span id="detalle-evento-nombre">-</span>
         </div>
-        <div class="fila-dato">
+        <div class="fila-dato fila-dato-columna">
           <label>Descripción:</label>
           <span id="detalle-evento-descripcion">-</span>
         </div>
@@ -101,19 +101,19 @@
         <span id="detalle-mobiliario-lista">No hay mobiliario</span>
       </div>
     </div> {% endcomment %}
-    <div class="modal-div modal-div-6">
+    <div class="modal-div modal-div-8">
       <h3 class="titulo-seccion-modal">Totales</h3>
-      <div class="datos">
+      <div class="datos" style="background: transparent;">
         <div class="fila-dato">
-          <span>IVA:</span>
-          <span id="detalle-total-iva">$0.00</span>
-        </div>
-        <div class="fila-dato">
-          <span>Subtotal:</span>
+          <label>Subtotal:</label>
           <span id="detalle-total-subtotal">$0.00</span>
         </div>
         <div class="fila-dato">
-          <span>Total:</span>
+          <label>IVA:</label>
+          <span id="detalle-total-iva">$0.00</span>
+        </div>
+        <div class="fila-dato">
+          <label>Total:</label>
           <span id="detalle-total-total">$0.00</span>
         </div>
       </div>
