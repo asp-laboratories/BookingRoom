@@ -10,6 +10,14 @@
 .equipamiento-container .administrador-tablita {
     max-height: 700px;
 }
+.row-disabled {
+    opacity: 0.5;
+    background-color: #f5f5f5;
+}
+.row-disabled button {
+    background-color: #ccc !important;
+    cursor: not-allowed;
+}
 </style>
 
 <div class="equipamiento-container">
@@ -63,7 +71,7 @@
 
             <tbody class="administrador-tbody">
                 {% for item in inventario %}
-                <tr>
+                <tr class="{% if item.estado_equipa.codigo == 'RESV' %}row-disabled{% endif %}">
                     <td class="administrador-td">{{ forloop.counter }}</td>
                     <td class="administrador-td">{{ item.equipamiento.nombre }}</td>
                     <td class="administrador-td">{{ item.equipamiento.tipo_equipa.nombre }}</td>
@@ -72,7 +80,9 @@
                     <td class="administrador-td">{{ item.cantidad }}</td>
                     <td class="administrador-td">{{ item.estado_equipa.nombre }}</td>
                     <td class="administrador-td">
-                        <button type="button" class="equipamiento-btn-verde" onclick="abrirModal({{ item.id }})">
+                        <button type="button" class="equipamiento-btn-verde" 
+                        {% if item.estado_equipa.codigo == 'RESV' %}disabled{% endif %}
+                        onclick="{% if item.estado_equipa.codigo != 'RESV' %}abrirModal({{ item.id }}){% endif %}">
                             <svg class="icono blanco">
                 <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-change-arrows"></use>
               </svg>

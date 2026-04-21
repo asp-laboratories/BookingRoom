@@ -10,6 +10,14 @@
 .mobiliario-container .administrador-tablita {
     max-height: 600px;
 }
+.row-disabled {
+    opacity: 0.5;
+    background-color: #f5f5f5;
+}
+.row-disabled button {
+    background-color: #ccc !important;
+    cursor: not-allowed;
+}
 </style>
 
 <div class="mobiliario-container">
@@ -31,10 +39,12 @@
                 <select name="estado" class="mobiliario-select">
                     <option value="">Estado</option>
                     {% for estado in estados %}
+                        {% if estado.codigo != 'RESV' %}
                         <option value="{{ estado.codigo }}"
                         {% if request.GET.estado == estado.codigo %}selected{% endif %}>
                             {{ estado.nombre }}
                         </option>
+                        {% endif %}
                     {% endfor %}
                 </select>
 
@@ -73,7 +83,7 @@
 
             <tbody class="administrador-tbody">
                 {% for item in inventario %}
-                <tr>
+                <tr class="{% if item.estado_mobil.codigo == 'OCUP' %}row-disabled{% endif %}">
                     <td class="administrador-td">{{ forloop.counter }}</td>
                     <td class="administrador-td">{{ item.mobiliario.nombre }}</td>
                     <td class="administrador-td">{{ item.mobiliario.tipo_movil.nombre }}</td>
@@ -83,7 +93,9 @@
                     <td class="administrador-td">{{ item.estado_mobil.nombre }}</td>
 
                     <td class="administrador-td">
-                            <button type="button" class="mobiliario-btn-verde" onclick="abrirModalMob({{ item.id }})">
+                            <button type="button" class="mobiliario-btn-verde" 
+                            {% if item.estado_mobil.codigo == 'OCUP' %}disabled{% endif %}
+                            onclick="{% if item.estado_mobil.codigo != 'OCUP' %}abrirModalMob({{ item.id }}){% endif %}">
                                 ↑↓
                             </button>
                         </td>

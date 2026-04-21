@@ -1565,6 +1565,106 @@ class AceptarSolicitudExtraView(APIView):
         })
 
 
+class RechazarSolicitudExtraView(APIView):
+    """API para rechazar las solicitudes extra de una reservación"""
+    def post(self, request, reservacion_id):
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        try:
+            reservacion = models.Reservacion.objects.select_related('montaje').get(pk=reservacion_id)
+        except models.Reservacion.DoesNotExist:
+            logger.error(f'Reservación {reservacion_id} no encontrada')
+            return Response({'error': 'Reservación no encontrada'}, status=404)
+        
+        rechazados = request.data.get('rechazados', [])
+        
+        logger.info(f'Rechazando solicitud {reservacion_id}: items={rechazados}')
+        
+        from django.db import transaction
+        with transaction.atomic():
+            rechazados_count = 0
+            
+            for item_id in rechazados:
+                try:
+                    # Buscar en mobiliarios extra
+                    mm = models.MontajeMobiliario.objects.filter(
+                        pk=item_id,
+                        montaje=reservacion.montaje,
+                        extra=True
+                    ).first()
+                    if mm:
+                        mm.delete()
+                        rechazados_count += 1
+                        logger.info(f'Mobiliario extra {item_id} rechazado y eliminado')
+                        continue
+                    
+                    # Buscar en equipamentos extra
+                    re = models.ReservaEquipa.objects.filter(
+                        pk=item_id,
+                        reservacion=reservacion,
+                        extra=True
+                    ).first()
+                    if re:
+                        re.delete()
+                        rechazados_count += 1
+                        logger.info(f'Equipamiento extra {item_id} rechazado y eliminado')
+                        continue
+                    
+                    # Buscar en servicios extra
+                    rs = models.ReservaServicio.objects.filter(
+                        pk=item_id,
+                        reservacion=reservacion,
+                        extra=True
+                    ).first()
+                    if rs:
+                        rs.delete()
+                        rechazados_count += 1
+                        logger.info(f'Servicio extra {item_id} rechazado y eliminado')
+                        continue
+                    
+                    logger.warning(f'Item {item_id} no encontrado en reservación {reservacion_id}')
+                    
+                except Exception as e:
+                    logger.error(f'Error al rechazar item {item_id}: {e}')
+            
+            # Recalcular precios sumando lo que queda
+            from decimal import Decimal
+            nuevo_subtotal = Decimal('0')
+            
+            # Sumar mobiliarios del montaje
+            if reservacion.montaje:
+                for mm in reservacion.montaje.montajemobiliario_set.all():
+                    if mm.mobiliario and mm.mobiliario.costo:
+                        nuevo_subtotal += mm.cantidad * mm.mobiliario.costo
+            
+            # Sumar equipamentos
+            for re in reservacion.reservaequipa_set.all():
+                if re.equipamiento and re.equipamiento.costo:
+                    nuevo_subtotal += re.cantidad * re.equipamiento.costo
+            
+            # Sumar servicios
+            for rs in reservacion.reservaservicio_set.all():
+                if rs.servicio and rs.servicio.costo:
+                    nuevo_subtotal += rs.servicio.costo
+            
+            nuevo_iva = nuevo_subtotal * Decimal('0.16')
+            nuevo_total = nuevo_subtotal + nuevo_iva
+            
+            reservacion.subtotal = nuevo_subtotal
+            reservacion.IVA = nuevo_iva
+            reservacion.total = nuevo_total
+            reservacion.save(update_fields=['subtotal', 'IVA', 'total'])
+            
+            logger.info(f'Precio actualizado después de rechazo: total={reservacion.total}')
+        
+        return Response({
+            'mensaje': f'{rechazados_count} elementos rechazados correctamente',
+            'rechazados_count': rechazados_count,
+            'nuevo_total': float(reservacion.total) if reservacion.total else 0,
+        })
+
+
 class MisSolicitudesExtraView(APIView):
     """API para obtener las solicitudes extra de las reservaciones del cliente"""
     def get(self, request):
