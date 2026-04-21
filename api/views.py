@@ -73,7 +73,7 @@ class TipoMobilViewSet(viewsets.ModelViewSet):
 
 
 class TipoEventoViewSet(viewsets.ModelViewSet):
-    queryset = models.TipoEvento.objects.all()
+    queryset = models.TipoEvento.objects.exclude(nombre__icontains="paquete")
     serializer_class = serializers.TipoEventoSerializer
 
 

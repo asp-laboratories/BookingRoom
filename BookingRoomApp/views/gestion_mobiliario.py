@@ -141,7 +141,7 @@ def inventario_mobiliario(request):
         "mobiliario",
         "mobiliario__tipo_movil",
         "estado_mobil"
-    ).filter(cantidad__gt=0)
+    ).filter(cantidad__gt=0).exclude(estado_mobil__codigo="RESV")
 
     buscar = request.GET.get("buscar")
     estado = request.GET.get("estado")
@@ -164,7 +164,7 @@ def inventario_mobiliario(request):
         {
             "inventario": inventario,
             "rol": rol,
-            "estados": models.EstadoMobil.objects.all(),
+            "estados": models.EstadoMobil.objects.exclude(codigo="RESV"),
             "tipos": models.TipoMobil.objects.all()
         }
     )
@@ -239,7 +239,7 @@ def obtener_resumen_estados_mob(request, inventario_id):
         item_base = get_object_or_404(models.InventarioMob, pk=inventario_id)
         resumen = models.InventarioMob.objects.filter(
             mobiliario=item_base.mobiliario
-        ).values('estado_mobil__nombre', 'cantidad')
+        ).exclude(estado_mobil__codigo="RESV").values('estado_mobil__nombre', 'cantidad')
         
         return JsonResponse({
             'status': 'success', 

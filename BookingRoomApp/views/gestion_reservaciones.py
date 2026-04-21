@@ -143,7 +143,7 @@ class ReservacionView(generic.View):
         ).order_by('-id')
 
         return render(request, self.template_name, {
-            "tipos_evento": models.TipoEvento.objects.all(),
+            "tipos_evento": models.TipoEvento.objects.exclude(nombre__icontains="paquete"),
             "trabajador_id": trabajador.pk,
             "trabajador_no_empleado": trabajador.no_empleado,
             "tipos_mobiliarios": models.TipoMobil.objects.filter(disposicion=True),
@@ -166,7 +166,7 @@ class ReservacionClienteView(generic.View):
             return HttpResponseRedirect(reverse("login"))
 
         return render(request, self.template_name, {
-            "tipos_evento": models.TipoEvento.objects.all(),
+            "tipos_evento": models.TipoEvento.objects.exclude(nombre__icontains="paquete"),
             "trabajador_id": "",  # Cliente no tiene trabajador
             "trabajador_no_empleado": "",
             "cliente_email": cuenta.correo_electronico,  # Email para cargar datos
