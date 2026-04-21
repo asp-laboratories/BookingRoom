@@ -69,8 +69,7 @@ window.onclick = function(event) {
           document.getElementById(prefix + "evento-asistentes").textContent =
             data.asistentes;
 
-          document.getElementById(prefix + "salon-nombre").textContent = data.salon;
-          document.getElementById(prefix + "salon-costo").textContent = data.salon_costo ? `$${data.salon_costo}` : '-';
+          document.getElementById(prefix + "salon-nombre").textContent = `${data.salon} ($${data.salon_costo || '0.00'})`;
           document.getElementById(prefix + "salon-montaje").textContent = data.montaje;
 
           const serviciosSpan = document.getElementById(prefix + "servicios-lista");

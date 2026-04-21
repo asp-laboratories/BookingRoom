@@ -46,27 +46,26 @@ async function abrirModalDetalleCompleto(pk) {
     document.getElementById(prefix + "evento-asistentes").textContent =
       data.asistentes;
 
-    document.getElementById(prefix + "salon-nombre").textContent = data.salon;
-    document.getElementById(prefix + "salon-costo").textContent = data.salon_costo ? `$${data.salon_costo}` : '-';
+    document.getElementById(prefix + "salon-nombre").textContent = `${data.salon} ($${data.salon_costo || '0.00'})`;
     document.getElementById(prefix + "salon-montaje").textContent = data.montaje;
 
     const serviciosSpan = document.getElementById(prefix + "servicios-lista");
     if (data.servicios && data.servicios.length > 0) {
-      serviciosSpan.innerHTML = data.servicios.map(s => `<span class="item-lista">• ${s.nombre} - $${s.costo}</span>`).join('');
+      serviciosSpan.innerHTML = data.servicios.map(s => `<span class="item-lista"> • ${s.nombre} - $${s.costo} </span>`).join('');
     } else {
       serviciosSpan.textContent = "No hay servicios";
     }
 
     const equipamentosSpan = document.getElementById(prefix + "equipamientos-lista");
     if (data.equipamentos && data.equipamentos.length > 0) {
-      equipamentosSpan.innerHTML = data.equipamentos.map(e => `<span class="item-lista">• ${e.nombre} (${e.cantidad}) - $${e.costo}</span>`).join('');
+      equipamentosSpan.innerHTML = data.equipamentos.map(e => `<span class="item-lista"> • ${e.nombre} (${e.cantidad}) - $${e.costo} </span>`).join('');
     } else {
       equipamentosSpan.textContent = "No hay equipamientos";
     }
 
     const mobiliarioSpan = document.getElementById(prefix + "mobiliario-lista");
     if (data.mobiliarios && data.mobiliarios.length > 0) {
-      mobiliarioSpan.innerHTML = data.mobiliarios.map(m => `<span class="item-lista">• ${m.nombre} (${m.cantidad}) - $${m.costo}</span>`).join('');
+      mobiliarioSpan.innerHTML = data.mobiliarios.map(m => `<span class="item-lista"> • ${m.nombre} (${m.cantidad}) - $${m.costo} WS</span>`).join('');
     } else {
       mobiliarioSpan.textContent = "No hay mobiliario";
     }
@@ -128,8 +127,7 @@ document.addEventListener("click", async function (e) {
     document.getElementById(prefix + "evento-asistentes").textContent =
       data.asistentes;
 
-    document.getElementById(prefix + "salon-nombre").textContent = data.salon;
-    document.getElementById(prefix + "salon-costo").textContent = data.salon_costo ? `$${data.salon_costo}` : '-';
+    document.getElementById(prefix + "salon-nombre").textContent = `${data.salon} ($${data.salon_costo || '0.00'})`;
     document.getElementById(prefix + "salon-montaje").textContent = data.montaje;
 
     const serviciosSpan = document.getElementById(prefix + "servicios-lista");

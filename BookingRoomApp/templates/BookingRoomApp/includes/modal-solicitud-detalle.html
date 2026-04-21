@@ -98,10 +98,6 @@
           <span id="solicitud-salon-nombre">-</span>
         </div>
         <div class="fila-dato">
-          <label>Costo:</label>
-          <span id="solicitud-salon-costo">-</span>
-        </div>
-        <div class="fila-dato">
           <label>Montaje:</label>
           <span id="solicitud-montaje-nombre">-</span>
         </div>
@@ -199,8 +195,7 @@ async function cargarDetallesSolicitud(pk) {
         document.getElementById('solicitud-evento-estado').textContent = data.estado_reserva?.nombre || '-';
         document.getElementById('solicitud-evento-asistentes').textContent = data.estimaAsistentes || '-';
         
-        document.getElementById('solicitud-salon-nombre').textContent = data.salon_nombre || '-';
-        document.getElementById('solicitud-salon-costo').textContent = data.salon_costo ? `$${data.salon_costo}` : '-';
+        document.getElementById('solicitud-salon-nombre').textContent = `${data.salon_nombre || '-'} ($${data.salon_costo || '0.00'})`;
         document.getElementById('solicitud-montaje-nombre').textContent = data.tipo_montaje_nombre || '-';
         
         // Cargar servicios

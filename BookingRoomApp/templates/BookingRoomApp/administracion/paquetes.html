@@ -190,7 +190,7 @@
         <div class="paquetes-item-info">
           <p><strong>Salón:</strong> 
             {% if item.paquete.montaje and item.paquete.montaje.salon %}
-              {{ item.paquete.montaje.salon.nombre }} - {{ item.paquete.montaje.tipo_montaje.nombre }}
+              {{ item.paquete.montaje.salon.nombre }} (${{ item.paquete.montaje.salon.costo }}) - {{ item.paquete.montaje.tipo_montaje.nombre }}
             {% else %}
               No asignado
             {% endif %}

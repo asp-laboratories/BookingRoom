@@ -97,8 +97,7 @@ async function abrirModalDetalleCompleto(pk) {
         document.getElementById('detalle-evento-estado').textContent = data.estado || '-';
         document.getElementById('detalle-evento-asistentes').textContent = data.asistentes || '-';
         
-        document.getElementById('detalle-salon-nombre').textContent = data.salon || '-';
-        document.getElementById('detalle-salon-costo').textContent = data.salon_costo ? `$${data.salon_costo}` : '-';
+        document.getElementById('detalle-salon-nombre').textContent = `${data.salon || '-'} ($${data.salon_costo || '0.00'})`;
         document.getElementById('detalle-salon-montaje').textContent = data.montaje || '-';
         
         const serviciosSpan = document.getElementById('detalle-servicios-lista');

@@ -363,7 +363,7 @@ async function ejecutarPago(data, csrfToken) {
             const compMontaje = document.getElementById('comp-montaje');
             const salonCosto = datosPago.salon_costo || '0.00';
 
-            if (compSalon) compSalon.textContent = (datosPago.salon || '—') + ' - $' + parseFloat(salonCosto).toFixed(2);
+            if (compSalon) compSalon.textContent = `${datosPago.salon || '—'} ($${parseFloat(salonCosto).toFixed(2)})`;
             if (compMontaje) compMontaje.textContent = datosPago.montaje || '—';
 
             // Servicios y Equipamientos
