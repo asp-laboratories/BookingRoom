@@ -2,7 +2,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict wbUf1zUA2dmcTLJAQgjeNukCNnkthvsoF9GYACF5zy4XM2ck1YRAcRWVwJ6GB8q
 
 -- Dumped from database version 18.2
 -- Dumped by pg_dump version 18.2
@@ -4080,5 +4079,4 @@ ALTER TABLE ONLY public.trabajador
 -- PostgreSQL database dump complete
 --
 
-\unrestrict wbUf1zUA2dmcTLJAQgjeNukCNnkthvsoF9GYACF5zy4XM2ck1YRAcRWVwJ6GB8q
 

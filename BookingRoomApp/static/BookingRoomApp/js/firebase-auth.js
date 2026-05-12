@@ -38,12 +38,11 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         if (response.ok) {
             const data = await response.json();
             
-            // Redirigir según el rol
             if (data.user && data.user.rol === 'CLIENTE') {
-                // Cliente -> ir a reservación de cliente
                 window.location.href = '/cliente/reservacion/';
+            } else if (data.user && data.user.rol === 'ALMAC') {
+                window.location.href = '/almacen/inventario-mobiliario/';
             } else {
-                // Trabajador (ADMIN, RECEP, etc) -> ir a home
                 window.location.href = '/home/';
             }
         } else {

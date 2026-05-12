@@ -80,13 +80,19 @@
                     <td class="administrador-td">{{ item.cantidad }}</td>
                     <td class="administrador-td">{{ item.estado_equipa.nombre }}</td>
                     <td class="administrador-td">
-                        <button type="button" class="equipamiento-btn-verde" 
-                        {% if item.estado_equipa.codigo == 'RESV' %}disabled{% endif %}
-                        onclick="{% if item.estado_equipa.codigo != 'RESV' %}abrirModal({{ item.id }}){% endif %}">
+                        {% if item.estado_equipa.codigo == 'RESV' %}
+                        <button type="button" class="equipamiento-btn-verde" disabled>
                             <svg class="icono blanco">
                 <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-change-arrows"></use>
               </svg>
                         </button>
+                        {% else %}
+                        <button type="button" class="equipamiento-btn-verde" onclick="abrirModal({{ item.id }})">
+                            <svg class="icono blanco">
+                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-change-arrows"></use>
+              </svg>
+                        </button>
+                        {% endif %}
                     </td>
                 </tr>
 

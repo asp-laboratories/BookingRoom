@@ -8,7 +8,7 @@
 
 <style>
 .mobiliario-container .administrador-tablita {
-    max-height: 600px;
+    max-height: 700px;
 }
 .row-disabled {
     opacity: 0.5;
@@ -93,11 +93,11 @@
                     <td class="administrador-td">{{ item.estado_mobil.nombre }}</td>
 
                     <td class="administrador-td">
-                            <button type="button" class="mobiliario-btn-verde" 
-                            {% if item.estado_mobil.codigo == 'OCUP' %}disabled{% endif %}
-                            onclick="{% if item.estado_mobil.codigo != 'OCUP' %}abrirModalMob({{ item.id }}){% endif %}">
-                                ↑↓
-                            </button>
+                            {% if item.estado_mobil.codigo == 'OCUP' %}
+                            <button type="button" class="mobiliario-btn-verde" disabled>↑↓</button>
+                            {% else %}
+                            <button type="button" class="mobiliario-btn-verde" onclick="abrirModalMob({{ item.id }})">↑↓</button>
+                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}
