@@ -11,11 +11,6 @@ __pycache__/
 htmlcov/
 *.log
 
-# Entornos virtuales
-venv/
-env/
-.venv/
-
 # Django
 *.sqlite3
 db.sqlite3
@@ -24,10 +19,22 @@ dist/
 build/
 media/
 staticfiles/
+*migrations/
 
 # Entorno
 .env
 .env.local
+
+# Firebase
+*firebase-creds.json
+*firebase_credentials.json
+*creds.json
+*serviceAccountKey.json
+
+# Entornos virtuales
+venv/
+env/
+.venv/
 
 # IDEs
 .vscode/

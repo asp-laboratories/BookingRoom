@@ -1,0 +1,174 @@
+{% extends "BookingRoomApp/base/base.html" %} 
+{% load static %}
+
+{% block inicio %}
+
+<link rel="stylesheet" href="{% static 'BookingRoomApp/css/recepcion/home.css' %}">
+
+<script src="{% static "BookingRoomApp/js/recepcion/mostrar-detalles.js" %}"></script> 
+<script src="{% static "BookingRoomApp/js/recepcion/buscar-fecha-manual.js" %}"></script> 
+<script src="{% static "BookingRoomApp/js/recepcion/home-solicitudes.js" %}"></script>
+
+<script>
+async function abrirModalDetalleCompleto(pk) {
+    try {
+        const response = await fetch(`/home/${pk}/json/`);
+        if (!response.ok) throw new Error("Error al obtener datos");
+        
+        const data = await response.json();
+        
+        document.getElementById('detalle-titulo-evento').textContent = data.nombre_evento || "Evento";
+        
+        document.getElementById('detalle-cliente-nombre').textContent = 
+            `${data.cliente?.nombre || '-'} ${data.cliente?.apellido_paterno || ''} ${data.cliente?.apellido_materno || ''}`.trim();
+        document.getElementById('detalle-cliente-correo').textContent = data.cliente?.correo || '-';
+        document.getElementById('detalle-cliente-telefono').textContent = data.cliente?.telefono || '-';
+        document.getElementById('detalle-cliente-rfc').textContent = data.cliente?.rfc || '-';
+        document.getElementById('detalle-cliente-nombre-fiscal').textContent = data.cliente?.nombre_fiscal || '-';
+        
+        document.getElementById('detalle-evento-nombre').textContent = data.nombre_evento || '-';
+        document.getElementById('detalle-evento-descripcion').textContent = data.descripcion || '-';
+        document.getElementById('detalle-evento-fecha').textContent = data.fecha || '-';
+        document.getElementById('detalle-evento-horario').textContent = 
+            `${data.hora_inicio || '-'} - ${data.hora_fin || '-'}`;
+        document.getElementById('detalle-evento-estado').textContent = data.estado || '-';
+        document.getElementById('detalle-evento-asistentes').textContent = data.asistentes || '-';
+        
+        document.getElementById('detalle-salon-nombre').textContent = `${data.salon || '-'} ($${data.salon_costo || '0.00'})`;
+        document.getElementById('detalle-salon-montaje').textContent = data.montaje || '-';
+        
+        const serviciosSpan = document.getElementById('detalle-servicios-lista');
+        if (data.servicios && data.servicios.length > 0) {
+            serviciosSpan.innerHTML = data.servicios.map(s => `<span class="item-lista">• ${s.nombre} - $${s.costo}</span>`).join('');
+        } else {
+            serviciosSpan.textContent = 'No hay servicios';
+        }
+
+        // Equipamientos
+        const equipamientosSpan = document.getElementById('detalle-equipamientos-lista');
+        if (data.equipamentos && data.equipamentos.length > 0) {
+            equipamientosSpan.innerHTML = data.equipamentos.map(e => `<span class="item-lista">• ${e.nombre} (${e.cantidad}) - $${e.costo}</span>`).join('');
+        } else {
+            equipamientosSpan.textContent = 'No hay equipamientos';
+        }
+
+        // Mobiliarios
+        const mobiliarioSpan = document.getElementById('detalle-mobiliario-lista');
+        if (data.mobiliarios && data.mobiliarios.length > 0) {
+            mobiliarioSpan.innerHTML = data.mobiliarios.map(m => `<span class="item-lista">• ${m.nombre} (${m.cantidad}) - $${m.costo}</span>`).join('');
+        } else {
+            mobiliarioSpan.textContent = 'No hay mobiliario';
+        }
+        
+        document.getElementById('detalle-total-iva').textContent = `$${data.iva || '0.00'}`;
+        document.getElementById('detalle-total-subtotal').textContent = `$${data.subtotal || '0.00'}`;
+        document.getElementById('detalle-total-total').textContent = `$${data.total || '0.00'}`;
+        
+        document.getElementById('modalDetalleCompleto').showModal();
+    } catch (error) {
+        console.error("Error:", error);
+        alert('No se pudo cargar los detalles');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.ver-detalles-completo').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const pk = this.dataset.pk;
+            abrirModalDetalleCompleto(pk);
+        });
+    });
+});
+</script> 
+
+
+<h1 class="titulo-seccion">
+  Bienvenido {{ cuenta.nombre_usuario }} ¿Que vamos a hacer hoy?
+</h1>
+<div class="parent" style="margin-top: 20px">
+  <div class="div1" id="calendar"></div>
+  <div class="div2">
+    <div class="tabs">
+      <button class="tab-btn active tab-confirm" onclick="openTab(event, 'tab1')">
+        Eventos confirmados
+      </button>
+      <button class="tab-btn tab-soli" onclick="openTab(event, 'tab2')">
+        Solicitudes
+        {% with solicitudes_count=reservaciones_solicitudes|length %}
+          {% if solicitudes_count > 0 %}
+            <span class="badge">{{ solicitudes_count }}</span>
+          {% endif %}
+        {% endwith %}
+      </button>
+    </div>
+    <div id="tab1" class="tab-content active">
+      <span class="titulo-solicitud" id="titulo-tab">Proximos eventos</span>
+      <div id="contenedor-eventos">
+        {% for reservacion in reservaciones_confirmados %}
+        <div class="contenedor-solicitud">
+          <span>{{ reservacion.nombreEvento }}</span>
+          <span class="estado-badge {{ reservacion.estado_reserva.codigo }}">{{ reservacion.estado_reserva.nombre }}</span>
+          <button class="boton-accion boton-beo ver-detalles-completo" data-pk="{{ reservacion.pk }}">
+            Ver detalles
+          </button>
+        </div>
+        {% empty %}
+        <p class="sin-resultados">No hay eventos confirmados</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div id="contenedor-resumen" style="display: none;"></div>
+
+     <script>
+    function openTab(evt, tabId) {
+      document
+        .querySelectorAll(".tab-content")
+        .forEach((c) => c.classList.remove("active"));
+      document
+        .querySelectorAll(".tab-btn")
+        .forEach((b) => b.classList.remove("active"));
+      document.getElementById(tabId).classList.add("active");
+      evt.currentTarget.classList.add("active");
+    }
+  </script>
+    <div id="tab2" class="tab-content">
+      <span class="titulo-solicitud">Solicitudes pendientes</span>
+      <div id="contenedor-solicitudes">
+        {% for reservacion in reservaciones_solicitudes %}
+        <div class="contenedor-solicitud" id="cerrar-contenedor">
+          <span>{{ reservacion.nombreEvento }}</span>
+          <span class="estado-badge {{ reservacion.estado_reserva.codigo }}">{{ reservacion.estado_reserva.nombre }}</span>
+          <button class="boton-accion boton-beo ver-detalles-solicitud" data-pk="{{ reservacion.pk }}">
+            Ver detalles
+          </button>
+        </div>
+        {% empty %}
+        <p class="sin-resultados">No hay solicitudes pendientes</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="div3">
+    <h2 class="label-buscar">Buscar</h2>
+    <div class="buscar-row">
+      <input class="buscar-fecha" id="buscar-fecha-input" type="date" placeholder="Selecciona una fecha" />
+      <button class="boton-accion" id="btn-buscar-fecha">Buscar</button>
+    </div>
+  </div>
+  <div class="div5">
+    <div class="contenedor-hacer">
+      <a href="{% url 'reservacion' %}" class="btn-reservacion"
+        >Hacer reservacion</a
+      >
+    </div>
+  </div>
+</div>
+
+{% include "BookingRoomApp/includes/modal-detalle-reservacion.html" with modal_id="miModal" id_prefix="modal-" %}
+{% include "BookingRoomApp/includes/modal-solicitud-detalle.html" %}
+{% include "BookingRoomApp/includes/modal-detalle-completo.html" %}
+{% include "BookingRoomApp/includes/alert-confirmar.html" %}
+{% include "BookingRoomApp/includes/alert-cancelar.html" %}
+
+{% endblock inicio %}

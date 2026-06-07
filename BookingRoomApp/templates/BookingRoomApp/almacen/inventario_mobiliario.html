@@ -1,90 +1,157 @@
-{% extends "BookingRoomApp/base.html" %}
+{% extends "BookingRoomApp/base/base.html" %}
 {% load static %}
 
 {% block inicio %}
 
 <link rel="stylesheet" href="{% static 'BookingRoomApp/css/almacen/inventario_mobiliario.css' %}">
+<link rel="stylesheet" href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
+
+<style>
+.mobiliario-container .administrador-tablita {
+    max-height: 700px;
+}
+.row-disabled {
+    opacity: 0.5;
+    background-color: #f5f5f5;
+}
+.row-disabled button {
+    background-color: #ccc !important;
+    cursor: not-allowed;
+}
+</style>
 
 <div class="mobiliario-container">
     <h2 class="mobiliario-titulo">Mobiliario</h2>
+
     <div class="mobiliario-contenedor">
 
-        <div class="mobiliario-fila">
-            <input type="text" placeholder="Buscar mobiliario" class="mobiliario-input">
+        <form method="GET">
+            <div class="mobiliario-fila">
 
-            <select class="mobiliario-select">
-                <option>Estado</option>
-                <option>Disponible</option>
-                <option>No disponible</option>
-            </select>
+                <input 
+                    type="text"
+                    name="buscar"
+                    value="{{ request.GET.buscar }}"
+                    placeholder="Buscar mobiliario"
+                    class="mobiliario-input"
+                >
 
-            <select class="mobiliario-select">
-                <option>Seleccione tipo</option>
-                <option>Sillas</option>
-                <option>Mesas</option>
-            </select>
+                <select name="estado" class="mobiliario-select">
+                    <option value="">Estado</option>
+                    {% for estado in estados %}
+                        {% if estado.codigo != 'RESV' %}
+                        <option value="{{ estado.codigo }}"
+                        {% if request.GET.estado == estado.codigo %}selected{% endif %}>
+                            {{ estado.nombre }}
+                        </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
 
-        </div>
+                <select name="tipo" class="mobiliario-select">
+                    <option value="">Seleccione tipo</option>
+                    {% for tipo in tipos %}
+                        <option value="{{ tipo.id }}"
+                        {% if request.GET.tipo == tipo.id|stringformat:"s" %}selected{% endif %}>
+                            {{ tipo.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
 
-        <table class="mobiliario-tabla">
-            <thead>
+                <button type="submit" class="mobiliario-btn-verde">
+                    Filtrar
+                </button>
+
+            </div>
+        </form>
+
+        <div class="administrador-tablita">
+
+        <table class="administrador-tabla">
+            <thead class="administrador-thead">
                 <tr>
-                    <th class="mobiliario-th">Indice</th>
-                    <th class="mobiliario-th">Mobiliario</th>
-                    <th class="mobiliario-th">Tipo</th>
-                    <th class="mobiliario-th">Descripcion</th>
-                    <th class="mobiliario-th">Costo</th>
-                    <th class="mobiliario-th">Stock</th>
-                    <th class="mobiliario-th">Estado</th>
-                    <th class="mobiliario-th">Cambiar estado</th>
+                    <th class="administrador-th">Indice</th>
+                    <th class="administrador-th">Mobiliario</th>
+                    <th class="administrador-th">Tipo</th>
+                    <th class="administrador-th">Descripcion</th>
+                    <th class="administrador-th">Costo</th>
+                    <th class="administrador-th">Stock</th>
+                    <th class="administrador-th">Estado</th>
+                    <th class="administrador-th">Cambiar estado</th>
                 </tr>
             </thead>
 
-            <tbody>
-                <tr>
-                    <td class="mobiliario-td">1</td>
-                    <td class="mobiliario-td">Silla 1</td>
-                    <td class="mobiliario-td">Sillas</td>
-                    <td class="mobiliario-td">Sin descripcion</td>
-                    <td class="mobiliario-td">0</td>
-                    <td class="mobiliario-td">5</td>
-                    <td class="mobiliario-td">Disponible</td>
+            <tbody class="administrador-tbody">
+                {% for item in inventario %}
+                <tr class="{% if item.estado_mobil.codigo == 'OCUP' %}row-disabled{% endif %}">
+                    <td class="administrador-td">{{ forloop.counter }}</td>
+                    <td class="administrador-td">{{ item.mobiliario.nombre }}</td>
+                    <td class="administrador-td">{{ item.mobiliario.tipo_movil.nombre }}</td>
+                    <td class="administrador-td">{{ item.mobiliario.descripcion }}</td>
+                    <td class="administrador-td">{{ item.mobiliario.costo }}</td>
+                    <td class="administrador-td">{{ item.cantidad }}</td>
+                    <td class="administrador-td">{{ item.estado_mobil.nombre }}</td>
 
-                    <td class="mobiliario-td">
-                        <button class="mobiliario-btn-verde" onclick="abrirModal()">↑↓</button>
-                    </td>
+                    <td class="administrador-td">
+                            {% if item.estado_mobil.codigo == 'OCUP' %}
+                            <button type="button" class="mobiliario-btn-verde" disabled>↑↓</button>
+                            {% else %}
+                            <button type="button" class="mobiliario-btn-verde" onclick="abrirModalMob({{ item.id }})">↑↓</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" style="text-align:center; padding: 20px; color: #888;">
+                            No hay mobiliario disponible
+                        </td>
                 </tr>
-                
+                {% endfor %}
             </tbody>
         </table>
+        </div>
 
     </div>
-
+    
 </div>
 
-<div id="modalEstado" class="mobiliario-modal">
+<div id="modalEstadoMob" class="mobiliario-modal">
     <div class="mobiliario-modal-content">
-        <span class="mobiliario-close" onclick="cerrarModal()">×</span>
-        <h3 style="text-align:center;">INFORME DE LA RESERVACION</h3>
-        <div class="mobiliario-form-grid">
+        <span class="mobiliario-close" onclick="cerrarModalMob()">×</span>
+        <h3 style="text-align:center; margin-bottom: 20px;">Gestión de Estado de Mobiliario</h3>
 
-            <label>Cantidad actual</label>
-            <input type="number" value="50" class="mobiliario-input">
-
-            <label>Cantidad a cambiar</label>
-            <input type="number" class="mobiliario-input">
-
-            <label>Cambiar estado</label>
-
-            <select class="mobiliario-select">
-                <option>Disponible</option>
-                <option>No disponible</option>
-            </select>
-
+        <div class="resumen-container" style="background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <p style="margin-top: 0; color: #555; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                Resumen del mobiliario: <span id="nombre-mob-modal" style="color:#2c3e50;">Cargando...</span>
+            </p>
+            <ul id="lista-resumen-mob" style="list-style: none; padding: 0; margin: 0; color: #333;">
+                <li>Cargando existencias...</li>
+            </ul>
         </div>
-        <div class="mobiliario-guardar">
-            <button class="mobiliario-btn-guardar">Guardar</button>
-        </div>
+
+        <form method="POST" action="{% url 'actualizar_estado_mobiliario' %}">
+            {% csrf_token %}
+            <input type="hidden" name="inventario_id" id="inventario_mob_id">
+
+            <div class="mobiliario-form-grid">
+                <label>Cantidad a mover</label>
+                <input type="number" name="cantidad" class="mobiliario-input" required min="1">
+
+                <label>Nuevo estado</label>
+                <select name="estado" class="mobiliario-select" required>
+                    <option value="">Seleccione un estado...</option>
+                    {% for estado in estados %}
+                        <option value="{{ estado.codigo }}">{{ estado.nombre }}</option>
+                    {% endfor %}
+                </select>
+
+            </div>
+
+            <div class="mobiliario-guardar" style="margin-top: 20px;">
+                <button type="submit" class="mobiliario-btn-guardar">Actualizar Estado</button>
+            </div>
+
+        </form>
     </div>
 
 </div>

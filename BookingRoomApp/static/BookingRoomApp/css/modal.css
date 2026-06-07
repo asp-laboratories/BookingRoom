@@ -1,14 +1,29 @@
 
+/* Ocultar por defecto */
+.modal-beo:not([open]) {
+    display: none !important;
+}
+
+.modal-beo[open] {
+    display: flex;
+    flex-direction: column;
+}
+
 .modal-beo {
-    width: 700px;
-    max-width: 90vw;
-    height: 90vh;
-    max-height: 95vh;
-    padding: 20px;
+    width: 1000px;
+    max-width: 96vw;
+    height: 96vh;
+    max-height: 98vh;
+    padding: 30px;
     border: none;
-    border-radius: 8px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-    margin: auto;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    z-index: 1000;
 }
 
 .cabecera-modal {
@@ -22,7 +37,7 @@
 
 .titulo-modal {
     font-weight: bold;
-    font-size: 1em;
+    font-size: 1.4em;
     text-align: center;
     flex: 1;
 }
@@ -30,27 +45,27 @@
 .cerrar-modal {
     background: none;
     border: none;
-    font-size: 20px;
+    font-size: 26px;
     cursor: pointer;
-    padding: 5px 10px;
+    padding: 8px 14px;
 }
 
 .modal-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(6, 1fr);
-    gap: 10px;
-    height: calc(100% - 100px);
+    grid-template-rows: auto;
+    gap: 18px;
+    padding: 12px;
 }
 
 .modal-div {
     background-color: #f8dbbf;
-    padding: 10px;
-    border-radius: 4px;
+    padding: 16px;
+    border-radius: 6px;
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+    gap: 8px;
+    box-shadow: rgba(0, 0, 0, 0.15) 0px 2px 5px, rgba(0, 0, 0, 0.25) 0px 2px 3px;
 }
 
 .modal-div-1 {
@@ -60,42 +75,69 @@
 .modal-div-1 .datos {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
 
 .titulo-info-cliente {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     color: #000000;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
+    font-weight: bold;
 }
 
 .titulo-seccion-modal {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     color: #000000;
-    font-size: 1rem;
+    font-size: 1.2rem;
+    font-weight: bold;
 }
 
 .modal-div .datos {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
 
 .modal-div .datos .fila-dato {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
 }
 
 .modal-div .datos label {
     font-weight: bold;
-    color: #333;
-    font-size: 0.75rem;
+    color: #222;
+    font-size: 0.95rem;
+    flex-shrink: 0;
 }
 
 .modal-div .datos span {
-    color: #666;
-    font-size: 0.85rem;
+    color: #333;
+    font-size: 1.05rem;
+    font-weight: 500;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    text-align: right;
+    flex: 1;
+    min-width: 150px;
+}
+
+/* Ajuste específico para descripciones largas si se desea que ocupen toda la fila */
+.fila-dato-columna {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+}
+
+.fila-dato-columna span {
+    text-align: right !important;
+    width: 100%;
+    margin-top: 4px;
+    max-height: 100px;
+    overflow-y: auto;
+    padding-right: 5px;
 }
 
 .modal-div-2 {
@@ -111,7 +153,8 @@
     grid-row: span 2;
 }
 
-.modal-div-6 {
+.modal-div-6,
+.modal-div-8 {
     grid-column: span 2;
 }
 
@@ -143,3 +186,125 @@
 .btn-modal:hover {
     opacity: 0.9;
 }
+
+       /* Contenedor Principal */
+        .receipt-container {
+            background-color: white;
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: auto auto auto auto auto auto; /* Altura automática según contenido */
+            gap: 20px;
+        }
+
+        /* Estilos Generales de Secciones */
+        .section-label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        .gray-box {
+            background-color: #e0e0e0;
+            padding: 15px;
+            border-radius: 4px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* 1. Encabezado */
+        .header-section {
+            grid-column: span 2;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header-section h1 {
+            margin: 0;
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* 2. Referencia de Reservación */
+        .reservation-section {
+            grid-column: span 2;
+        }
+
+        /* 3. Datos del Cliente */
+        .client-section {
+            grid-column: span 2;
+        }
+        .client-section .gray-box {
+            grid-template-columns: 1fr; /* Una columna para el nombre y evento */
+        }
+        .event-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+
+        /* 4. Espacio Rentado */
+        .space-section {
+            grid-column: span 2;
+        }
+
+        /* 5. Elementos Extra (Servicios y Equipos) */
+        .extras-section {
+            grid-column: span 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .extras-box {
+            background-color: #e0e0e0;
+            padding: 15px;
+            border-radius: 4px;
+            min-height: 80px;
+        }
+
+        /* 6. Resumen Financiero */
+        .financial-section {
+            grid-column: span 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            margin-top: 10px;
+            padding: 10px;
+        }
+
+        .balance-info {
+            display: flex;
+            align-items: flex-end;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .totals-info {
+            text-align: right;
+            line-height: 1.8;
+        }
+
+        .totals-info span {
+            display: inline-block;
+            width: 100px;
+        }
+
+        .total-bold {
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-top: 1px solid #333;
+            margin-top: 5px;
+            padding-top: 5px;
+        }
+
+        /* Etiquetas internas */
+        span.label {
+            color: #555;
+            font-size: 0.85rem;
+            display: block;
+        }

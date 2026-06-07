@@ -1,0 +1,96 @@
+{% load static %}
+
+<style>
+  #modal-cancelar {
+    border: none;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 0 10px #444;
+    max-width: 400px;
+    width: 90%;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+  }
+
+  #modal-cancelar::backdrop {
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .modal-cancelar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .modal-cancelar-header h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .modal-cancelar-cerrar {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+  }
+
+  .modal-cancelar-cerrar:hover {
+    color: #333;
+  }
+
+  .modal-cancelar-mensaje {
+    margin-bottom: 20px;
+    color: #555;
+  }
+
+  .modal-cancelar-botones {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .modal-cancelar-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .modal-cancelar-btn.si {
+    background-color: var(--color-boton-cancelar);
+    color: white;
+  }
+
+  .modal-cancelar-btn.si:hover {
+    background-color: #bb2d3b;
+  }
+
+  .modal-cancelar-btn.no {
+    background-color:var(--color-boton-accion);
+    color: white;
+  }
+
+  .modal-cancelar-btn.no:hover {
+    background-color: #2B5F9B;
+  }
+</style>
+
+<dialog id="modal-cancelar">
+  <div class="modal-cancelar-header">
+    <h3 id="modal-cancelar-titulo">Cancelar acción</h3>
+    <button type="button" class="modal-cancelar-cerrar" onclick="cerrarModalCancelar()">×</button>
+  </div>
+  <p class="modal-cancelar-mensaje" id="modal-cancelar-mensaje">¿Estás seguro de que quieres cancelar?</p>
+  <div class="modal-cancelar-botones">
+    <button type="button" class="modal-cancelar-btn no" onclick="cerrarModalCancelar()">No</button>
+    <button type="button" class="modal-cancelar-btn si" id="modal-cancelar-btn">Sí, cancelar</button>
+  </div>
+</dialog>
+
+<script src="{% static 'BookingRoomApp/js/modal/modal-cancelar.js' %}"></script>

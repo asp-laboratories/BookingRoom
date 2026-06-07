@@ -1,0 +1,154 @@
+{% load static %}
+
+<style>
+  .descripcion-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+  }
+  .modal-div-8 {
+    grid-column: span 2;
+  }
+</style>
+
+<dialog id="{{ modal_id|default:'miModal' }}" class="modal-beo">
+  <div class="cabecera-modal">
+    <span class="titulo-modal"
+      >SOLICITUD DE: <span id="{{ id_prefix|default:'' }}titulo-evento">Orden de banquete de evento (BEO)</span></span
+    >
+    <button onclick="window.{{ modal_id|default:'miModal' }}.close()" class="cerrar-modal">X</button>
+  </div>
+
+  <div class="modal-grid">
+    <div class="modal-div modal-div-1">
+      <h3 class="titulo-info-cliente">Información del cliente</h3>
+
+      <div class="fila-dato fila-dato-columna">
+        <label>Nombre completo:</label>
+        <span id="{{ id_prefix|default:'' }}cliente-nombre">-</span>
+      </div>
+      <div class="fila-dato fila-dato-columna">
+        <label>Correo electrónico:</label>
+        <span id="{{ id_prefix|default:'' }}cliente-correo">-</span>
+      </div>
+      ...
+      <div class="fila-dato fila-dato-columna">
+        <label>Nombre fiscal:</label>
+        <span id="{{ id_prefix|default:'' }}cliente-nombre-fiscal">-</span>
+      </div>
+
+        <div class="fila-dato">
+          <label>RFC:</label>
+          <span id="{{ id_prefix|default:'' }}cliente-rfc">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Nombre fiscal:</label>
+          <span id="{{ id_prefix|default:'' }}cliente-nombre-fiscal">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-2">
+      <h3 class="titulo-seccion-modal">Información del evento</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Nombre:</label>
+          <span id="{{ id_prefix|default:'' }}evento-nombre">-</span>
+        </div>
+        <div class="fila-dato fila-dato-columna">
+          <label>Descripción:</label>
+          <span id="{{ id_prefix|default:'' }}evento-descripcion">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Fecha:</label>
+          <span id="{{ id_prefix|default:'' }}evento-fecha">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Horario:</label>
+          <span id="{{ id_prefix|default:'' }}evento-horario">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Estado:</label>
+          <span id="{{ id_prefix|default:'' }}evento-estado">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Asistentes:</label>
+          <span id="{{ id_prefix|default:'' }}evento-asistentes">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-3">
+      <h3 class="titulo-seccion-modal">Salón y Montaje</h3>
+      <div class="datos">
+        <div class="fila-dato">
+          <label>Salón:</label>
+          <span id="{{ id_prefix|default:'' }}salon-nombre">-</span>
+        </div>
+        <div class="fila-dato">
+          <label>Montaje:</label>
+          <span id="{{ id_prefix|default:'' }}salon-montaje">-</span>
+        </div>
+      </div>
+    </div>
+        <div class="modal-div modal-div-6">
+      <h3 class="titulo-seccion-modal">Mobiliario</h3>
+      <div class="datos">
+        <span id="{{ id_prefix|default:'' }}mobiliario-lista">Consultar en detalle</span>
+      </div>
+    </div>
+    <div class="modal-div modal-div-4">
+      <h3 class="titulo-seccion-modal">Servicios</h3>
+      <div class="datos">
+        <span id="{{ id_prefix|default:'' }}servicios-lista">No hay servicios</span>
+      </div>
+    </div>
+    <div class="modal-div modal-div-5">
+      <h3 class="titulo-seccion-modal">Equipamientos</h3>
+      <div class="datos">
+        <span id="{{ id_prefix|default:'' }}equipamientos-lista">No hay equipamientos</span>
+      </div>
+    </div>
+    {% comment %} <div class="modal-div modal-div-6">
+      <h3 class="titulo-seccion-modal">Mobiliario</h3>
+      <div class="datos">
+        <span id="{{ id_prefix|default:'' }}mobiliario-lista">Consultar en detalle</span>
+      </div>
+    </div> {% endcomment %}
+    <div class="modal-div modal-div-8">
+      <h3 class="titulo-seccion-modal">Totales</h3>
+      <div class="datos" style="background: transparent;">
+        <div class="fila-dato">
+          <label>Subtotal:</label>
+          <span id="{{ id_prefix|default:'' }}total-subtotal">$0.00</span>
+        </div>
+        <div class="fila-dato">
+          <label>IVA:</label>
+          <span id="{{ id_prefix|default:'' }}total-iva">$0.00</span>
+        </div>
+        <div class="fila-dato">
+          <label>Total:</label>
+          <span id="{{ id_prefix|default:'' }}total-total">$0.00</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-div modal-div-8" style="background: transparent;">
+      <h3 class="titulo-seccion-modal">Descripción del Evento</h3>
+      <div class="datos">
+        <textarea id="{{ id_prefix|default:'' }}evento-descripcion-input" class="descripcion-textarea" placeholder="Ingresa la descripción del evento..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  {% if mostrar_botones|default:True %}
+  <div class="modal-botones" style="display: none;">
+    <button class="btn-modal btn-aceptar" id="detalle-btn-confirmar" onclick="abrirConfirmarModalDesdeDetalle()">Confirmar</button>
+    <button class="btn-modal btn-denegar" id="detalle-btn-cancelar" onclick="abrirCancelarModalDesdeDetalle()">
+      Cancelar
+    </button>
+  </div>
+  {% endif %}
+</dialog>

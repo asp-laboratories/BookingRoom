@@ -1,4 +1,4 @@
-{% extends "BookingRoomApp/base.html" %}
+{% extends "BookingRoomApp/base/base.html" %}
 {% load static %}
 
 {% block inicio %}
@@ -6,21 +6,38 @@
 <link rel="stylesheet"
     href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
 
-<div class="administrador-contenido">
-    <h1 class="titulo-seccion">Trabajadores</h1>
+{% include "BookingRoomApp/includes/alert-confirmar.html" %}
+{% include "BookingRoomApp/includes/alert-cancelar.html" %}
 
-    <h2>Registrar trabajadores</h2>
+<div class="administrador-contenido administrador-registro-contenido">
+    <h1 class="titulo-seccion">Registro de Trabajadores</h1>
+
+    <div class="indicador">
+        <div>
+            Cantidad de trabajadores:
+        </div>
+        <div class="cantidad">
+            {{trabajador_total}}
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
 
     <div class="administrador-formularios">
-        <h3 class="administrador-tituloSeccion">Usuario</h3>
-        <form class="administrador-seccionFlex">
-            <!--Primer form par registrar cuenta-->
+        <h3 class="administrador-tituloSeccion">Crear cuenta</h3>
+        <form class="administrador-seccionFlex" method="POST" action="{% url 'registrar_trabajador' %}">
+            {% csrf_token %}
+            <input type="hidden" name="form_tipo" value="cuenta">
             <div class="administrador-inputGrid">
                 <label class="administrador-label">Nombre de usuario:<br>
                     <input
                         type="text"
                         placeholder="Usuario"
-                        name="nameUser"
+                        name="nombre_usuario"
                         class="administrador-input"
                         required /></label>
 
@@ -43,30 +60,36 @@
                 <label class="administrador-label">Confirmar contraseña: <br>
                     <input
                         type="password"
-                        placeholder="Contraseña"
-                        name="contrasena"
+                        placeholder="Confirmar contraseña"
+                        name="confirmar_contrasena"
                         class="administrador-input"
                         required /></label>
             </div>
 
             <button class="administrador-paGuarar"
-                type="submit">Guardar</button>
-
+                type="submit">Siguiente</button>
         </form>
+
+        <script>
+        // Auto-trim email field on form submission
+        document.querySelector('form[action="{% url "registrar_trabajador" %}"] input[name="email"]')
+            ?.addEventListener('blur', function() {
+                this.value = this.value.trim();
+            });
+        </script>
     </div>
 
     <div class="administrador-formularios">
-
-        <h3 class="administrador-tituloSeccion">Trabajador</h3>
-
-        <form class="administrador-seccionFlex">
-            <!--Segundo form par registrar dattos de trabajador-->
+        <h3 class="administrador-tituloSeccion">Datos del Trabajador</h3>
+        <form class="administrador-seccionFlex" method="POST" action="{% url 'registrar_trabajador' %}">
+            {% csrf_token %}
+            <input type="hidden" name="form_tipo" value="trabajador">
             <div class="administrador-inputGrid">
                 <label class="administrador-label">Nombre: <br>
                     <input
                         type="text"
                         placeholder="Nombre"
-                        name="nameTraba"
+                        name="nombre"
                         class="administrador-input"
                         required /></label>
 
@@ -74,7 +97,7 @@
                     <input
                         type="text"
                         placeholder="Apellido paterno"
-                        name="priApellido"
+                        name="apellido_paterno"
                         class="administrador-input"
                         required /></label>
 
@@ -82,7 +105,7 @@
                     <input
                         type="text"
                         placeholder="Apellido materno"
-                        name="segApellido"
+                        name="apellido_materno"
                         class="administrador-input"
                         required /></label>
 
@@ -106,65 +129,130 @@
                     <input
                         type="text"
                         placeholder="Numero"
-                        name="numEmpleado"
+                        name="no_empleado"
                         class="administrador-input"
                         required /></label>
 
                 <label class="administrador-label"> Rol <br>
-                    <select name="rolSeleccionado" id="itemAsig"
-                        class="administrador-select" required>
+                    <select name="rol_id" class="administrador-select emparejar-select" required>
                         <option value disabled selected hidden>Escoge rol</option>
-                        <option value="1">Recepcionista</option>
-                        <option value="2">Almacenista</option>
-                        <option value="3">Coordinador</option>
+                        {% for rol in roles %}
+                        <option value="{{ rol.codigo }}">{{ rol.nombre }}</option>
+                        {% endfor %}
                     </select>
                 </label>
-
-                <!--Aca tengo q anadir q todas las cuentas sin rol se incluyan-->
-                <datalist id="items">
-                    <option value="2">panfilo</option>
-                    <option value="1">kaka</option>
-                </datalist>
-
-                <label class="administrador-label">Cuenta asociada: <br>
-                    <input
-                        type="text"
-                        placeholder="Numero de cuenta"
-                        name="numCuenta"
-                        class="administrador-input"
-                        list="items"
-                        required /></label>
             </div>
 
             <button class="administrador-paGuarar"
-                type="submit">Guardar</button>
-
+                type="button" onclick="mostrarConfirmacion()">Guardar</button>
         </form>
 
+        <form id="form-trabajador" method="POST" action="{% url 'registrar_trabajador' %}" style="display: none;">
+            {% csrf_token %}
+            <input type="hidden" name="form_tipo" value="trabajador">
+            <input type="hidden" name="nombre" id="hidden-nombre">
+            <input type="hidden" name="apellido_paterno" id="hidden-apellido-paterno">
+            <input type="hidden" name="apellido_materno" id="hidden-apellido-materno">
+            <input type="hidden" name="telefono" id="hidden-telefono">
+            <input type="hidden" name="rfc" id="hidden-rfc">
+            <input type="hidden" name="no_empleado" id="hidden-no-empleado">
+            <input type="hidden" name="rol_id" id="hidden-rol">
+        </form>
+
+        <script>
+        // Validaciones para el formulario de Datos del Trabajador
+        (function() {
+            const formTrabajador = document.querySelector('form[action="{% url "registrar_trabajador" %}"] input[name="form_tipo"][value="trabajador"]')?.closest('form');
+            if (!formTrabajador) return;
+
+            const inputTelefono = formTrabajador.querySelector('input[name="telefono"]');
+            const inputRFC = formTrabajador.querySelector('input[name="rfc"]');
+
+            // Validar teléfono: solo permite números, máximo 10 dígitos
+            if (inputTelefono) {
+                inputTelefono.addEventListener('input', function() {
+                    // Eliminar cualquier carácter que no sea número
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    // Limitar a 10 dígitos
+                    if (this.value.length > 10) {
+                        this.value = this.value.slice(0, 10);
+                    }
+                });
+            }
+
+            // Validar RFC: formato mexicano
+            if (inputRFC) {
+                inputRFC.addEventListener('input', function() {
+                    // Convertir a mayúsculas
+                    this.value = this.value.toUpperCase();
+                    // Limitar a 13 caracteres
+                    if (this.value.length > 13) {
+                        this.value = this.value.slice(0, 13);
+                    }
+                });
+            }
+
+            // Validación antes de enviar el formulario
+            formTrabajador.addEventListener('submit', function(e) {
+                let errores = [];
+
+                // Validar teléfono (10 dígitos)
+                const telefono = inputTelefono?.value || '';
+                if (!/^\d{10}$/.test(telefono)) {
+                    errores.push('El teléfono debe tener exactamente 10 dígitos numéricos');
+                }
+
+                // Validar RFC (formato completo mexicano)
+                const rfc = inputRFC?.value || '';
+                // Validación simplificada: solo mínimo y máximo de caracteres
+                if (rfc.length < 10 || rfc.length > 13) {
+                    errores.push('El RFC debe tener entre 10 y 13 caracteres');
+                }
+
+                // Validación completa comentada para uso futuro:
+                // const rfc = inputRFC?.value || '';
+                // if (!/^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/.test(rfc)) {
+                //     errores.push('El RFC no tiene un formato válido (ejemplo: ABCD123456XYZ)');
+                // }
+
+                if (errores.length > 0) {
+                    e.preventDefault();
+                    alert('Errores en el formulario:\n\n• ' + errores.join('\n• '));
+                    return false;
+                }
+            });
+        })();
+        </script>
     </div>
 
-    <form class="administrador-seccionBusq">
-
-        <h3 class="administrador-tituloSeccion">Busqueda</h3>
+    <form class="administrador-seccionBusq" method="GET">
+        <h3 class="administrador-tituloSeccion">Búsqueda</h3>
 
         <div class="administrador-entradaBusquedas">
             <input
                 type="text"
-                placeholder="Buscar trabajador"
-                name="busqTraba"
+                placeholder="Buscar por nombre"
+                name="nombre"
                 class="administrador-input"
-                required />
+                value="{{ nombre|default:'' }}" />
 
-            <!-- checar esta parte para andir chido cada cosa, en caso de q no se elija un rol se hara una evaluacion por parte de django para q no haga filtro-->
-            <select name="rolSeleccionado" id="itemBusq"
-                class="administrador-select">
-                <option value selected hidden>Ningun seleccionado</option>
-                <option value="1">Recepcionista</option>
-                <option value="2">Almacenista</option>
-                <option value="3">Coordinador</option>
+            <input
+                type="text"
+                placeholder="Buscar por No. Empleado"
+                name="no_empleado"
+                class="administrador-input"
+                value="{{ no_empleado|default:'' }}" />
+
+            <select name="rol" id="filtro-rol"
+                class="administrador-select ">
+                <option value="">Todos los roles</option>
+                {% for rol in roles %}
+                <option value="{{ rol.codigo }}" {% if rol.codigo == rol_filtro %}selected{% endif %}>{{ rol.nombre }}</option>
+                {% endfor %}
             </select>
 
-            <button class="administrador-paGuarar" type="submit">Buscar</button>
+            <button class="administrador-busqAlgo" type="submit">Buscar</button>
+            <a href="{% url 'trabajadores' %}"><button type="button" class="administrador-busqAlgo">Limpiar</button></a>
         </div>
     </form>
 
@@ -185,20 +273,45 @@
             </thead>
 
             <tbody class="administrador-tbody">
-                <!-- aca va la logica del for onde se imprimen todos los trabajadores-->
-                <tr>
-                    <td class="administrador-td">ejemplo</td>
-                    <td class="administrador-td">ejemplo</td>
-                    <td class="administrador-td">ejemplo</td>
-                    <td
-                        class="administrador-td">ejemplo</td>
-                    <td class="administrador-td">ejemplo</td>
-                    <td class="administrador-td">ejemplo</td>
-                    <td class="administrador-td">ejemplo</td>
-                    <td class="administrador-td">ejemplo</td>
-                    <td class="administrador-td"><img class="administrador-img"
-                            src="/document.png"></td>
+                {% for trabajador in trabajadores %}
+                <tr data-id="{{ trabajador.no_empleado }}"
+                    data-nombre="{{ trabajador.nombre }}"
+                    data-apellido-paterno="{{ trabajador.apellidoPaterno }}"
+                    data-apellido-materno="{{ trabajador.apelidoMaterno|default:'' }}"
+                    data-telefono="{{ trabajador.telefono }}"
+                    data-rfc="{{ trabajador.rfc }}"
+                    data-rol-codigo="{{ trabajador.rol.codigo }}">
+                    <td class="administrador-td">{{ trabajador.no_empleado }}</td>
+                    <td class="administrador-td celda-nombre">{{ trabajador.nombre }}</td>
+                    <td class="administrador-td celda-apellido-paterno">{{ trabajador.apellidoPaterno }}</td>
+                    <td class="administrador-td celda-apellido-materno">{{ trabajador.apelidoMaterno|default:'-' }}</td>
+                    <td class="administrador-td celda-rfc">{{ trabajador.rfc }}</td>
+                    <td class="administrador-td celda-telefono">{{ trabajador.telefono }}</td>
+                    <td class="administrador-td">{{ trabajador.correo_electronico }}</td>
+                    <td class="administrador-td celda-rol">{{ trabajador.rol.nombre }}</td>
+                    <td class="administrador-td servicio-acciones">
+                        <button type="button" class="btn-editar" onclick="editarRegistro('{{ trabajador.no_empleado }}')" title="Editar">
+                            <svg class="icono blanco">
+                                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-edit"></use>
+                            </svg>
+                        </button>
+                        <button type="button" class="btn-guardar" style="display: none;" onclick="guardarRegistro('{{ trabajador.no_empleado }}')" title="Guardar">
+                            <svg class="icono blanco">
+                                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-save"></use>
+                            </svg>
+                        </button>
+                        <button type="button" class="btn-cancelar" style="display: none;" onclick="cancelarEdicionInline('{{ trabajador.no_empleado }}')" title="Cancelar">
+                            <svg class="icono blanco">
+                                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-cancel"></use>
+                            </svg>
+                        </button>
+                    </td>
                 </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="administrador-td">No hay trabajadores registrados</td>
+                </tr>
+                {% endfor %}
             </tbody>
 
         </table>
@@ -206,5 +319,33 @@
     </div>
 
 </div>
+
+<link rel="stylesheet" href="{% static 'BookingRoomApp/css/administracion/servicios.css' %}">
+
+<script src="{% static 'BookingRoomApp/js/inline-edit.js' %}"></script>
+<script>
+window.roles = [
+    {% for rol in roles %}
+        { codigo: "{{ rol.codigo }}", nombre: "{{ rol.nombre }}" },
+    {% endfor %}
+];
+
+console.log('roles cargados:', window.roles);
+
+configurarInlineEdit({
+    nombreSingular: 'trabajador',
+    urlActualizar: '/administracion/trabajadores/0/actualizar/',
+    campoObligatorio: 'nombre',
+    campoNombre: 'nombre',
+    campos: [
+        { nombre: 'nombre', clase: 'celda-nombre', tipo: 'texto' },
+        { nombre: 'apellidoPaterno', clase: 'celda-apellido-paterno', tipo: 'texto' },
+        { nombre: 'apellidoMaterno', clase: 'celda-apellido-materno', tipo: 'texto' },
+        { nombre: 'rfc', clase: 'celda-rfc', tipo: 'rfc' },
+        { nombre: 'telefono', clase: 'celda-telefono', tipo: 'telefono' },
+        { nombre: 'rol', clase: 'celda-rol', tipo: 'select-db', opcionesVar: 'roles', dataAttr: 'rol-codigo' }
+    ]
+});
+</script>
 
 {% endblock inicio %}

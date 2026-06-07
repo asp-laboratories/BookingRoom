@@ -1,0 +1,97 @@
+{% load static %}
+
+<style>
+  #modal-confirmar {
+    border: none;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 0 10px #444;
+    max-width: 400px;
+    width: 90%;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+  }
+
+  #modal-confirmar::backdrop {
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .modal-confirmar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .modal-confirmar-header h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .modal-confirmar-cerrar {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+  }
+
+  .modal-confirmar-cerrar:hover {
+    color: #333;
+  }
+
+  .modal-confirmar-mensaje {
+    margin-bottom: 20px;
+    color: #555;
+  }
+
+  .modal-confirmar-botones {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .modal-confirmar-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .modal-confirmar-btn.confirmar {
+    background-color: var(--color-boton-guardar);
+    color: white;
+  }
+
+  .modal-confirmar-btn.confirmar:hover {
+    background-color: #157347;
+  }
+
+  .modal-confirmar-btn.cancelar {
+    background-color: var(--color-boton-cancelar);
+    color: white;
+  }
+
+  .modal-confirmar-btn.cancelar:hover {
+    background-color: #b21e0a;
+  }
+</style>
+
+<dialog id="modal-confirmar">
+  <div class="modal-confirmar-header">
+    <h3 id="modal-confirmar-titulo">Confirmar acción</h3>
+    <button type="button" class="modal-confirmar-cerrar" onclick="cerrarModalConfirmar()">×</button>
+  </div>
+  <p class="modal-confirmar-mensaje" id="modal-confirmar-mensaje">¿Estás seguro de que quieres continuar?</p>
+  <div class="modal-confirmar-botones">
+    <button type="button" class="modal-confirmar-btn cancelar" onclick="cerrarModalConfirmar()">Cancelar</button>
+    <button type="button" class="modal-confirmar-btn confirmar" id="modal-confirmar-btn">Confirmar</button>
+  </div>
+</dialog>
+
+<script src="{% static 'BookingRoomApp/js/modal/modal-confirmacion.js' %}"></script>
+<script src="{% static 'BookingRoomApp/js/modal/modal-confirmacion-forms.js' %}"></script>

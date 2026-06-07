@@ -1,0 +1,570 @@
+from django.http import HttpResponseRedirect, JsonResponse
+from django.shortcuts import render, get_object_or_404
+from django.views import generic
+from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Q
+from django.db import transaction
+from django.urls import reverse
+from django.contrib import messages
+from django.utils.decorators import method_decorator
+from BookingRoomApp import models
+from BookingRoomApp.views import get_cuenta_and_rol
+
+
+class HistorialReservacionViw(generic.View):
+    template_name = "BookingRoomApp/recepcion/historial_reservacion.html"
+
+    def get(self, request):
+        cuenta, rol = get_cuenta_and_rol(request)
+        if not cuenta:
+            return HttpResponseRedirect(reverse("login"))
+
+        tab = request.GET.get('tab', 'reservaciones')
+
+        if tab == 'clientes':
+            return self._get_clientes(request, rol)
+        else:
+            return self._get_reservaciones(request, rol)
+
+    def _get_reservaciones(self, request, rol):
+        reservaciones = models.Reservacion.objects.select_related(
+            "cliente", "estado_reserva", "montaje__salon",
+        ).filter(es_paquete=False).exclude(estado_reserva__codigo='SOLIC')
+        estados = models.EstadoReserva.objects.all()
+        reservacion_total = models.Reservacion.objects.filter(es_paquete=False).count()
+        tipos_cliente = models.TipoCliente.objects.all()
+
+        nombre = request.GET.get('nombre', '')
+        estado_filtro = request.GET.get('estado', '')
+
+        if nombre:
+            reservaciones = reservaciones.filter(
+                Q(nombreEvento__icontains=nombre) |
+                Q(cliente__nombre__icontains=nombre)
+            )
+
+        if estado_filtro:
+            reservaciones = reservaciones.filter(estado_reserva__codigo=estado_filtro)
+
+        return render(request, self.template_name, {
+            "reservaciones": reservaciones.order_by('-id').all(),
+            "estados": estados,
+            "tipos_cliente": tipos_cliente,
+            "rol": rol,
+            "nombre": nombre,
+            "estado_filtro": estado_filtro,
+            "reservacion_total": reservacion_total,
+            "tab": "reservaciones"
+        })
+
+    def _get_clientes(self, request, rol):
+        from django.db.models import Count
+
+        clientes = models.DatosCliente.objects.select_related('tipo_cliente').annotate(
+            total_reservaciones=Count('reservacion')
+        )
+
+        busqueda = request.GET.get('busqueda', '')
+        tipo_filtro = request.GET.get('tipo', '')
+
+        if busqueda:
+            clientes = clientes.filter(
+                Q(nombre__icontains=busqueda) |
+                Q(rfc__icontains=busqueda) |
+                Q(correo_electronico__icontains=busqueda)
+            )
+
+        if tipo_filtro and tipo_filtro != 'todos':
+            clientes = clientes.filter(tipo_cliente__codigo=tipo_filtro.upper())
+
+        tipos_cliente = models.TipoCliente.objects.all()
+
+        return render(request, self.template_name, {
+            "clientes": clientes.order_by('-id').all(),
+            "tipos_cliente": tipos_cliente,
+            "rol": rol,
+            "busqueda": busqueda,
+            "tipo_filtro": tipo_filtro,
+            "tab": "clientes"
+        })
+
+    @method_decorator(csrf_exempt)
+    def post(self, request):
+        cuenta, rol = get_cuenta_and_rol(request)
+        if not cuenta:
+            return JsonResponse({'success': False, 'message': 'No autorizado'})
+
+        cliente_id = request.POST.get('cliente_id')
+        if not cliente_id:
+            return JsonResponse({'success': False, 'message': 'ID de cliente requerido'})
+
+        try:
+            cliente = models.DatosCliente.objects.get(pk=cliente_id)
+        except models.DatosCliente.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Cliente no encontrado'})
+
+        cliente.nombre = request.POST.get('nombre', cliente.nombre)
+        cliente.apellidoPaterno = request.POST.get('apellidoPaterno', cliente.apellidoPaterno)
+        cliente.apelidoMaterno = request.POST.get('apelidoMaterno', cliente.apelidoMaterno) or None
+        cliente.correo_electronico = request.POST.get('correo', cliente.correo_electronico)
+        cliente.telefono = request.POST.get('telefono', cliente.telefono)
+        cliente.rfc = request.POST.get('rfc', cliente.rfc)
+        cliente.nombre_fiscal = request.POST.get('nombre_fiscal', cliente.nombre_fiscal)
+
+        tipo_codigo = request.POST.get('tipo_cliente')
+        if tipo_codigo:
+            try:
+                tipo = models.TipoCliente.objects.get(codigo=tipo_codigo)
+                cliente.tipo_cliente = tipo
+            except models.TipoCliente.DoesNotExist:
+                pass
+
+        try:
+            cliente.save()
+            return JsonResponse({'success': True, 'message': 'Cliente actualizado correctamente'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': f'Error al guardar: {str(e)}'})
+
+
+class ReservacionView(generic.View):
+    template_name = "BookingRoomApp/recepcion/reservacion.html"
+
+    def get(self, request):
+        cuenta, rol = get_cuenta_and_rol(request)
+        if not cuenta:
+            return HttpResponseRedirect(reverse("login"))
+
+        trabajador = models.Trabajador.objects.get(cuenta=cuenta.pk)
+
+        reservaciones_solicitudes = models.Reservacion.objects.filter(
+            estado_reserva__codigo='SOLIC'
+        ).select_related(
+            "cliente", "estado_reserva", "montaje__salon"
+        ).order_by('-id')
+
+        return render(request, self.template_name, {
+            "tipos_evento": models.TipoEvento.objects.exclude(nombre__icontains="paquete"),
+            "trabajador_id": trabajador.pk,
+            "trabajador_no_empleado": trabajador.no_empleado,
+            "tipos_mobiliarios": models.TipoMobil.objects.filter(disposicion=True),
+            "salones": models.Salon.objects.all(),
+            "tipos_servicio": models.TipoServicio.objects.filter(disposicion=True),
+            "tipos_equipa": models.TipoEquipa.objects.filter(disposicion=True),
+            "tipos_equipamiento": models.TipoEquipa.objects.filter(disposicion=True),
+            "tipos_montaje": models.TipoMontaje.objects.filter(disposicion=True),
+            "rol": rol,
+            "reservaciones_solicitudes": reservaciones_solicitudes,
+        })
+
+
+class ReservacionClienteView(generic.View):
+    template_name = "BookingRoomApp/cliente/reservacion_cliente.html"
+
+    def get(self, request):
+        cuenta, rol = get_cuenta_and_rol(request)
+        if not cuenta:
+            return HttpResponseRedirect(reverse("login"))
+
+        return render(request, self.template_name, {
+            "tipos_evento": models.TipoEvento.objects.exclude(nombre__icontains="paquete"),
+            "trabajador_id": "",  # Cliente no tiene trabajador
+            "trabajador_no_empleado": "",
+            "cliente_email": cuenta.correo_electronico,  # Email para cargar datos
+            "tipos_mobiliarios": models.TipoMobil.objects.filter(disposicion=True),
+            "salones": models.Salon.objects.filter(estado_salon='DIS'),
+            "tipos_servicio": models.TipoServicio.objects.filter(disposicion=True),
+            "tipos_equipa": models.TipoEquipa.objects.filter(disposicion=True),
+            "tipos_equipamiento": models.TipoEquipa.objects.filter(disposicion=True),
+            "tipos_montaje": models.TipoMontaje.objects.filter(disposicion=True),
+            "rol": rol,
+        })
+
+
+@csrf_exempt
+def buscar_cliente(request):
+    if request.method == 'GET':
+        query = request.GET.get('q', '').strip()
+        if not query:
+            return JsonResponse({'encontrado': False, 'mensaje': 'Ingrese un RFC o nombre'})
+        
+        cliente = models.DatosCliente.objects.filter(rfc__iexact=query).first()
+        if not cliente:
+            cliente = models.DatosCliente.objects.filter(
+                Q(nombre__icontains=query) | Q(nombre_fiscal__icontains=query)
+            ).first()
+        
+        if cliente:
+            return JsonResponse({
+                'encontrado': True,
+                'cliente': {
+                    'id': cliente.id, 'rfc': cliente.rfc, 'nombre': cliente.nombre,
+                    'apellido_paterno': cliente.apellidoPaterno,
+                    'apellido_materno': cliente.apelidoMaterno or '',
+                    'nombre_fiscal': cliente.nombre_fiscal,
+                    'telefono': cliente.telefono, 'correo': cliente.correo_electronico,
+                    'colonia': cliente.dir_colonia, 'calle': cliente.dir_calle,
+                    'numero': cliente.dir_numero,
+                    'tipo_cliente': cliente.tipo_cliente.nombre if cliente.tipo_cliente else '',
+                }
+            })
+        
+        return JsonResponse({'encontrado': False, 'mensaje': 'Cliente no encontrado'})
+
+
+@csrf_exempt
+def obtener_servicios_por_tipo(request):
+    if request.method == 'GET':
+        tipo_id = request.GET.get('tipo_id')
+        if not tipo_id:
+            return JsonResponse({'servicios': []})
+        servicios = models.Servicio.objects.filter(
+            tipo_servicio_id=tipo_id, disposicion=True
+        ).values('id', 'nombre', 'costo')
+        return JsonResponse({'servicios': list(servicios)})
+
+
+@csrf_exempt
+def obtener_equipamiento_por_tipo(request):
+    if request.method == 'GET':
+        tipo_id = request.GET.get('tipo_id')
+        if not tipo_id:
+            return JsonResponse({'equipamientos': []})
+        
+        inventarios = models.InventarioEquipa.objects.filter(
+            estado_equipa='DISP',
+            equipamiento__tipo_equipa_id=tipo_id
+        ).select_related('equipamiento')
+
+        lista_equipos = []
+        for item in inventarios:
+            if item.cantidad > 0:
+                lista_equipos.append({
+                    'id': item.equipamiento.id,
+                    'nombre': item.equipamiento.nombre,
+                    'costo': item.equipamiento.costo,
+                    'stock': item.cantidad
+                })
+
+        return JsonResponse({'equipamientos': lista_equipos})
+
+
+@csrf_exempt
+def mobiliarios_por_tipo(request):
+    if request.method == 'GET':
+        tipo_id = request.GET.get('tipo_id')
+
+        if not tipo_id:
+            return JsonResponse({'mobiliarios': []})
+        try:
+
+            inventarios = models.InventarioMob.objects.filter(
+                estado_mobil='DISP',
+                mobiliario__tipo_movil_id=tipo_id
+            ).select_related('mobiliario')
+
+            lista_mobiliarios = []
+            for item in inventarios:
+                if item.cantidad > 0:
+                    lista_mobiliarios.append({
+                        'id': item.mobiliario.id,
+                        'nombre': item.mobiliario.nombre,
+                        'costo': str(item.mobiliario.costo),
+                        'stock': item.cantidad
+                    })
+
+            return JsonResponse({'mobiliarios': lista_mobiliarios})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+
+@csrf_exempt
+def montaje_por_capacidad_salon(request):
+    salonId = request.GET.get('salon_id')
+    if not salonId:
+        return JsonResponse({'montajes': []})
+    
+    try:
+        salon = models.Salon.objects.get(id=salonId)
+        tipos_montajes = models.TipoMontaje.objects.filter(capacidadIdeal__lte=salon.maxCapacidad)
+        lista = []
+        for tipo in tipos_montajes:
+            lista.append({
+                'id': tipo.id,
+                'nombre': tipo.nombre,
+                'capacidadIdeal': tipo.capacidadIdeal
+            })
+
+        return JsonResponse({'montajes': lista, 'salon': {'costo': str(salon.costo)}})
+    except models.Salon.DoesNotExist:
+        return JsonResponse({'error': 'Salón no encontrado'}, status=404)
+
+
+@csrf_exempt
+def montaje_por_salon(request):
+    salonId = request.GET.get('salon_id')
+    todos = request.GET.get('todos')
+    
+    if todos == 'true':
+        montajes = models.Montaje.objects.select_related('tipo_montaje', 'salon')
+        lista = []
+        for m in montajes:
+            lista.append({
+                'id': m.id,
+                'tipo_montaje_id': m.tipo_montaje.id,
+                'nombre': f'{m.tipo_montaje.nombre} - {m.salon.nombre}',
+                'capacidadIdeal': m.tipo_montaje.capacidadIdeal,
+                'costo': str(m.costo),
+                'salon_nombre': m.salon.nombre
+            })
+
+        if len(lista) == 0:
+            tipos_montaje = models.TipoMontaje.objects.prefetch_related()
+
+        return JsonResponse({'montajes': lista})
+    
+    if not salonId:
+        return JsonResponse({'montajes': []})
+    
+    try:
+        salon = models.Salon.objects.get(id=salonId)
+        
+        # Obtener los Montaje relacionados con este salon
+        montajes = models.Montaje.objects.filter(salon=salon).select_related('tipo_montaje')
+
+        lista = []
+        for m in montajes:
+            lista.append({
+                'id': m.id,
+                'tipo_montaje_id': m.tipo_montaje.id,
+                'nombre': m.tipo_montaje.nombre,
+                'capacidadIdeal': m.tipo_montaje.capacidadIdeal,
+                'costo': str(m.costo)
+            })
+        
+        return JsonResponse({
+            'montajes': lista,
+            'salon': {
+                'id': salon.id,
+                'nombre': salon.nombre,
+                'costo': str(salon.costo),
+                'capacidad': salon.maxCapacidad
+            }
+        })
+
+    except models.Salon.DoesNotExist:
+        return JsonResponse({'error': 'Salón no encontrado'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+class DetallesReservacionView(generic.DetailView):
+    template_name = "BookingRoomApp/home/"
+    model = models.Reservacion
+    context_object_name = "reservacion"
+
+
+def reservacion_detalle_json(request, pk):
+    reserva = get_object_or_404(
+        models.Reservacion.objects.select_related(
+            "cliente", "montaje__salon", "montaje__tipo_montaje", "estado_reserva", "tipo_evento", "trabajador",
+        ),
+        pk=pk,
+    )
+
+    # Servicios: lista con nombre y costo
+    servicios = list(reserva.reservaservicio_set.select_related('servicio').values(
+        'servicio__nombre', 'servicio__costo'
+    ))
+    servicios_formatted = [
+        {'nombre': s['servicio__nombre'], 'costo': float(s['servicio__costo']) if s['servicio__costo'] else 0}
+        for s in servicios
+    ]
+    
+    # Equipamientos: lista con nombre, cantidad y costo
+    equipamientos = list(reserva.reservaequipa_set.select_related('equipamiento').values(
+        'equipamiento__nombre', 'cantidad', 'equipamiento__costo'
+    ))
+    # Formatear equipamientos para el frontend
+    equipamientos_formatted = [
+        {'nombre': eq['equipamiento__nombre'], 'cantidad': eq['cantidad'], 'costo': float(eq['equipamiento__costo']) if eq['equipamiento__costo'] else 0}
+        for eq in equipamientos
+    ]
+
+    # Mobiliarios: lista con nombre, cantidad y costo
+    mobiliario = []
+    if reserva.montaje:
+        mobiliario_qs = models.MontajeMobiliario.objects.filter(
+            montaje=reserva.montaje
+        ).select_related('mobiliario').values('mobiliario__nombre', 'cantidad', 'mobiliario__costo')
+        mobiliario = [
+            {'nombre': mob['mobiliario__nombre'], 'cantidad': mob['cantidad'], 'costo': float(mob['mobiliario__costo']) if mob['mobiliario__costo'] else 0}
+            for mob in mobiliario_qs
+        ]
+
+    salon_costo = float(reserva.montaje.salon.costo) if reserva.montaje and reserva.montaje.salon and reserva.montaje.salon.costo else 0
+
+    return JsonResponse({
+        "id": reserva.pk, "nombre_evento": reserva.nombreEvento,
+        "descripcion": reserva.descripEvento, "fecha": reserva.fechaEvento.isoformat() if reserva.fechaEvento else None,
+        "hora_inicio": reserva.horaInicio.strftime("%H:%M") if reserva.horaInicio else None,
+        "hora_fin": reserva.horaFin.strftime("%H:%M") if reserva.horaFin else None,
+        "estado": reserva.estado_reserva.nombre, "estado_codigo": reserva.estado_reserva.codigo,
+        "asistentes": reserva.estimaAsistentes,
+        "salon": reserva.montaje.salon.nombre if reserva.montaje and reserva.montaje.salon else "N/A",
+        "salon_costo": salon_costo,
+        "montaje": reserva.montaje.tipo_montaje.nombre if reserva.montaje and reserva.montaje.tipo_montaje else "N/A",
+        "tipo_evento": reserva.tipo_evento.nombre if reserva.tipo_evento else "N/A",
+        "subtotal": str(reserva.subtotal), "iva": str(reserva.IVA), "total": str(reserva.total),
+        "trabajador": reserva.trabajador.nombre if reserva.trabajador else None,
+        "cliente": {
+            "nombre": reserva.cliente.nombre, "apellido_paterno": reserva.cliente.apellidoPaterno,
+            "apellido_materno": reserva.cliente.apelidoMaterno or "",
+            "correo": reserva.cliente.correo_electronico, "telefono": reserva.cliente.telefono,
+            "rfc": reserva.cliente.rfc, "nombre_fiscal": reserva.cliente.nombre_fiscal,
+        },
+        "servicios": servicios_formatted,
+        "equipamentos": equipamientos_formatted,
+        "mobiliarios": mobiliario,
+    })
+
+
+def historial_detalle(request, pk):
+    reservacion = get_object_or_404(models.Reservacion, pk=pk)
+    pagos = models.Pago.objects.filter(reservacion=reservacion).order_by("no_pago")
+    
+    primer_pago = segundo_pago = 0
+    for pago in pagos:
+        if pago.no_pago == 1:
+            primer_pago = pago.monto
+        elif pago.no_pago == 2:
+            segundo_pago = pago.monto
+    
+    ultimo_pago = pagos.order_by("-no_pago").first()
+    saldo = ultimo_pago.saldo if ultimo_pago else reservacion.total
+    
+    return JsonResponse({
+        "total": str(reservacion.total), "subtotal": str(reservacion.subtotal),
+        "iva": str(reservacion.IVA), "primer_pago": str(primer_pago),
+        "segundo_pago": str(segundo_pago), "saldo": str(saldo),
+    })
+
+
+@csrf_exempt
+def confirmar_reservacion(request, pk):
+    if request.method == 'POST':
+        try:
+            reserva = get_object_or_404(models.Reservacion, pk=pk)
+
+            # Obtener el trabajador actual desde la sesión
+            cuenta, rol = get_cuenta_and_rol(request)
+            if not cuenta:
+                return JsonResponse({'success': False, 'message': 'No hay sesión activa'}, status=400)
+            
+            # Buscar el trabajador asociado a esta cuenta
+            try:
+                trabajador = models.Trabajador.objects.get(cuenta=cuenta)
+            except models.Trabajador.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'No hay trabajador asociado a esta cuenta'}, status=400)
+
+            # Actualizar descripción si se proporciona
+            descripcion = request.POST.get('descripcion', '')
+            if descripcion:
+                reserva.descripEvento = descripcion
+
+            # Confirmar la reservación como PENDIENTE
+            reserva.estado_reserva = models.EstadoReserva.objects.get(codigo='PEN')
+            reserva.trabajador = trabajador
+            reserva.save()
+
+            return JsonResponse({'success': True, 'message': 'Reservación enviada a pendientes'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+    return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
+
+
+@csrf_exempt
+def cancelar_reservacion(request, pk):
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                reservacion = models.Reservacion.objects.select_related(
+                    'montaje__salon'
+                ).get(pk=pk)
+
+                fecha_evento = reservacion.fechaEvento
+
+                if reservacion.montaje and reservacion.montaje.salon and fecha_evento:
+                    salon = reservacion.montaje.salon
+                    models.RegistrEstadSalon.objects.filter(
+                        salon=salon,
+                        fecha=fecha_evento
+                    ).delete()
+
+                models.ReservaServicio.objects.filter(reservacion=reservacion).delete()
+
+                reserva_equipas = models.ReservaEquipa.objects.filter(reservacion=reservacion)
+                for re in reserva_equipas:
+                    # Primero intentar liberar de RESV, luego de OCUP
+                    inventario = models.InventarioEquipa.objects.filter(
+                        equipamiento=re.equipamiento,
+                        estado_equipa__codigo='RESV'
+                    ).first()
+                    if not inventario:
+                        inventario = models.InventarioEquipa.objects.filter(
+                            equipamiento=re.equipamiento,
+                            estado_equipa__codigo='OCUP'
+                        ).first()
+                    if inventario:
+                        inventario.cantidad += re.cantidad
+                        inventario.save()
+                    re.delete()
+
+                if reservacion.montaje:
+                    montage_mobs = models.MontajeMobiliario.objects.filter(montaje=reservacion.montaje)
+                    for mm in montage_mobs:
+                        # Primero intentar liberar de RESV, luego de OCUP
+                        inventario = models.InventarioMob.objects.filter(
+                            mobiliario=mm.mobiliario,
+                            estado_mobil__codigo='RESV'
+                        ).first()
+                        if not inventario:
+                            inventario = models.InventarioMob.objects.filter(
+                                mobiliario=mm.mobiliario,
+                                estado_mobil__codigo='OCUP'
+                            ).first()
+                        if inventario:
+                            inventario.cantidad += mm.cantidad
+                            inventario.save()
+                        mm.delete()
+
+                reservacion.estado_reserva = models.EstadoReserva.objects.get(codigo='CAN')
+                reservacion.save()
+
+            return JsonResponse({'success': True, 'message': 'Reservación cancelada y recursos liberados'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+    return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
+
+
+
+
+@csrf_exempt
+def actualizar_reservacion(request, pk):
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                reservacion = models.Reservacion.objects.get(pk=pk)
+
+                if request.POST.get('evento_nombre'):
+                    reservacion.nombreEvento = request.POST.get('evento_nombre')
+                if request.POST.get('evento_descripcion'):
+                    reservacion.descripEvento = request.POST.get('evento_descripcion')
+
+                reservacion.save()
+
+            messages.success(request, 'Reservación actualizada correctamente')
+            return JsonResponse({'success': True, 'redirect': reverse('historial_reservacion')})
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+    return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)

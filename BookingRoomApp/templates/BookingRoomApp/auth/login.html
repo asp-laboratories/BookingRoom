@@ -1,0 +1,67 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - BookingRoom</title>
+    <link
+      rel="stylesheet"
+      href="{% static 'BookingRoomApp/css/auth/inicio_sesion_estilos.css'%}"
+    />
+  </head>
+  <body>
+    {% include "BookingRoomApp/includes/alert-exito.html" %}
+    
+    <div class="contenedor-login">
+      <div class="login">
+        <h1>Inicio de sesión</h1>
+
+        <form id="loginForm">
+          {% csrf_token %}
+          <label>Correo electronico</label>
+          <input
+            class="inputs"
+            id="email"
+            name="email"
+            type="email"
+            placeholder="ejemplo@gmail.com"
+            required
+          />
+          <label>Contraseña</label>
+          <input
+            class="inputs"
+            id="password"
+            name="password"
+            type="password"
+            placeholder="123456"
+            required
+          />
+
+          <button class="btn-ingresar" type="submit" id="btnSubmit">
+            Ingresar
+          </button>
+        </form>
+
+        <a href="{% url 'sign_up' %}"
+          >¿No tienes cuenta?
+          <span class="enviar-registro">Registrate aqui</span></a
+        >
+      </div>
+      <div class="background">
+        <img
+          class="logo"
+          src="{% static 'BookingRoomApp/img/BookingRoom.png' %}"
+        />
+      </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    
+    <!-- Firebase Auth -->
+    <script src="{% static 'BookingRoomApp/js/firebase-auth.js' %}?v=2"></script>
+  </body>
+</html>

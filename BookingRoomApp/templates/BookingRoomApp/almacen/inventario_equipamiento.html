@@ -1,60 +1,111 @@
-{% extends "BookingRoomApp/base.html" %}
+{% extends "BookingRoomApp/base/base.html" %}
 {% load static %}
 
 {% block inicio %}
 
 <link rel="stylesheet" href="{% static 'BookingRoomApp/css/almacen/inventario_equipamiento.css' %}">
+<link rel="stylesheet" href="{% static 'BookingRoomApp/css/administrador/registro_administrador.css' %}">
+
+<style>
+.equipamiento-container .administrador-tablita {
+    max-height: 700px;
+}
+.row-disabled {
+    opacity: 0.5;
+    background-color: #f5f5f5;
+}
+.row-disabled button {
+    background-color: #ccc !important;
+    cursor: not-allowed;
+}
+</style>
 
 <div class="equipamiento-container">
     <h2 class="equipamiento-titulo">Equipamientos</h2>
+
     <div class="equipamiento-contenedor">
-        <div class="equipamiento-fila">
-            <input type="text" placeholder="Buscar equipamiento" class="equipamiento-input">
+        <form method="GET">
+            <div class="equipamiento-fila">
+                <input 
+                    type="text" 
+                    name="buscar"
+                    value="{{ request.GET.buscar }}"
+                    placeholder="Buscar equipamiento" 
+                    class="equipamiento-input"
+                >
+                <select name="estado" class="equipamiento-select">
+                    <option value="">Estado</option>
+                    {% for estado in estados %}
+                        <option value="{{ estado.codigo }}" {% if request.GET.estado == estado.codigo %}selected{% endif %}>
+                            {{ estado.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <select name="tipo" class="equipamiento-select">
+                    <option value="">Seleccione tipo</option>
+                    {% for tipo in tipos %}
+                        <option value="{{ tipo.id }}" {% if request.GET.tipo == tipo.id|stringformat:"s" %}selected{% endif %}>
+                            {{ tipo.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="equipamiento-btn-verde">Filtrar</button>
+            </div>
+        </form>
 
-            <select class="equipamiento-select">
-                <option>Estado</option>
-                <option>Disponible</option>
-                <option>No disponible</option>
-            </select>
+        <div class="administrador-tablita">
 
-            <select class="equipamiento-select">
-                <option>Seleccione tipo</option>
-                <option>oficina</option>
-                <option>Carnaval</option>
-            </select>
-
-        </div>
-
-        <table class="equipamiento-tabla">
-            <thead>
+        <table class="administrador-tabla">
+            <thead class="administrador-thead">
                 <tr>
-                    <th class="equipamiento-th">Indice</th>
-                    <th class="equipamiento-th">Servicio</th>
-                    <th class="equipamiento-th">Tipo</th>
-                    <th class="equipamiento-th">Descripcion</th>
-                    <th class="equipamiento-th">Costo</th>
-                    <th class="equipamiento-th">Stock</th>
-                    <th class="equipamiento-th">Estado</th>
-                    <th class="equipamiento-th">Cambiar estado</th>
+                    <th class="administrador-th">Indice</th>
+                    <th class="administrador-th">Servicio</th>
+                    <th class="administrador-th">Tipo</th>
+                    <th class="administrador-th">Descripcion</th>
+                    <th class="administrador-th">Costo</th>
+                    <th class="administrador-th">Stock</th>
+                    <th class="administrador-th">Estado</th>
+                    <th class="administrador-th">Cambiar estado</th>
                 </tr>
             </thead>
 
-            <tbody>
-                <tr>
-                    <td class="equipamiento-td">1</td>
-                    <td class="equipamiento-td">Laptop</td>
-                    <td class="equipamiento-td">Ejecutivo</td>
-                    <td class="equipamiento-td">Sin descripcion</td>
-                    <td class="equipamiento-td">2</td>
-                    <td class="equipamiento-td">0</td>
-                    <td class="equipamiento-td">Disponible</td>
-
-                    <td class="equipamiento-td">
-                        <button class="equipamiento-btn-verde" onclick="abrirModal()">↑↓</button>
+            <tbody class="administrador-tbody">
+                {% for item in inventario %}
+                <tr class="{% if item.estado_equipa.codigo == 'RESV' %}row-disabled{% endif %}">
+                    <td class="administrador-td">{{ forloop.counter }}</td>
+                    <td class="administrador-td">{{ item.equipamiento.nombre }}</td>
+                    <td class="administrador-td">{{ item.equipamiento.tipo_equipa.nombre }}</td>
+                    <td class="administrador-td">{{ item.equipamiento.descripcion }}</td>
+                    <td class="administrador-td">{{ item.equipamiento.costo }}</td>
+                    <td class="administrador-td">{{ item.cantidad }}</td>
+                    <td class="administrador-td">{{ item.estado_equipa.nombre }}</td>
+                    <td class="administrador-td">
+                        {% if item.estado_equipa.codigo == 'RESV' %}
+                        <button type="button" class="equipamiento-btn-verde" disabled>
+                            <svg class="icono blanco">
+                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-change-arrows"></use>
+              </svg>
+                        </button>
+                        {% else %}
+                        <button type="button" class="equipamiento-btn-verde" onclick="abrirModal({{ item.id }})">
+                            <svg class="icono blanco">
+                <use href="{% static 'BookingRoomApp/img/icons/sprite.svg' %}#icon-change-arrows"></use>
+              </svg>
+                        </button>
+                        {% endif %}
                     </td>
                 </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align:center; padding: 20px; color: #888;">
+                        No hay equipamiento disponible
+                    </td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
+        </div>
 
     </div>
 
@@ -63,30 +114,40 @@
 <div id="modalEstado" class="equipamiento-modal">
     <div class="equipamiento-modal-content">
         <span class="equipamiento-close" onclick="cerrarModal()">×</span>
+        <h3 style="text-align:center; margin-bottom: 20px;">Gestión de Estado</h3>
 
-        <h3 style="text-align:center;">INFORME DE LA RESERVACION</h3>
-        <div class="equipamiento-form-grid">
-
-            <label>Cantidad actual</label>
-            <input type="number" value="50" class="equipamiento-input">
-
-            <label>Cantidad a cambiar</label>
-            <input type="number" class="equipamiento-input">
-
-            <label>Cambiar estado</label>
-
-            <select class="equipamiento-select">
-                <option>Disponible</option>
-                <option>No disponible</option>
-            </select>
+        <div class="resumen-container" style="background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <p style="margin-top: 0; color: #555; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                Resumen del equipo: <span id="nombre-equipo-modal" style="color:#2c3e50;">Cargando...</span>
+            </p>
+            <ul id="lista-resumen" style="list-style: none; padding: 0; margin: 0; color: #333;">
+                <li>Cargando existencias...</li>
+            </ul>
         </div>
 
-        <div class="equipamiento-guardar">
-            <button class="equipamiento-btn-guardar">Guardar</button>
-        </div>
+        <form method="POST" action="{% url 'actualizar_estado_equipamiento' %}">
+            {% csrf_token %}
+            <input type="hidden" name="inventario_id" id="inventario_id">
 
+            <div class="equipamiento-form-grid">
+                <label>Cantidad a mover</label>
+                <input type="number" name="cantidad" class="equipamiento-input" required min="1">
+
+                <label>Nuevo estado</label>
+                <select name="estado" class="equipamiento-select" required>
+                    <option value="">Seleccione un estado...</option>
+                    {% for estado in estados %}
+                        <option value="{{ estado.codigo }}">{{ estado.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="equipamiento-guardar" style="margin-top: 20px;">
+                <button type="submit" class="equipamiento-btn-guardar">Actualizar Estado</button>
+            </div>
+        </form>
     </div>
-
+    
 </div>
 
 <script src="{% static 'BookingRoomApp/js/almacen/inventario_equipamiento.js' %}"></script>
