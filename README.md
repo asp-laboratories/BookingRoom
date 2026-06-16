@@ -6,7 +6,7 @@
 ---
 
 <p align="center">
-  <img src="../../Presentacion(1).gif" alt="Presentación del sistema"/>
+  <img src="BookingRoomApp/static/BookingRoomApp/img/Presentacion(1).gif" alt="Presentación del sistema"/>
 </p>
 
 ## Tabla de contenidos
