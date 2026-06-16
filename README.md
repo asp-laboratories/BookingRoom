@@ -1,9 +1,9 @@
 <h1 align="center">BookingRoom - Sistema de Gestión de Eventos en Hoteles</h1>
 
 <p align="center">
-  <img src="../../BookingRoom.png" alt="BookingRoom" width="360"/>
+  <img src="BookingRoomApp/static/BookingRoomApp/img/BookingRoom.png" alt="BookingRoom" width="360"/>
 </p>
----
+
 
 <p align="center">
   <img src="BookingRoomApp/static/BookingRoomApp/img/Presentacion(1).gif" alt="Presentación del sistema"/>
